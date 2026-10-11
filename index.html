@@ -417,6 +417,74 @@
       .recent li { flex-wrap: wrap; }
       footer { padding: 10px; }
     }
+
+    /* Ajustes para que la imagen del ThinkPad no descuadre la entrada */
+    .thinkpad-post {
+      grid-template-columns: 58px minmax(0, 1fr);
+      align-items: start;
+    }
+    .thinkpad-post .post-icon {
+      min-width: 0;
+      padding-top: 10px;
+    }
+    .thinkpad-post .post-icon img {
+      width: 58px;
+      height: 58px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .thinkpad-post .post-content { min-width: 0; }
+    .thinkpad-post .post-content p {
+      max-width: 68ch;
+      overflow-wrap: anywhere;
+    }
+
+    .music-player .widget-body { padding: 10px; }
+    .music-track {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+    .music-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .music-controls button {
+      border: 1px solid var(--blue);
+      background: #080914;
+      color: var(--green);
+      padding: 7px 9px;
+      font: bold 12px "Courier New", monospace;
+      cursor: pointer;
+    }
+    .music-controls button:hover,
+    .music-controls button:focus-visible {
+      background: #10172c;
+      outline: 1px solid var(--green);
+    }
+    .music-volume {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: bold;
+    }
+    #musicVolume { width: 100%; accent-color: var(--green); }
+    .music-hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 540px) {
+      .thinkpad-post { grid-template-columns: 34px minmax(0, 1fr); gap: 9px; }
+      .thinkpad-post .post-icon img { width: 34px; height: 34px; }
+      .music-controls button { padding: 7px; }
+    }
+
   </style>
 </head>
 <body>
@@ -492,9 +560,11 @@
             <a class="read-more" href="#linux">Leer más...</a>
           </div>
         </article>
-        <article class="post" id="thinkpad">
-          <div class="post-icon" aria-hidden="true"><img src="Mountain%20Dew%20Flavored%20ThinkPad%20T430.jpeg"alt="ThinkPad T430 con temática Mountain Dew">
-          <div>
+        <article class="post thinkpad-post" id="thinkpad">
+          <div class="post-icon" aria-hidden="true">
+            <img src="Mountain%20Dew%20Flavored%20ThinkPad%20T430.jpeg" alt="ThinkPad T430 con temática Mountain Dew">
+          </div>
+          <div class="post-content">
             <p class="date"><time datetime="2026-09-25">2026-09-25</time></p>
             <h2>Mi ThinkPad T480</h2>
             <p>Después de mucho tiempo, por fin tengo mi ThinkPad T480.
@@ -579,11 +649,21 @@
           </div>
         </section>
 
-        <div class="perl-banner">
-          <span class="terminal-mark">&gt;_</span>
-          <span>Hecho con Perl<br><small>(próximamente)</small></span>
-          <span aria-hidden="true">🐪</span>
-        </div>
+        <section class="widget music-player" aria-labelledby="music-title">
+          <h2 id="music-title">♫ ESMAIWOL PLAYER</h2>
+          <div class="widget-body">
+            <p class="music-track" id="musicTrackName">Selecciona una canción</p>
+            <audio id="siteAudio" preload="metadata"></audio>
+            <div class="music-controls">
+              <button type="button" id="musicPrev" aria-label="Canción anterior">|◀</button>
+              <button type="button" id="musicToggle" aria-label="Reproducir música" aria-pressed="false">▶ PLAY</button>
+              <button type="button" id="musicNext" aria-label="Canción siguiente">▶|</button>
+            </div>
+            <label class="music-volume" for="musicVolume">VOLUMEN</label>
+            <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.7">
+            <p class="music-hint" id="musicStatus" aria-live="polite">La música solo empieza cuando pulses PLAY.</p>
+          </div>
+        </section>
 
         <div class="bottom-art" aria-label="Paisaje pixelado decorativo">
           /\  /\    /\/\    /\<br>
@@ -597,6 +677,83 @@
       <span>| Última actualización:</span> 2026-10-09
     </footer>
   </div>
+
+
+<script>
+(() => {
+  // Sube tus MP3 a la carpeta "music" y añade aquí sus nombres.
+  const playlist = [
+    { title: "Canción 1", src: "music/cancion1.mp3" },
+    { title: "Canción 2", src: "music/cancion2.mp3" }
+  ];
+  const audio = document.getElementById("siteAudio");
+  const toggle = document.getElementById("musicToggle");
+  const prev = document.getElementById("musicPrev");
+  const next = document.getElementById("musicNext");
+  const name = document.getElementById("musicTrackName");
+  const status = document.getElementById("musicStatus");
+  const volume = document.getElementById("musicVolume");
+  if (!audio || !toggle || !prev || !next || !name || !status || !volume) return;
+
+  let index = 0;
+  let loaded = false;
+  audio.volume = Number(volume.value);
+
+  function loadTrack(nextIndex) {
+    index = (nextIndex + playlist.length) % playlist.length;
+    const track = playlist[index];
+    audio.src = track.src;
+    audio.load();
+    name.textContent = track.title;
+    loaded = true;
+  }
+  async function playTrack() {
+    if (!loaded) loadTrack(index);
+    try {
+      await audio.play();
+      toggle.textContent = "Ⅱ PAUSE";
+      toggle.setAttribute("aria-label", "Pausar música");
+      toggle.setAttribute("aria-pressed", "true");
+      status.textContent = "Reproduciendo · " + playlist[index].title;
+    } catch (error) {
+      status.textContent = "No se pudo reproducir. Comprueba que el MP3 exista en la carpeta music/.";
+    }
+  }
+  function pauseTrack() {
+    audio.pause();
+    toggle.textContent = "▶ PLAY";
+    toggle.setAttribute("aria-label", "Reproducir música");
+    toggle.setAttribute("aria-pressed", "false");
+    status.textContent = "Música pausada.";
+  }
+  toggle.addEventListener("click", () => {
+    if (audio.paused) playTrack();
+    else pauseTrack();
+  });
+  prev.addEventListener("click", async () => {
+    loadTrack(index - 1);
+    await playTrack();
+  });
+  next.addEventListener("click", async () => {
+    loadTrack(index + 1);
+    await playTrack();
+  });
+  volume.addEventListener("input", () => { audio.volume = Number(volume.value); });
+  audio.addEventListener("ended", () => {
+    loadTrack(index + 1);
+    playTrack();
+  });
+  audio.addEventListener("play", () => {
+    toggle.textContent = "Ⅱ PAUSE";
+    toggle.setAttribute("aria-pressed", "true");
+  });
+  audio.addEventListener("pause", () => {
+    toggle.textContent = "▶ PLAY";
+    toggle.setAttribute("aria-pressed", "false");
+  });
+  loadTrack(0);
+})();
+</script>
 
 <script>
 (() => {
