@@ -230,6 +230,15 @@
 
     .widget-body { padding: 10px 12px; }
 
+    .waifus-widget .widget-body { padding: 0; }
+    .waifus-gif {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 260px;
+      object-fit: cover;
+    }
+
     .racial-thoughts-widget .widget-body { padding: 0; }
     .racial-thoughts-banner-link { display: block; line-height: 0; }
     .racial-thoughts-banner {
@@ -622,6 +631,13 @@
       </main>
 
       <aside class="sidebar">
+        <section class="widget waifus-widget">
+          <h2>WAIFUS</h2>
+          <div class="widget-body">
+            <img class="waifus-gif" src="images/fashfoid.gif" alt="WAIFUS">
+          </div>
+        </section>
+
         <section class="widget racial-thoughts-widget">
           <h2>RACIAL THOUGHTS</h2>
           <div class="widget-body">
