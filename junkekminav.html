@@ -428,11 +428,27 @@
     .gallery img { display: block; width: 100%; aspect-ratio: 16/10; object-fit: cover; }
     .gallery figcaption { color: var(--muted); font-size: 12px; padding-top: 5px; }
     .placeholder { min-height: 130px; display:flex; align-items:center; justify-content:center; text-align:center; border:1px dashed var(--blue); color:var(--muted); padding:12px; }
-    @media (max-width: 600px) { .project-grid, .gallery { grid-template-columns: 1fr; } }
+    /* BANNER SUPERIOR: cambia únicamente la ruta de src en el HTML. */
+    .project-banner {
+      width: 100%; margin: 0; padding: 0; overflow: hidden;
+      border-bottom: 2px solid var(--border); background: #050610; line-height: 0;
+    }
+    .project-banner img {
+      display: block; width: 100%; height: auto; max-height: 420px;
+      object-fit: cover; object-position: center;
+    }
+    @media (max-width: 600px) {
+      .project-grid, .gallery { grid-template-columns: 1fr; }
+      .project-banner img { max-height: 240px; }
+    }
   </style>
 </head>
 <body>
   <div class="site" id="inicio">
+    <!-- BANNER: cambia el src por la ruta de tu imagen, por ejemplo images/junkekminav/banner.jpg -->
+    <div class="project-banner" aria-label="Banner de JUNKEKMINAV">
+      <img src="images/junkekminav/REEMPLAZA-ESTA-RUTA.jpg" alt="Banner de JUNKEKMINAV">
+    </div>
     <header class="masthead">
       <div class="pixel-art" aria-hidden="true"><span class="moon">☾</span><span class="logo-text">ESMAIWOL<br>NET.ZONE</span></div>
       <div class="brand"><h1>JUNKEKMINAV</h1><p>VISUAL NOVEL // ARCHIVO DEL PROYECTO</p><p>Una página de proyecto dentro de ESMAIWOL NET.ZONE</p></div>
