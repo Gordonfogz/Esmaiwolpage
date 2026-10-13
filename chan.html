@@ -253,8 +253,10 @@
         const card = document.createElement('article'); card.className = 'thread'; card.id = `post-thread-${thread.id}`;
         const head = document.createElement('div'); head.className = 'thread-head';
         head.append(safeText('span','thread-title',thread.title), safeText('span','meta',`No. ${thread.id}`), safeText('span','meta',formatDate(thread.created_at)));
-        const body = safeText('div','thread-content',thread.content);
+        const body = document.createElement('div'); body.className = 'thread-content';
+        renderPostText(body, thread.content || '');
         card.append(head,body);
+        addReportButton(card, 'thread', thread.id);
         const image = await makeImage(thread.image_path); if (image) card.append(image);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
         const { data: replies, error: replyError } = await supabase.from('posts').select('id, thread_id, content, image_path, created_at').eq('thread_id',thread.id).order('created_at',{ascending:true}).limit(100);
@@ -262,8 +264,14 @@
         else if (!replies?.length) repliesBox.append(safeText('div','muted','Sin respuestas todavía.'));
         else {
           for (const reply of replies) {
-            const item = document.createElement('div'); item.className = 'reply';
-            item.append(safeText('div','meta',`>> No. ${reply.id} · ${formatDate(reply.created_at)}`),safeText('div','reply-text',reply.content));
+            const item = document.createElement('div'); item.className = 'reply'; item.id = `post-reply-${reply.id}`;
+            const replyText = document.createElement('div'); replyText.className = 'reply-text';
+            renderPostText(replyText, reply.content || '');
+            item.append(
+              safeText('div','meta',`>> No. ${reply.id} · ${formatDate(reply.created_at)}`),
+              replyText
+            );
+            addReportButton(item, 'reply', reply.id);
             const replyImage = await makeImage(reply.image_path); if (replyImage) item.append(replyImage);
             repliesBox.append(item);
           }
