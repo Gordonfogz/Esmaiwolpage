@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05060c">
+  <title>Esmaiwol.chan — tablón anónimo</title>
+  <style>
+    :root{color-scheme:dark;--bg:#05060c;--panel:#090b16;--panel2:#0d1122;--border:#253b87;--blue:#5d83ff;--green:#9cff9c;--text:#d8dcf4;--muted:#929bbd;--red:#ff6d86}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at top,#101735 0,#05060c 55%);color:var(--text);font:15px/1.55 monospace}
+    a{color:var(--green)}a:hover{color:#fff}
+    .wrap{width:min(1050px,calc(100% - 24px));margin:22px auto 50px}
+    header,.panel,.thread{border:1px solid var(--border);background:#070914ed;box-shadow:0 0 18px #00134c35}
+    header{padding:18px;margin-bottom:14px;background:linear-gradient(110deg,#101a3b,#070914 70%)}
+    .eyebrow{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+    h1{margin:3px 0 8px;color:var(--green);font-size:clamp(27px,6vw,42px);line-height:1.1;text-shadow:0 0 14px #55ff9950}
+    h2{margin:0 0 12px;color:var(--green);font-size:19px}
+    .intro{margin:0;color:#c2c9e8}
+    .nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px}
+    .notice{margin:12px 0;padding:10px 12px;border-left:3px solid var(--blue);background:#0a1024;color:#bdc7eb;font-size:13px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:start}
+    .main{min-width:0}.side{display:grid;gap:14px}
+    .panel{padding:15px;margin-bottom:14px}
+    label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}
+    input,textarea,select{display:block;width:100%;padding:10px;border:1px solid #293a79;border-radius:0;background:#03040a;color:var(--text);font:inherit;outline:none}
+    input:focus,textarea:focus,select:focus{border-color:var(--green)}textarea{min-height:100px;resize:vertical}
+    input[type=file]{padding:7px;font-size:12px}
+    button,.button{border:1px solid var(--blue);background:#0a1025;color:var(--green);font:inherit;padding:9px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+    button:hover,.button:hover{background:#172348}button:disabled{opacity:.55;cursor:wait}
+    .form-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+    .muted{color:var(--muted);font-size:12px}.status{min-height:20px;margin-top:9px;color:var(--muted);font-size:12px}.status.error{color:var(--red)}
+    .boardbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+    .thread{padding:13px;margin-bottom:12px;overflow-wrap:anywhere}
+    .thread-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;border-bottom:1px dashed #28335e;padding-bottom:8px;margin-bottom:9px}
+    .thread-title{font-weight:bold;color:var(--green);font-size:17px}
+    .meta{font-size:11px;color:var(--muted)}.thread-content{white-space:pre-wrap;margin:8px 0 10px}
+    .post-image{display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;object-position:left;margin:8px 0;border:1px solid #28335e;background:#000}
+    .replies{margin:12px 0 0 14px;padding-left:12px;border-left:2px solid #1c2b61}
+    .reply{padding:8px 0;border-bottom:1px dotted #202a50}.reply:last-child{border-bottom:0}
+    .reply-text{white-space:pre-wrap;margin-top:4px}
+    .reply-form{margin-top:12px;padding-top:10px;border-top:1px dashed #26315c}
+    .reply-form textarea{min-height:65px}.reply-form label{margin-top:7px}
+    .empty{padding:22px;text-align:center;border:1px dashed #293a79;color:var(--muted)}
+    footer{margin-top:18px;text-align:center;color:#747da0;font-size:11px}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}}
+    @media(max-width:520px){.side{grid-template-columns:1fr}.wrap{width:calc(100% - 14px);margin-top:7px}header,.panel,.thread{padding:11px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">ESMAIWOL NET.ZONE // imageboard</div>
+      <h1>Esmaiwol.chan</h1>
+      <p class="intro">Un tablón anónimo inspirado en los imageboards clásicos. Publica un hilo, responde y comparte imágenes sin crear una cuenta.</p>
+      <nav class="nav"><a href="index.html">&lt;&lt; Volver a ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Crear hilo</a><a href="#tablones">Ver hilos</a></nav>
+    </header>
+
+    <div class="notice">Reglas básicas: no publiques datos personales, amenazas, contenido ilegal ni material de otras personas sin permiso. El tablón no tiene cuentas; eso no garantiza anonimato técnico absoluto. Las publicaciones públicas pueden ser copiadas por terceros.</div>
+
+    <div class="layout">
+      <main class="main">
+        <section class="panel" id="nuevo-hilo">
+          <h2>// Crear un hilo</h2>
+          <form id="thread-form">
+            <label for="board">Tablón</label>
+            <select id="board" name="board"><option value="b">/b/ — General</option><option value="tech">/tech/ — Tecnología</option><option value="art">/art/ — Arte y creatividad</option><option value="linux">/linux/ — Linux y software libre</option></select>
+            <label for="thread-title">Título</label>
+            <input id="thread-title" name="title" maxlength="120" required placeholder="Título del hilo">
+            <label for="thread-content">Mensaje</label>
+            <textarea id="thread-content" name="content" maxlength="10000" required placeholder="Escribe tu publicación..."></textarea>
+            <label for="thread-image">Imagen (opcional: JPG, PNG, GIF o WebP; máximo 5 MB)</label>
+            <input id="thread-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+            <div class="form-actions"><button type="submit">[ PUBLICAR HILO ]</button><button type="button" id="refresh">[ ACTUALIZAR ]</button></div>
+            <div id="thread-status" class="status" role="status"></div>
+          </form>
+        </section>
+
+        <section id="tablones">
+          <div class="boardbar"><h2 id="list-title">// Hilos recientes</h2><span class="muted">Actualiza para ver nuevas publicaciones</span></div>
+          <div id="threads-list"><div class="empty">Conectando con el tablón…</div></div>
+        </section>
+      </main>
+
+      <aside class="side">
+        <section class="panel">
+          <h2>// Estado del sistema</h2>
+          <div id="connection-status" class="status">Comprobando conexión…</div>
+          <p class="muted">Los mensajes se guardan en Supabase. No se requiere usuario ni contraseña.</p>
+        </section>
+        <section class="panel">
+          <h2>// Sobre el chan</h2>
+          <p class="muted">Un rincón comunitario de ESMAIWOL. Mantén las publicaciones legibles y respeta a los demás.</p>
+          <p class="muted">Las imágenes subidas se guardan en el bucket <code>chan-images</code>.</p>
+        </section>
+      </aside>
+    </div>
+    <footer>ESMAIWOL.CHAN // SIN CUENTAS · CON RESPONSABILIDAD</footer>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    // Rellena estos dos valores con la URL del proyecto y la clave Publishable.
+    // Nunca pegues aquí una clave Secret o service_role.
+    const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
+    const BUCKET = 'chan-images';
+    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+    const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
+    const $ = (id) => document.getElementById(id);
+    const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
+    let supabase = null;
+
+    function status(id, message, error = false) {
+      const el = $(id); el.textContent = message; el.classList.toggle('error', error);
+    }
+    function safeText(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      el.textContent = text ?? '';
+      return el;
+    }
+    function formatDate(value) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? 'fecha desconocida' : date.toLocaleString('es-ES');
+    }
+    function makeImage(path) {
+      if (!path) return Promise.resolve(null);
+      return supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
+        if (error || !data?.signedUrl) return null;
+        const img = document.createElement('img');
+        img.className = 'post-image'; img.loading = 'lazy'; img.alt = 'Imagen adjunta'; img.src = data.signedUrl;
+        return img;
+      });
+    }
+    async function uploadImage(file) {
+      if (!file || !file.name) return null;
+      if (file.size > MAX_IMAGE_BYTES) throw new Error('La imagen supera el límite de 5 MB.');
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!allowedExtensions.has(ext)) throw new Error('Formato no permitido. Usa JPG, PNG, GIF o WebP.');
+      if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) throw new Error('El archivo no parece ser una imagen compatible.');
+      const path = `${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
+      if (error) throw error;
+      return path;
+    }
+    async function loadThreads() {
+      if (!supabase) return;
+      const board = $('board').value;
+      $('list-title').textContent = `// Hilos de /${board}/`;
+      $('threads-list').replaceChildren(safeText('div','empty','Cargando hilos…'));
+      const { data: threads, error } = await supabase.from('threads').select('id, board, title, content, image_path, created_at').eq('board', board).order('created_at',{ascending:false}).limit(50);
+      if (error) {
+        $('threads-list').replaceChildren(safeText('div','empty','No se pudieron cargar los hilos. Comprueba las políticas SELECT de Supabase.'));
+        status('connection-status', `Error de lectura: ${error.message}`, true); return;
+      }
+      if (!threads?.length) {
+        $('threads-list').replaceChildren(safeText('div','empty','Todavía no hay hilos en este tablón. ¡Puedes abrir el primero!'));
+        status('connection-status','Conectado a Supabase.'); return;
+      }
+      const fragment = document.createDocumentFragment();
+      for (const thread of threads) {
+        const card = document.createElement('article'); card.className = 'thread';
+        const head = document.createElement('div'); head.className = 'thread-head';
+        head.append(safeText('span','thread-title',thread.title), safeText('span','meta',`No. ${thread.id}`), safeText('span','meta',formatDate(thread.created_at)));
+        const body = safeText('div','thread-content',thread.content);
+        card.append(head,body);
+        const image = await makeImage(thread.image_path); if (image) card.append(image);
+        const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
+        const { data: replies, error: replyError } = await supabase.from('posts').select('id, thread_id, content, image_path, created_at').eq('thread_id',thread.id).order('created_at',{ascending:true}).limit(100);
+        if (replyError) repliesBox.append(safeText('div','muted','No se pudieron cargar las respuestas.'));
+        else if (!replies?.length) repliesBox.append(safeText('div','muted','Sin respuestas todavía.'));
+        else {
+          for (const reply of replies) {
+            const item = document.createElement('div'); item.className = 'reply';
+            item.append(safeText('div','meta',`>> No. ${reply.id} · ${formatDate(reply.created_at)}`),safeText('div','reply-text',reply.content));
+            const replyImage = await makeImage(reply.image_path); if (replyImage) item.append(replyImage);
+            repliesBox.append(item);
+          }
+        }
+        const form = document.createElement('form'); form.className = 'reply-form';
+        const label = safeText('label','','Responder a este hilo');
+        const textarea = document.createElement('textarea'); textarea.required = true; textarea.maxLength = 5000; textarea.placeholder = 'Tu respuesta…';
+        const fileLabel = safeText('label','','Imagen opcional (máximo 5 MB)');
+        const file = document.createElement('input'); file.type='file'; file.accept='image/jpeg,image/png,image/gif,image/webp';
+        const submit = document.createElement('button'); submit.type='submit'; submit.textContent='[ RESPONDER ]';
+        const msg = safeText('div','status',''); msg.setAttribute('role','status');
+        form.append(label,textarea,fileLabel,file,submit,msg);
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault(); submit.disabled = true; statusFrom(msg,'Publicando respuesta…');
+          try {
+            const content = textarea.value.trim(); if (!content) throw new Error('Escribe una respuesta.');
+            const image_path = await uploadImage(file.files[0]);
+            const { error } = await supabase.from('posts').insert({thread_id:thread.id,content,image_path});
+            if (error) throw error;
+            await loadThreads();
+          } catch (e) { statusFrom(msg,e.message || 'No se pudo publicar.',true); }
+          finally { submit.disabled = false; }
+        });
+        card.append(repliesBox,form); fragment.append(card);
+      }
+      $('threads-list').replaceChildren(fragment);
+      status('connection-status','Conectado a Supabase.');
+    }
+    function statusFrom(el,message,error=false){el.textContent=message;el.classList.toggle('error',error)}
+
+    $('board').addEventListener('change',loadThreads);
+    $('refresh').addEventListener('click',loadThreads);
+    $('thread-form').addEventListener('submit',async(event)=>{
+      event.preventDefault();
+      const button=$('#thread-form button[type="submit"]'); button.disabled=true; status('thread-status','Publicando hilo…');
+      try{
+        if(!supabase) throw new Error('Primero configura la URL y la clave Publishable en el código.');
+        const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
+        if(!title || !content) throw new Error('El título y el mensaje son obligatorios.');
+        const image_path=await uploadImage($('thread-image').files[0]);
+        const {error}=await supabase.from('threads').insert({board,title,content,image_path});
+        if(error) throw error;
+        $('thread-form').reset(); status('thread-status','Hilo publicado.'); await loadThreads();
+      }catch(e){status('thread-status',e.message || 'No se pudo publicar. Revisa la configuración y las políticas RLS.',true)}
+      finally{button.disabled=false}
+    });
+
+    if(!ready){
+      status('connection-status','Falta configurar la URL y la clave Publishable en chan.html.',true);
+      $('threads-list').replaceChildren(safeText('div','empty','Edita chan.html y sustituye los dos valores de configuración indicados en el código.'));
+    }else{
+      supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+      loadThreads().catch(e=>status('connection-status',e.message,true));
+    }
+  </script>
+</body>
+</html>
