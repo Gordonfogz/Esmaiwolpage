@@ -279,7 +279,8 @@
         form.addEventListener('submit', async (event) => {
           event.preventDefault(); submit.disabled = true; statusFrom(msg,'Publicando respuesta…');
           try {
-            checkPostCooldown();\n            const content = textarea.value.trim(); if (!content) throw new Error('Escribe una respuesta.');
+            checkPostCooldown();
+            const content = textarea.value.trim(); if (!content) throw new Error('Escribe una respuesta.');
             const image_path = await uploadImage(file.files[0]);
             const { error } = await supabase.from('posts').insert({thread_id:thread.id,content,image_path});
             if (error) throw error;
@@ -303,7 +304,8 @@
       button.disabled=true; status('thread-status','Publicando hilo…');
       try{
         if(!supabase) throw new Error('Primero configura la URL y la clave Publishable en el código.');
-        checkPostCooldown();\n        const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
+        checkPostCooldown();
+        const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('El título y el mensaje son obligatorios.');
         const image_path=await uploadImage($('thread-image').files[0]);
         const {error}=await supabase.from('threads').insert({board,title,content,image_path});
