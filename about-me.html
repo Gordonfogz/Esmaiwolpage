@@ -4,60 +4,88 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050509">
+  <meta name="description" content="Sobre Esmaiwol: Linux, hardware, arte digital y proyectos web.">
   <link rel="icon" type="image/png" href="favicon.png">
-  <title>ABOUT ME // ESMAIWOL NET.ZONE</title>
+  <title>Sobre mí // ESMAIWOL.ZN</title>
   <style>
     :root{--bg:#050509;--panel:#080914;--blue:#1768ff;--green:#00ff83;--text:#cbd5ff;--muted:#91b7bb;--border:#164cff}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Courier New",Courier,monospace;font-size:16px;line-height:1.6}
-    a{color:var(--blue);text-decoration:underline;text-underline-offset:3px}a:hover,a:focus{color:var(--green);background:#10172c}
-    .site{width:min(1100px,calc(100% - 28px));margin:12px auto;border:2px solid var(--border);box-shadow:0 0 0 1px #080d36,0 0 18px #00134c55}
-    header{padding:22px 20px;border-bottom:2px solid var(--border);background:linear-gradient(120deg,#050509,#0a1030 65%,#050509)}
-    .eyebrow{color:var(--muted);margin:0 0 5px}.brand{font-size:clamp(26px,5vw,44px);line-height:1.15;color:var(--green);margin:0;overflow-wrap:anywhere;text-shadow:0 0 12px #00ff8333}
-    .subtitle{color:var(--muted);margin:8px 0 0}.nav{display:flex;flex-wrap:wrap;gap:10px 24px;padding:10px 16px;border-bottom:2px solid var(--border);background:#050610;font-weight:bold}.nav a:before{content:"[ ";color:var(--text)}.nav a:after{content:" ]";color:var(--text)}
-    main{padding:clamp(16px,4vw,32px)}.panel{border:1px solid #164cff;background:var(--panel);padding:clamp(15px,3vw,24px);margin:0 0 18px;box-shadow:inset 0 0 18px #00134c22}.label{color:var(--muted);font-size:13px;letter-spacing:1px;margin:0}.panel h2{color:var(--green);margin:4px 0 12px;font-size:clamp(21px,3vw,28px)}.panel h3{color:var(--green);margin:0 0 8px}.panel p{margin:8px 0}.panel ul{padding-left:22px}.panel li{margin:5px 0}.tag{display:inline-block;border:1px solid var(--blue);padding:2px 7px;margin:3px;color:var(--muted);font-size:13px}footer{padding:14px 20px;border-top:2px solid var(--border);color:var(--muted);font-size:13px}
-    @media(max-width:600px){.nav{gap:8px 12px}.site{width:calc(100% - 14px);margin:7px auto}}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "Courier New",Courier,monospace}
+    a{color:var(--blue);text-underline-offset:3px}a:hover,a:focus{color:var(--green);background:#10172c}
+    .site{width:min(1200px,calc(100% - 28px));margin:12px auto;border:2px solid var(--border);box-shadow:0 0 0 1px #080d36,0 0 18px #00134c55}
+    .masthead{padding:24px 18px;border-bottom:2px solid var(--border);background:linear-gradient(120deg,#050509,#080c32 65%,#050509)}
+    .eyebrow{color:var(--blue);font-weight:bold;letter-spacing:3px;margin:0 0 8px}.masthead h1{margin:0;color:var(--green);font-size:clamp(28px,5vw,52px);line-height:1.15;overflow-wrap:anywhere;text-shadow:0 0 12px #00ff8333}.masthead p{color:var(--muted);margin:8px 0 0}
+    nav{display:flex;flex-wrap:wrap;gap:10px 22px;padding:12px 16px;border-bottom:2px solid var(--border);background:#050610;font-weight:bold}nav a{text-decoration:none}nav a:before{content:"[ ";color:var(--text)}nav a:after{content:" ]";color:var(--text)}
+    main{padding:18px;display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,.85fr);gap:18px}.panel,.side-panel{border:2px solid var(--border);background:#05060c;min-width:0}.panel h2,.side-panel h2{font-size:20px;margin:0;padding:6px 12px;color:var(--green);border-bottom:2px solid var(--border);background:linear-gradient(90deg,#07123c,#080914)}.content{padding:14px}.content p{margin:8px 0 14px}.terminal{border:1px solid #1768ff;padding:12px;background:#03050c;overflow-wrap:anywhere}.prompt{color:var(--green)}.quote{color:#fff;border-left:3px solid var(--green);padding:8px 0 8px 14px;margin:14px 0;font-weight:bold}.tags{display:flex;flex-wrap:wrap;gap:8px;padding:0;list-style:none}.tags li{border:1px solid var(--blue);padding:4px 8px;color:var(--green);background:#080914}.side-panel{margin-bottom:14px}.side-panel .content{padding:12px}.side-panel ul{margin:0;padding-left:20px}.side-panel li{margin:6px 0}footer{padding:12px 16px;border-top:2px solid var(--border);color:var(--green);font-weight:bold}footer span{color:var(--muted)}
+    @media(max-width:760px){main{grid-template-columns:1fr;padding:10px}.masthead{padding:18px 12px}.content{padding:11px}body{font-size:14px}}
   </style>
 </head>
 <body>
   <div class="site">
-    <header>
-      <p class="eyebrow">ESMAIWOL NET.ZONE // PERSONAL FILE</p>
-      <h1 class="brand">ABOUT ME</h1>
-      <p class="subtitle">Un rincón personal de Internet. Ideas, sistemas y proyectos.</p>
+    <header class="masthead">
+      <p class="eyebrow">ESMAIWOL NET.ZONE // USER PROFILE</p>
+      <h1>./SOBRE_MÍ</h1>
+      <p><span class="prompt">[STATUS]</span> usuario conectado · explorando sistemas, imágenes e ideas</p>
     </header>
-    <nav class="nav" aria-label="Navegación principal">
+    <nav aria-label="Navegación principal">
       <a href="index.html">Inicio</a>
-      <a href="index.html#archivo">Archivo</a>
-      <a href="racial-thoughts.html">Racial Thoughts</a>
-      <a href="index.html#enlaces">Enlaces</a>
+      <a href="#perfil">Perfil</a>
+      <a href="#linux">Linux</a>
+      <a href="#hardware">Hardware</a>
+      <a href="#creativo">Arte y vídeo</a>
+      <a href="#proyectos">Proyectos</a>
     </nav>
     <main>
-      <section class="panel">
-        <p class="label">01 // PERFIL</p>
-        <h2>Sobre mí</h2>
-        <p>Bienvenido a mi espacio personal. Aquí reúno mis intereses, experimentos y proyectos, con una estética retro inspirada en la web antigua, los terminales y la cultura digital.</p>
-        <p>Esta página irá creciendo poco a poco con más información personal y nuevas entradas.</p>
-      </section>
-      <section class="panel">
-        <p class="label">02 // INTERESES</p>
-        <h2>Lo que me interesa</h2>
-        <ul>
-          <li><strong>Linux y software libre:</strong> sistemas, herramientas y personalización del escritorio.</li>
-          <li><strong>ThinkPad y hardware:</strong> equipos clásicos, reparaciones y mejoras prácticas.</li>
-          <li><strong>Edición de vídeo y proyectos creativos:</strong> experimentación visual, estética retro y audio.</li>
-          <li><strong>Desarrollo web:</strong> construir y mantener ESMAIWOL NET.ZONE.</li>
-          <li><strong>Juegos y proyectos personales:</strong> ideas interactivas, visual novels y experimentos digitales.</li>
-        </ul>
-      </section>
-      <section class="panel">
-        <p class="label">03 // CURRENT SETUP</p>
-        <h2>Mi zona digital</h2>
-        <span class="tag">Debian</span><span class="tag">XFCE</span><span class="tag">ThinkPad T480</span><span class="tag">HTML / CSS / JS</span><span class="tag">Retro web</span>
-        <p>El sitio funciona como una libreta digital en evolución: un lugar para publicar descubrimientos, pruebas y cosas que me apetece construir.</p>
-      </section>
-      <p><a href="index.html">&lt; Volver a ESMAIWOL NET.ZONE</a></p>
+      <div>
+        <section class="panel" id="perfil">
+          <h2>&gt;_ IDENTIDAD</h2>
+          <div class="content">
+            <div class="terminal"><span class="prompt">esmaiwol@net.zone:~$</span> whoami<br><br>Soy esmaiwol, un usuario y ahora dirán que postmodernista o larper. No soy un moderado; política y éticamente, a hablar no procedo porque simplemente no se me tomará en serio a primeras. Abiertamente pro elitista.</div>
+            <p class="quote">No es una página corporativa. Es mi rincón de la red: intereses, experimentos, archivos e ideas, a mi manera.</p>
+          </div>
+        </section>
+        <section class="panel" id="linux" style="margin-top:16px">
+          <h2>&gt;_ LINUX / SOFTWARE LIBRE</h2>
+          <div class="content">
+            <p>Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.</p>
+            <ul class="tags"><li>Debian</li><li>GNU/Linux</li><li>Software libre</li><li>Terminal</li></ul>
+          </div>
+        </section>
+        <section class="panel" id="hardware" style="margin-top:16px">
+          <h2>&gt;_ THINKPAD / HARDWARE</h2>
+          <div class="content">
+            <p>Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto</p>
+            <p><a href="index.html#thinkpad">→ Ver la entrada sobre mi ThinkPad</a></p>
+          </div>
+        </section>
+        <section class="panel" id="creativo" style="margin-top:16px">
+          <h2>&gt;_ EDICIÓN Y ARTE DIGITAL</h2>
+          <div class="content">
+            <p>También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.</p>
+            <ul class="tags"><li>Vídeo</li><li>Audio</li><li>PNG</li><li>Graffiti</li><li>Y2K / retro web</li></ul>
+          </div>
+        </section>
+        <section class="panel" id="proyectos" style="margin-top:16px">
+          <h2>&gt;_ ESMAIWOL / PROYECTOS</h2>
+          <div class="content">
+            <p>ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion</p>
+            <p><span class="prompt">[INFO]</span> Esta página se irá actualizando cuando tenga nuevos proyectos que enseñar.</p>
+          </div>
+        </section>
+        <section class="panel" id="galeria" style="margin-top:16px">
+          <h2>&gt;_ GALERÍA / ARCHIVO VISUAL</h2>
+          <div class="content">
+            <p>Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.</p>
+            <p class="prompt">[ GALERÍA EN CONSTRUCCIÓN ]</p>
+          </div>
+        </section>
+      </div>
+      <aside>
+        <section class="side-panel"><h2>SYS.INFO</h2><div class="content"><p><span class="prompt">USER:</span> esmaiwol</p><p><span class="prompt">MODE:</span> personal</p><p><span class="prompt">THEME:</span> retro terminal</p><p><span class="prompt">STATUS:</span> en construcción</p></div></section>
+        <section class="side-panel"><h2>CONTENIDO</h2><div class="content"><ul><li><a href="#perfil">Identidad</a></li><li><a href="#linux">Linux</a></li><li><a href="#hardware">ThinkPad</a></li><li><a href="#creativo">Arte y vídeo</a></li><li><a href="#proyectos">Proyectos</a></li><li><a href="#galeria">Galería</a></li></ul></div></section>
+        <section class="side-panel"><h2>EXTERNAL LINKS</h2><div class="content"><ul><li><a href="https://www.debian.org/" target="_blank" rel="noopener noreferrer">Debian</a></li><li><a href="https://www.gnu.org/" target="_blank" rel="noopener noreferrer">GNU</a></li><li><a href="https://www.perl.org/" target="_blank" rel="noopener noreferrer">Perl</a></li></ul></div></section>
+      </aside>
     </main>
-    <footer>ESMAIWOL NET.ZONE // ABOUT ME — página en construcción.</footer>
+    <footer><a href="index.html">&lt; Volver a ESMAIWOL NET.ZONE</a> <span>// HTML + CSS</span></footer>
   </div>
 </body>
 </html>
