@@ -1197,7 +1197,7 @@
       de: 'Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.',
       es: 'El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos.'
     };
-    const updateRacialDescription = () => { racialDescription.textContent = racialDescriptions[currentLang] || racialDescriptions.en; };
+    const updateRacialDescription = () => { racialDescription.textContent = racialDescriptions[langSelect.value] || racialDescriptions.en; };
     updateRacialDescription();
     langSelect.addEventListener('change', updateRacialDescription);
   }
