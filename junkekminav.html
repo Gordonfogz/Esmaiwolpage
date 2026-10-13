@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -418,6 +418,10 @@
       footer { padding: 10px; }
     }
   
+    .language-switcher { display:flex; align-items:center; gap:6px; margin-left:auto; }
+    .language-switcher label { color:var(--muted); font-weight:bold; }
+    .language-switcher select { max-width:100%; background:#050610; color:var(--green); border:1px solid var(--blue); padding:7px; font: bold 14px "Courier New", monospace; }
+    .language-switcher select:focus { outline:1px solid var(--green); }
     .project-hero { border: 2px solid var(--border); padding: 18px; margin: 16px 0; background: #050610; box-shadow: 0 0 18px #00134c55; }
     .project-tag { color: var(--green); letter-spacing: 2px; font-weight: bold; }
     .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -451,35 +455,57 @@
     </div>
     <header class="masthead">
       <div class="pixel-art" aria-hidden="true"><span class="moon">☾</span><span class="logo-text">ESMAIWOL<br>NET.ZONE</span></div>
-      <div class="brand"><h1>JUNKEKMINAV</h1><p>VISUAL NOVEL // ARCHIVO DEL PROYECTO</p><p>Una página de proyecto dentro de ESMAIWOL NET.ZONE</p></div>
-      <div class="quick-links"><a href="index.html">Página principal</a><a href="about.html">Sobre mí</a></div>
+      <div class="brand"><h1>JUNKEKMINAV</h1><p data-i18n="subtitle">VISUAL NOVEL // PROJECT ARCHIVE</p><p data-i18n="siteDescription">A project page within ESMAIWOL NET.ZONE</p></div>
+      <div class="quick-links"><a href="index.html" data-i18n="homeLink">Home page</a><a href="about.html" data-i18n="aboutLink">About me</a></div>
     </header>
     <nav class="nav" aria-label="Navegación principal">
-      <a href="index.html">Inicio</a><a href="about.html">Sobre mí</a><a href="#informacion">Proyecto</a><a href="#galeria">Galería</a>
+      <a href="index.html" data-i18n="navHome">Home</a><a href="about.html" data-i18n="navAbout">About me</a><a href="#informacion" data-i18n="navProject">Project</a><a href="#galeria" data-i18n="navGallery">Gallery</a>
+      <div class="language-switcher"><label for="language-select" data-i18n="languageLabel">Language:</label><select id="language-select" aria-label="Language"><option value="en">English</option><option value="de">Deutsch</option><option value="es">Español</option></select></div>
     </nav>
     <div style="padding: 16px;">
       <section class="project-hero">
-        <div class="project-tag">[ VISUAL NOVEL / JUNKEKMINAV ]</div>
+        <div class="project-tag" data-i18n="projectTag">[ VISUAL NOVEL / JUNKEKMINAV ]</div>
         <h2 style="color:var(--green);font-size:clamp(25px,4vw,42px);margin:8px 0;">JUNKEKMINAV</h2>
-        <p>Este no es tu masterpiece indie generica,no existe el objetivo de hacer un fnaf o otro rpg generico que terminara siendo venerado por marrones. </p>
-        <p><a href="index.html">&lt; Volver a ESMAIWOL NET.ZONE</a></p>
+        <p data-i18n="intro">This is not your generic indie masterpiece. The goal is not to make another FNAF or generic RPG that ends up being worshipped by normies.</p>
+        <p><a href="index.html" data-i18n="backHome">&lt; Back to ESMAIWOL NET.ZONE</a></p>
       </section>
       <div class="project-grid" id="informacion">
-        <section class="project-panel"><h2>&gt; SINOPSIS</h2><p>Junkekminav nacio como un proyecto en renpy, y termino siendo la primera visual novel que he hecho, actualmente como una beta con un capitulo disponible, la idea del juego, tanto su estetica y su intencion es incierta, ya que lo programe, y lo desarrolle bajo los efectos de drogas, este juego se entiende a si mismo como un busoge</p></section>
-        <section class="project-panel"><h2>&gt; FICHA TÉCNICA</h2><ul><li><strong>Tipo:</strong> Novela visual</li><li><strong>Título:</strong> JUNKEKMINAV</li><li><strong>Estado:</strong> En desarrollo / por confirmar</li><li><strong>Autor:</strong> ESMAIWOL</li></ul></section>
-        <section class="project-panel"><h2>&gt; PERSONAJES</h2><p>Sin ahondar mucho en los detalles, el elenco son recolores o modificaciones de personajes de lucky star, aunque en futuras actualizaciones si pretendo cambiar su diseño hasta lograr diferenciarlo en un punto en que ya no sea solo un recolor, en el primer capitulo contamos solo con 3 personajes, marutsa, elyskek y pirushka.</p></section>
-        <section class="project-panel"><h2>&gt; DESARROLLO</h2><p>Información sobre el motor, las versiones, las novedades y el proceso creativo se publicará aquí.</p></section>
+        <section class="project-panel"><h2 data-i18n="synopsisTitle">&gt; SYNOPSIS</h2><p data-i18n="synopsis">JUNKEKMINAV began as a Ren’Py project and became the first visual novel I have made. It is currently a beta with one chapter available. The game’s concept, aesthetic, and intent remain uncertain, since I programmed and developed it while under the influence of drugs. The game sees itself as a kusoge.</p></section>
+        <section class="project-panel"><h2 data-i18n="detailsTitle">&gt; PROJECT DETAILS</h2><ul><li><strong data-i18n="typeLabel">Type:</strong> <span data-i18n="typeValue">Visual novel</span></li><li><strong data-i18n="titleLabel">Title:</strong> JUNKEKMINAV</li><li><strong data-i18n="statusLabel">Status:</strong> <span data-i18n="statusValue">In development / to be confirmed</span></li><li><strong data-i18n="authorLabel">Author:</strong> ESMAIWOL</li></ul></section>
+        <section class="project-panel"><h2 data-i18n="charactersTitle">&gt; CHARACTERS</h2><p data-i18n="characters">Without going too deeply into the details, the cast consists of recolors or modifications of Lucky Star characters. In future updates, I do intend to change their designs enough to make them distinct rather than mere recolors. The first chapter features only three characters: Marutsa, Elys kek, and Pirushka.</p></section>
+        <section class="project-panel"><h2 data-i18n="developmentTitle">&gt; DEVELOPMENT</h2><p data-i18n="development">Information about the engine, versions, updates, and creative process will be published here.</p></section>
       </div>
       <section class="project-panel" id="galeria" style="margin-top:12px;">
-        <h2>&gt; GALERÍA / CAPTURAS</h2>
-        <p>Capturas del juego JUNKEKMINAV.</p>
+        <h2 data-i18n="galleryTitle">&gt; GALLERY / SCREENSHOTS</h2>
+        <p data-i18n="galleryDescription">Screenshots from JUNKEKMINAV.</p>
         <div class="gallery">
-          <figure><img src="images/junkminav/captura-01.png" alt="Captura de pantalla de JUNKEKMINAV, escena 01" loading="lazy"><figcaption>Captura de pantalla / escena 01</figcaption></figure>
-          <figure><img src="images/junkminav/captura-02.png" alt="Captura de pantalla de JUNKEKMINAV, escena 02" loading="lazy"><figcaption>Captura de pantalla / escena 02</figcaption></figure>
+          <figure><img src="images/junkminav/captura-01.png" alt="Captura de pantalla de JUNKEKMINAV, escena 01" loading="lazy"><figcaption data-i18n="caption1">Screenshot / scene 01</figcaption></figure>
+          <figure><img src="images/junkminav/captura-02.png" alt="Captura de pantalla de JUNKEKMINAV, escena 02" loading="lazy"><figcaption data-i18n="caption2">Screenshot / scene 02</figcaption></figure>
         </div>
       </section>
     </div>
-    <footer>ESMAIWOL.ZN <span>// JUNKEKMINAV PROJECT FILE</span></footer>
+    <footer>ESMAIWOL.ZN <span data-i18n="footer">// JUNKEKMINAV PROJECT FILE</span></footer>
   </div>
-</body>
+
+  <script>
+    (function () {
+      const translations = {"en": {"subtitle": "VISUAL NOVEL // PROJECT ARCHIVE", "siteDescription": "A project page within ESMAIWOL NET.ZONE", "homeLink": "Home page", "aboutLink": "About me", "navHome": "Home", "navAbout": "About me", "navProject": "Project", "navGallery": "Gallery", "languageLabel": "Language:", "projectTag": "[ VISUAL NOVEL / JUNKEKMINAV ]", "intro": "This is not your generic indie masterpiece. The goal is not to make another FNAF or generic RPG that ends up being worshipped by normies.", "backHome": "< Back to ESMAIWOL NET.ZONE", "synopsisTitle": "> SYNOPSIS", "synopsis": "JUNKEKMINAV began as a Ren’Py project and became the first visual novel I have made. It is currently a beta with one chapter available. The game’s concept, aesthetic, and intent remain uncertain, since I programmed and developed it while under the influence of drugs. The game sees itself as a kusoge.", "detailsTitle": "> PROJECT DETAILS", "typeLabel": "Type:", "typeValue": "Visual novel", "titleLabel": "Title:", "statusLabel": "Status:", "statusValue": "In development / to be confirmed", "authorLabel": "Author:", "charactersTitle": "> CHARACTERS", "characters": "Without going too deeply into the details, the cast consists of recolors or modifications of Lucky Star characters. In future updates, I do intend to change their designs enough to make them distinct rather than mere recolors. The first chapter features only three characters: Marutsa, Elys kek, and Pirushka.", "developmentTitle": "> DEVELOPMENT", "development": "Information about the engine, versions, updates, and creative process will be published here.", "galleryTitle": "> GALLERY / SCREENSHOTS", "galleryDescription": "Screenshots from JUNKEKMINAV.", "caption1": "Screenshot / scene 01", "caption2": "Screenshot / scene 02", "footer": "// JUNKEKMINAV PROJECT FILE"}, "de": {"subtitle": "VISUAL NOVEL // PROJEKTARCHIV", "siteDescription": "Eine Projektseite innerhalb von ESMAIWOL NET.ZONE", "homeLink": "Startseite", "aboutLink": "Über mich", "navHome": "Start", "navAbout": "Über mich", "navProject": "Projekt", "navGallery": "Galerie", "languageLabel": "Sprache:", "projectTag": "[ VISUAL NOVEL / JUNKEKMINAV ]", "intro": "Dies ist kein generisches Indie-Meisterwerk. Das Ziel ist nicht, ein weiteres FNAF oder ein generisches RPG zu machen, das am Ende von Normies verehrt wird.", "backHome": "< Zurück zu ESMAIWOL NET.ZONE", "synopsisTitle": "> INHALTSANGABE", "synopsis": "JUNKEKMINAV begann als Ren’Py-Projekt und wurde zu meiner ersten Visual Novel. Derzeit ist es eine Beta mit einem verfügbaren Kapitel. Konzept, Ästhetik und Absicht des Spiels sind noch unklar, da ich es unter Drogeneinfluss programmiert und entwickelt habe. Das Spiel versteht sich selbst als Kusoge.", "detailsTitle": "> PROJEKTDETAILS", "typeLabel": "Typ:", "typeValue": "Visual Novel", "titleLabel": "Titel:", "statusLabel": "Status:", "statusValue": "In Entwicklung / noch zu bestätigen", "authorLabel": "Autor:", "charactersTitle": "> FIGUREN", "characters": "Ohne zu sehr ins Detail zu gehen, besteht die Besetzung aus Umfärbungen oder Änderungen von Figuren aus Lucky Star. In zukünftigen Updates möchte ich ihre Designs so verändern, dass sie eigenständiger wirken und nicht nur Umfärbungen sind. Im ersten Kapitel gibt es nur drei Figuren: Marutsa, Elys kek und Pirushka.", "developmentTitle": "> ENTWICKLUNG", "development": "Informationen zur Engine, zu Versionen, Neuigkeiten und zum kreativen Prozess werden hier veröffentlicht.", "galleryTitle": "> GALERIE / SCREENSHOTS", "galleryDescription": "Screenshots aus JUNKEKMINAV.", "caption1": "Screenshot / Szene 01", "caption2": "Screenshot / Szene 02", "footer": "// JUNKEKMINAV-PROJEKTDATEI"}, "es": {"subtitle": "NOVELA VISUAL // ARCHIVO DEL PROYECTO", "siteDescription": "Una página de proyecto dentro de ESMAIWOL NET.ZONE", "homeLink": "Página principal", "aboutLink": "Sobre mí", "navHome": "Inicio", "navAbout": "Sobre mí", "navProject": "Proyecto", "navGallery": "Galería", "languageLabel": "Idioma:", "projectTag": "[ NOVELA VISUAL / JUNKEKMINAV ]", "intro": "Esta no es tu obra maestra indie genérica. El objetivo no es hacer otro FNAF ni otro RPG genérico que acabe siendo venerado por los normies.", "backHome": "< Volver a ESMAIWOL NET.ZONE", "synopsisTitle": "> SINOPSIS", "synopsis": "JUNKEKMINAV nació como un proyecto en Ren’Py y terminó convirtiéndose en la primera novela visual que he hecho. Actualmente es una beta con un capítulo disponible. La idea, la estética y la intención del juego son inciertas, ya que lo programé y desarrollé bajo los efectos de drogas. Este juego se entiende a sí mismo como un kusoge.", "detailsTitle": "> FICHA TÉCNICA", "typeLabel": "Tipo:", "typeValue": "Novela visual", "titleLabel": "Título:", "statusLabel": "Estado:", "statusValue": "En desarrollo / por confirmar", "authorLabel": "Autor:", "charactersTitle": "> PERSONAJES", "characters": "Sin entrar demasiado en detalles, el elenco está formado por recolores o modificaciones de personajes de Lucky Star. En futuras actualizaciones sí pretendo cambiar sus diseños hasta que se distingan y dejen de ser simples recolores. En el primer capítulo aparecen solo tres personajes: Marutsa, Elys kek y Pirushka.", "developmentTitle": "> DESARROLLO", "development": "Aquí se publicará información sobre el motor, las versiones, las novedades y el proceso creativo.", "galleryTitle": "> GALERÍA / CAPTURAS", "galleryDescription": "Capturas del juego JUNKEKMINAV.", "caption1": "Captura de pantalla / escena 01", "caption2": "Captura de pantalla / escena 02", "footer": "// ARCHIVO DEL PROYECTO JUNKEKMINAV"}};
+      const selector = document.getElementById('language-select');
+      function setLanguage(language) {
+        const dictionary = translations[language] || translations.en;
+        document.documentElement.lang = language;
+        document.querySelectorAll('[data-i18n]').forEach(function (element) {
+          const key = element.getAttribute('data-i18n');
+          if (Object.prototype.hasOwnProperty.call(dictionary, key)) {
+            element.textContent = dictionary[key];
+          }
+        });
+        selector.value = language;
+        try { localStorage.setItem('junkekminav-language', language); } catch (error) {}
+      }
+      selector.addEventListener('change', function () { setLanguage(selector.value); });
+      setLanguage('en');
+    })();
+  </script>
+\n</body>
 </html>
