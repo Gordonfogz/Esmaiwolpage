@@ -19,6 +19,8 @@
     .intro{margin:0;color:#c2c9e8}
     .nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px}
     .notice{margin:12px 0;padding:10px 12px;border-left:3px solid var(--blue);background:#0a1024;color:#bdc7eb;font-size:13px}
+    .board-warning{margin:12px 0;padding:13px 15px;border:2px solid #ffdf00;border-left:7px solid #ffdf00;background:#332d00;color:#fff36a;font-weight:bold;text-transform:uppercase;box-shadow:0 0 14px #ffdf0030}
+    .board-warning .warning-symbol{font-size:20px;margin-right:8px;color:#ffdf00}
     .layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:start}
     .main{min-width:0}.side{display:grid;gap:14px}
     .panel{padding:15px;margin-bottom:14px}
@@ -64,7 +66,7 @@
           <h2>// Crear un hilo</h2>
           <form id="thread-form">
             <label for="board">Tablón</label>
-            <select id="board" name="board"><option value="b">/b/ — General</option><option value="tech">/tech/ — Tecnología</option><option value="art">/art/ — Arte y creatividad</option><option value="linux">/linux/ — Linux y software libre</option></select>
+            <select id="board" name="board"><option value="b">/b/ — General</option><option value="tech">/tech/ — Tecnología</option><option value="art">/art/ — Arte y creatividad</option><option value="linux">/linux/ — Linux y software libre</option><option value="anime">/anime/ — Anime</option><option value="politically">/politically/ — Politic</option><option value="jumpstyle">/jumpstyle/ — Hardcore</option><option value="white-nationalist">/white-nationalist/ — Estudio histórico del nacionalismo blanco</option><option value="creepypasta">/creepypasta/ — Horror</option><option value="old-history">/old-history/ — Old history</option><option value="random">/random/ — Random</option><option value="hentai">/hentai/</option></select>
             <label for="thread-title">Título</label>
             <input id="thread-title" name="title" maxlength="120" required placeholder="Título del hilo">
             <label for="thread-content">Mensaje</label>
