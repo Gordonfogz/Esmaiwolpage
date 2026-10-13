@@ -638,17 +638,17 @@
     /* Logo principal ESMAIWOL */
     .brand-logo {
       display: block;
-      width: min(100%, 560px);
-      max-height: 150px;
+      width: min(100%, 760px);
+      max-height: 205px;
       height: auto;
       object-fit: contain;
       object-position: left center;
     }
     @media (max-width: 850px) {
-      .brand-logo { width: min(100%, 500px); max-height: 125px; }
+      .brand-logo { width: min(100%, 680px); max-height: 180px; }
     }
     @media (max-width: 540px) {
-      .brand-logo { width: min(100%, 420px); max-height: 110px; margin: 0 auto; }
+      .brand-logo { width: min(100%, 560px); max-height: 155px; margin: 0 auto; }
     }
 
 </style>
@@ -677,7 +677,7 @@
       </div>
 
       <div class="brand">
-        <img class="brand-logo" src="images/ESMAIWOL LOGO.png" alt="ESMAIWOL Projecta Code">
+        <img class="brand-logo" src="images/ESMAIWOL%20LOGO.png" alt="ESMAIWOL Projecta Code">
         <p>Para quienes como yo no paran el odio</p>
         <p>Si me sigues es por lo que opino es relevante</p>
       </div>
@@ -1121,8 +1121,10 @@
     "Debian": {en:"Debian",de:"Debian",es:"Debian"},
     "Arch Linux": {en:"Arch Linux",de:"Arch Linux",es:"Arch Linux"},
     "RACIAL THOUGHTS // ENTRAR": {en:"RACIAL THOUGHTS // ENTER",de:"RACIAL THOUGHTS // EINTRETEN",es:"RACIAL THOUGHTS // ENTRAR"},
-    "RACIAL THOUGHTS": {en:"RACIAL THOUGHTS",de:"RACIAL THOUGHTS",es:"PENSAMIENTOS RACIALES"},
+    "RACIAL THOUGHTS": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
     "Racial Thoughts": {en:"Racial Thoughts",de:"Rassengedanken",es:"Pensamientos raciales"},
+    "RACIAL THOUGHTS": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
+    "El ser humano, al igual que cualquier otro animal, se diferencian por castas en este apartado cubrire mis opiniones y no opiniones sobre el tema racial tanto contemporaneo como antiguo": {en:"Human beings, like other animals, are often divided into social groups. In this section, I share my thoughts and reflections on racial topics, both contemporary and historical.",de:"Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.",es:"El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos."},
     "Esmaiwol.chan": {en:"Esmaiwol.chan",de:"Esmaiwol.chan",es:"Esmaiwol.chan"}
   };
   const langSelect = document.getElementById('siteLanguage');
@@ -1187,6 +1189,19 @@
     });
     langSelect.value = currentLang;
   }
+  // Translate the Racial Thoughts card description as a complete paragraph in all three languages.
+  const racialDescription = document.querySelector('#racial-thoughts > div:last-child p:not(.date)');
+  if (racialDescription) {
+    const racialDescriptions = {
+      en: 'Human beings, like other animals, are often divided into social groups. In this section, I share my thoughts and reflections on racial topics, both contemporary and historical.',
+      de: 'Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.',
+      es: 'El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos.'
+    };
+    const updateRacialDescription = () => { racialDescription.textContent = racialDescriptions[currentLang] || racialDescriptions.en; };
+    updateRacialDescription();
+    langSelect.addEventListener('change', updateRacialDescription);
+  }
+
   langSelect.addEventListener('change', () => {
     applyLanguage(langSelect.value);
     try { localStorage.setItem('esmaiwol-language', langSelect.value); } catch (e) {}
