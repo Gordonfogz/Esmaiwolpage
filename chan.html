@@ -45,6 +45,13 @@
     .replies{margin:12px 0 0 14px;padding-left:12px;border-left:2px solid #1c2b61}
     .reply{padding:8px 0;border-bottom:1px dotted #202a50}.reply:last-child{border-bottom:0}
     .reply-text{white-space:pre-wrap;margin-top:4px}
+    .post-ref{color:#8fb2ff;text-decoration:underline;font-weight:bold;cursor:pointer}
+    .post-ref:hover{color:#fff;background:#1a2a5c}
+    .post-ref:target,.thread:target,.reply:target,.ref-highlight{outline:2px solid var(--green);outline-offset:3px;background-color:#101a2b}
+    .post-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}
+    .report-button{font-size:11px;padding:4px 7px;color:#ffb0b0;border-color:#75404b}
+    .report-button:hover{background:#35141b}
+    .anti-spam-note{margin-top:8px;color:#929bbd;font-size:11px}
     .reply-form{margin-top:12px;padding-top:10px;border-top:1px dashed #26315c}
     .reply-form textarea{min-height:65px}.reply-form label{margin-top:7px}
     .empty{padding:22px;text-align:center;border:1px dashed #293a79;color:var(--muted)}
@@ -105,7 +112,7 @@
         <section class="panel">
           <h2>// Sobre el chan</h2>
           <p class="muted">Un rincón comunitario de ESMAIWOL. Mantén las publicaciones legibles y respeta a los demás.</p>
-          <p class="muted">Las imágenes subidas se guardan en el bucket <code>chan-images</code>.</p>
+          <p class="muted">Las imágenes subidas se guardan en el bucket <code>chan-images</code>.</p><p class="anti-spam-note">Anti-spam básico activo en este navegador. Los reportes se envían a la base de datos para revisión.</p>
         </section>
       </aside>
     </div>
@@ -138,6 +145,74 @@
     function formatDate(value) {
       const date = new Date(value);
       return Number.isNaN(date.getTime()) ? 'fecha desconocida' : date.toLocaleString('es-ES');
+    }
+    const POST_COOLDOWN_MS = 20000;
+    const LAST_POST_KEY = 'esmaiwol_chan_last_post';
+    function checkPostCooldown() {
+      try {
+        const last = Number(localStorage.getItem(LAST_POST_KEY) || 0);
+        const remaining = POST_COOLDOWN_MS - (Date.now() - last);
+        if (remaining > 0) throw new Error(`Espera ${Math.ceil(remaining / 1000)} s antes de publicar otra vez.`);
+      } catch (e) {
+        if (e instanceof Error && e.message.startsWith('Espera ')) throw e;
+      }
+    }
+    function markPostPublished() {
+      try { localStorage.setItem(LAST_POST_KEY, String(Date.now())); } catch (_) {}
+    }
+    function renderPostText(container, text) {
+      // Convierte referencias >>123 en enlaces sin interpretar el texto como HTML.
+      const pattern = />>([0-9]{1,18})/g;
+      let lastIndex = 0, match;
+      while ((match = pattern.exec(text)) !== null) {
+        if (match.index > lastIndex) container.append(document.createTextNode(text.slice(lastIndex, match.index)));
+        const link = document.createElement('a');
+        const targetId = match[1];
+        link.className = 'post-ref';
+        link.href = `#post-reply-${targetId}`;
+        link.textContent = match[0];
+        link.title = `Ir a la publicación ${targetId}`;
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          // Los IDs de hilos y respuestas son secuencias distintas; priorizamos respuesta y luego hilo.
+          const target = document.getElementById(`post-reply-${targetId}`) || document.getElementById(`post-thread-${targetId}`);
+          if (target) {
+            history.replaceState(null, '', `#${target.id}`);
+            target.scrollIntoView({behavior:'smooth', block:'center'});
+            target.classList.add('ref-highlight');
+            setTimeout(() => target.classList.remove('ref-highlight'), 1800);
+          } else {
+            status('connection-status', `No se encuentra >>${targetId} entre las publicaciones cargadas de este tablón.`, true);
+          }
+        });
+        container.append(link);
+        lastIndex = pattern.lastIndex;
+      }
+      if (lastIndex < text.length) container.append(document.createTextNode(text.slice(lastIndex)));
+    }
+    async function reportPost(postType, postId) {
+      const reason = prompt('Motivo del reporte (spam, acoso, datos personales, contenido ilegal u otro):');
+      if (reason === null) return;
+      const cleanReason = reason.trim().slice(0, 500);
+      if (!cleanReason) { alert('Escribe un motivo para el reporte.'); return; }
+      const { error } = await supabase.from('reports').insert({
+        post_type: postType,
+        post_id: Number(postId),
+        reason: cleanReason
+      });
+      if (error) {
+        alert('No se pudo enviar el reporte. Comprueba que hayas creado la tabla reports y sus políticas en Supabase.');
+        return;
+      }
+      alert('Reporte enviado. Gracias por ayudar a mantener el tablón.');
+    }
+    function addReportButton(container, postType, postId) {
+      const actions = document.createElement('div');
+      actions.className = 'post-actions';
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'report-button'; button.textContent = '[ REPORTAR ]';
+      button.addEventListener('click', () => reportPost(postType, postId).catch(() => alert('No se pudo enviar el reporte.')));
+      actions.append(button); container.append(actions);
     }
     function makeImage(path) {
       if (!path) return Promise.resolve(null);
@@ -175,7 +250,7 @@
       }
       const fragment = document.createDocumentFragment();
       for (const thread of threads) {
-        const card = document.createElement('article'); card.className = 'thread';
+        const card = document.createElement('article'); card.className = 'thread'; card.id = `post-thread-${thread.id}`;
         const head = document.createElement('div'); head.className = 'thread-head';
         head.append(safeText('span','thread-title',thread.title), safeText('span','meta',`No. ${thread.id}`), safeText('span','meta',formatDate(thread.created_at)));
         const body = safeText('div','thread-content',thread.content);
@@ -204,7 +279,7 @@
         form.addEventListener('submit', async (event) => {
           event.preventDefault(); submit.disabled = true; statusFrom(msg,'Publicando respuesta…');
           try {
-            const content = textarea.value.trim(); if (!content) throw new Error('Escribe una respuesta.');
+            checkPostCooldown();\n            const content = textarea.value.trim(); if (!content) throw new Error('Escribe una respuesta.');
             const image_path = await uploadImage(file.files[0]);
             const { error } = await supabase.from('posts').insert({thread_id:thread.id,content,image_path});
             if (error) throw error;
@@ -228,7 +303,7 @@
       button.disabled=true; status('thread-status','Publicando hilo…');
       try{
         if(!supabase) throw new Error('Primero configura la URL y la clave Publishable en el código.');
-        const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
+        checkPostCooldown();\n        const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('El título y el mensaje son obligatorios.');
         const image_path=await uploadImage($('thread-image').files[0]);
         const {error}=await supabase.from('threads').insert({board,title,content,image_path});
