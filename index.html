@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
@@ -597,7 +597,13 @@
       .chan-promo { margin: 12px 10px 16px; }
       .chan-promo-body { padding: 12px; }
     }
-</style>
+
+    .language-bar { display:flex; justify-content:flex-end; align-items:center; gap:10px; padding:7px 14px; border-bottom:1px solid var(--border); background:#070914; color:var(--muted); font-size:13px; }
+    .language-bar label { color:var(--green); font-weight:bold; }
+    #siteLanguage { max-width:100%; padding:5px 8px; border:1px solid var(--blue); border-radius:0; background:#050509; color:var(--text); font:inherit; cursor:pointer; }
+    #siteLanguage:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+
+  </style>
 </head>
 <body>
   <div class="hero-banner" id="heroBanner" role="region" aria-label="Carrusel de banners de ESMAIWOL">
@@ -637,6 +643,14 @@
       </div>
     </header>
 
+    <div class="language-bar">
+      <label for="siteLanguage" data-i18n="Language">Language</label>
+      <select id="siteLanguage" aria-label="Choose language">
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
     <nav class="nav" aria-label="Navegación principal">
       <a href="#inicio">Inicio</a>
       <a href="#archivos">Archivo</a>
@@ -967,6 +981,108 @@
   });
   show(0);
   start();
+})();
+</script>
+
+
+<script id="esmaiwol-i18n">
+(() => {
+  const dictionary = {
+    "Language": {en:"Language",de:"Sprache",es:"Idioma"},
+    "ESMAIWOL TNFD": {en:"ESMAIWOL TNFD",de:"ESMAIWOL TNFD",es:"ESMAIWOL TNFD"},
+    "Para quienes como yo no paran el odio": {en:"For those who, like me, never stop hating",de:"Für diejenigen, die wie ich nie aufhören zu hassen",es:"Para quienes como yo no paran el odio"},
+    "Si me sigues es por lo que opino es relevante": {en:"If you follow me, it is because you find my opinions relevant",de:"Wenn du mir folgst, findest du meine Meinungen relevant",es:"Si me sigues es por lo que opino es relevante"},
+    "Perl": {en:"Perl",de:"Perl",es:"Perl"}, "Linux": {en:"Linux",de:"Linux",es:"Linux"},
+    "Ideas": {en:"Ideas",de:"Ideen",es:"Ideas"}, "Proyectos": {en:"Projects",de:"Projekte",es:"Proyectos"},
+    "Inicio": {en:"Home",de:"Startseite",es:"Inicio"}, "Archivo": {en:"Archive",de:"Archiv",es:"Archivo"},
+    "Sobre mí": {en:"About me",de:"Über mich",es:"Sobre mí"}, "girls und panzer": {en:"Girls und Panzer",de:"Girls und Panzer",es:"girls und panzer"},
+    "Enlaces": {en:"Links",de:"Links",es:"Enlaces"}, "SECCIÓN": {en:"SECTION",de:"ABSCHNITT",es:"SECCIÓN"},
+    "Bienvenido a mis escritos dirigidos a todo lo que odio": {en:"Welcome to my writings about everything I hate",de:"Willkommen zu meinen Texten über alles, was ich hasse",es:"Bienvenido a mis escritos dirigidos a todo lo que odio"},
+    "Este es mi primer espacio para dejar por escrito pensamientos que mejoraran el mundo. Aquí publicaré criticas y opiniones inpiadosas Gracias por visitarme.": {en:"This is my first space to put into writing thoughts that will improve the world. Here I will publish harsh criticism and merciless opinions. Thanks for visiting.",de:"Dies ist mein erster Ort, um Gedanken aufzuschreiben, die die Welt verbessern sollen. Hier veröffentliche ich scharfe Kritik und gnadenlose Meinungen. Danke für deinen Besuch.",es:"Este es mi primer espacio para dejar por escrito pensamientos que mejoraran el mundo. Aquí publicaré criticas y opiniones inpiadosas Gracias por visitarme."},
+    "Leer más...": {en:"Read more...",de:"Weiterlesen...",es:"Leer más..."},
+    "Por qué me gusta Linux": {en:"Why I like Linux",de:"Warum ich Linux mag",es:"Por qué me gusta Linux"},
+    "Yo tampoco lo entendia hasta que uno de los super mega frikis de nivel 99 me instalo debian mas temprano que tarde comprendi por que era el elixir de la pantalla": {en:"I didn't understand it either, until a level-99 super geek installed Debian for me. Before long, I understood why it was the screen's elixir.",de:"Ich verstand es auch nicht, bis ein Super-Nerd auf Level 99 Debian für mich installierte. Schon bald verstand ich, warum es das Elixier des Bildschirms war.",es:"Yo tampoco lo entendia hasta que uno de los super mega frikis de nivel 99 me instalo debian mas temprano que tarde comprendi por que era el elixir de la pantalla"},
+    "Mi ThinkPad T480": {en:"My ThinkPad T480",de:"Mein ThinkPad T480",es:"Mi ThinkPad T480"},
+    "Un dia fui al centro de la ciudad a por ella en un vecindario modesto,y ahi, un anciano salio de su morada ahi mismo en la puerta me la vendio, estaba muy comprable en internet": {en:"One day I went downtown to get it, in a modest neighborhood. An old man came out of his home and sold it to me right there at the door. It was much cheaper than online.",de:"Eines Tages fuhr ich in die Innenstadt, in ein bescheidenes Viertel. Ein älterer Mann kam aus seinem Haus und verkaufte es mir direkt an der Tür. Es war viel günstiger als im Internet.",es:"Un dia fui al centro de la ciudad a por ella en un vecindario modesto,y ahi, un anciano salio de su morada ahi mismo en la puerta me la vendio, estaba muy comprable en internet"},
+    "Ideas para un futuro": {en:"Ideas for the future",de:"Ideen für die Zukunft",es:"Ideas para un futuro"},
+    "Terminar al 100% este sitio y tal vez, como seria lo normal apuntar a algo mas grande como un chan o tablon de imagenes": {en:"Finish this site 100%, and perhaps, as one normally would, aim for something bigger like a chan or imageboard.",de:"Diese Website zu 100 % fertigstellen und vielleicht, wie es normal wäre, etwas Größeres anstreben, etwa einen Chan oder ein Imageboard.",es:"Terminar al 100% este sitio y tal vez, como seria lo normal apuntar a algo mas grande como un chan o tablon de imagenes"},
+    "Proyectos en construcción": {en:"Projects under construction",de:"Projekte im Aufbau",es:"Proyectos en construcción"},
+    "Intentos de programas o sitios con perl, intentar integrarlo aqui mismo y videos de propaganda, alentando a usar xmpp o software no espiado": {en:"Attempts at programs or websites with Perl, integrating them here, and propaganda videos encouraging the use of XMPP or software that doesn't spy on you.",de:"Versuche, Programme oder Websites mit Perl zu erstellen, sie hier zu integrieren und Propagandavideos, die zur Nutzung von XMPP oder nicht ausspionierender Software ermutigen.",es:"Intentos de programas o sitios con perl, intentar integrarlo aqui mismo y videos de propaganda, alentando a usar xmpp o software no espiado"},
+    "Racial Thoughts": {en:"Racial Thoughts",de:"Racial Thoughts",es:"Racial Thoughts"},
+    "El ser humano, al igual que cualquier otro animal, se diferencian por castas en este apartado cubrire mis opiniones y no opiniones sobre el tema racial tanto contemporaneo como ant": {en:"Human beings, like any other animal, differ by castes. In this section I will cover my opinions and non-opinions on racial topics, both contemporary and historical.",de:"Menschen unterscheiden sich wie jedes andere Tier durch Kasten. In diesem Abschnitt behandle ich meine Meinungen und Nicht-Meinungen zu zeitgenössischen und historischen Rassenthemen.",es:"El ser humano, al igual que cualquier otro animal, se diferencian por castas en este apartado cubrire mis opiniones y no opiniones sobre el tema racial tanto contemporaneo como ant"},
+    "Últimas entradas": {en:"Latest posts",de:"Neueste Beiträge",es:"Últimas entradas"},
+    "Bienvenido a mi blog": {en:"Welcome to my blog",de:"Willkommen in meinem Blog",es:"Bienvenido a mi blog"},
+    "Categorías": {en:"Categories",de:"Kategorien",es:"Categorías"},
+    "Hardware": {en:"Hardware",de:"Hardware",es:"Hardware"}, "Personal": {en:"Personal",de:"Persönlich",es:"Personal"},
+    "Octubre 2026 (2)": {en:"October 2026 (2)",de:"Oktober 2026 (2)",es:"Octubre 2026 (2)"},
+    "Septiembre 2026 (3)": {en:"September 2026 (3)",de:"September 2026 (3)",es:"Septiembre 2026 (3)"},
+    "Agosto 2026 (0)": {en:"August 2026 (0)",de:"August 2026 (0)",es:"Agosto 2026 (0)"},
+    "Open Source": {en:"Open Source",de:"Open Source",es:"Open Source"},
+    "Selecciona una canción": {en:"Select a song",de:"Wähle einen Song",es:"Selecciona una canción"},
+    "VOLUMEN": {en:"VOLUME",de:"LAUTSTÄRKE",es:"VOLUMEN"},
+    "La música solo empieza cuando pulses PLAY.": {en:"Music only starts when you press PLAY.",de:"Die Musik startet erst, wenn du auf PLAY drückst.",es:"La música solo empieza cuando pulses PLAY."},
+    "Página personal ": {en:"Personal website ",de:"Persönliche Website ",es:"Página personal "},
+    " HTML + CSS": {en:" HTML + CSS",de:" HTML + CSS",es:" HTML + CSS"},
+    "| Última actualización:": {en:"| Last updated:",de:"| Zuletzt aktualisiert:",es:"| Última actualización:"},
+    "Un tablón anónimo inspirado en los imageboards clásicos como 4chan. Crea hilos, responde a otras publicaciones y comparte imágenes sin necesidad de registrarte.": {en:"An anonymous imageboard inspired by classic imageboards like 4chan. Create threads, reply to posts, and share images without registering.",de:"Ein anonymes Imageboard, inspiriert von klassischen Imageboards wie 4chan. Erstelle Threads, antworte auf Beiträge und teile Bilder ohne Registrierung.",es:"Un tablón anónimo inspirado en los imageboards clásicos como 4chan. Crea hilos, responde a otras publicaciones y comparte imágenes sin necesidad de registrarte."},
+    "[ ENTRAR A ESMAIWOL.CHAN ] >>": {en:"[ ENTER ESMAIWOL.CHAN ] >>",de:"[ ESMAIWOL.CHAN BETRETEN ] >>",es:"[ ENTRAR A ESMAIWOL.CHAN ] >>"},
+    "Carrusel de banners de ESMAIWOL": {en:"ESMAIWOL banner carousel",de:"ESMAIWOL-Bannerkarussell",es:"Carrusel de banners de ESMAIWOL"},
+    "Navegación principal": {en:"Main navigation",de:"Hauptnavigation",es:"Navegación principal"},
+    "Choose language": {en:"Choose language",de:"Sprache auswählen",es:"Elegir idioma"},
+    "Canción anterior": {en:"Previous track",de:"Vorheriger Titel",es:"Canción anterior"},
+    "Reproducir música": {en:"Play music",de:"Musik abspielen",es:"Reproducir música"},
+    "Pausar música": {en:"Pause music",de:"Musik pausieren",es:"Pausar música"},
+    "No se pudo reproducir. Comprueba que el MP3 exista en la carpeta music/.": {en:"Playback failed. Check that the MP3 exists in the music/ folder.",de:"Wiedergabe fehlgeschlagen. Prüfe, ob die MP3-Datei im Ordner music/ liegt.",es:"No se pudo reproducir. Comprueba que el MP3 exista en la carpeta music/."},
+    "Música pausada.": {en:"Music paused.",de:"Musik pausiert.",es:"Música pausada."}
+  };
+  const langSelect = document.getElementById('siteLanguage');
+  if (!langSelect) return;
+  let currentLang = 'en';
+  const originalText = new WeakMap();
+  function applyLanguage(lang) {
+    currentLang = dictionary.Language[lang] ? lang : 'en';
+    document.documentElement.lang = currentLang;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!originalText.has(node)) originalText.set(node, node.nodeValue);
+      const original = originalText.get(node);
+      const trimmed = original.trim();
+      if (!trimmed) continue;
+      const entry = dictionary[trimmed];
+      if (entry) node.nodeValue = original.replace(trimmed, entry[currentLang] || entry.en || trimmed);
+    }
+    const attrMap = { 'aria-label': dictionary, title: dictionary, placeholder: dictionary };
+    document.querySelectorAll('[aria-label], [title], [placeholder]').forEach(el => {
+      ['aria-label','title','placeholder'].forEach(attr => {
+        if (!el.hasAttribute(attr)) return;
+        const val = el.getAttribute(attr);
+        const entry = attrMap[attr][val];
+        if (entry) el.setAttribute(attr, entry[currentLang] || entry.en || val);
+      });
+    });
+    langSelect.value = currentLang;
+  }
+  langSelect.addEventListener('change', () => {
+    applyLanguage(langSelect.value);
+    try { localStorage.setItem('esmaiwol-language', langSelect.value); } catch (e) {}
+  });
+  // English is the default on a first visit; remember the visitor's explicit choice.
+  let saved = 'en';
+  try { saved = localStorage.getItem('esmaiwol-language') || 'en'; } catch (e) {}
+  applyLanguage(saved);
+  // Translate text inserted later by the music player or other page scripts.
+  const observer = new MutationObserver(records => {
+    for (const record of records) {
+      if (record.type === 'childList') record.addedNodes.forEach(n => {
+        if (n.nodeType === Node.TEXT_NODE) {
+          const t = n.nodeValue.trim(), entry = dictionary[t];
+          if (entry) n.nodeValue = n.nodeValue.replace(t, entry[currentLang] || entry.en || t);
+        }
+      });
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 
