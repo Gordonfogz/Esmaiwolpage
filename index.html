@@ -1079,6 +1079,40 @@
       const entry = dictionary[trimmed];
       if (entry) node.nodeValue = original.replace(trimmed, entry[currentLang] || entry.en || trimmed);
     }
+    // Translate each article summary as a whole. These paragraphs contain <br>
+    // tags and multiple text nodes, so translating individual nodes caused mixed languages.
+    const summaries = [
+      {
+        en: "This is my first space to write down thoughts that will improve the world.<br>Here I will publish harsh criticism and merciless opinions.<br>Thanks for visiting.",
+        de: "Dies ist mein erster Ort, um Gedanken aufzuschreiben, die die Welt verbessern sollen.<br>Hier veröffentliche ich scharfe Kritik und gnadenlose Meinungen.<br>Danke für deinen Besuch.",
+        es: "Este es mi primer espacio para dejar por escrito pensamientos que mejoraran el mundo.<br>Aquí publicaré criticas y opiniones inpiadosas<br>Gracias por visitarme."
+      },
+      {
+        en: "I didn't understand it either until one of the level-99 super geeks installed Debian for me.<br>Before long, I understood why it was the elixir of the screen.",
+        de: "Ich verstand es auch nicht, bis einer der Super-Nerds auf Level 99 Debian für mich installierte.<br>Bald verstand ich, warum es das Elixier des Bildschirms war.",
+        es: "Yo tampoco lo entendia hasta que uno de los super mega frikis de nivel 99 me instalo debian.<br>Mas temprano que tarde comprendi por que era el elixir de la pantalla."
+      },
+      {
+        en: "One day I went downtown to get it.<br>In a modest neighborhood, an old man came out of his home and sold it to me right there at the door. It was much cheaper than online.",
+        de: "Eines Tages fuhr ich in die Innenstadt, um es zu holen.<br>In einem bescheidenen Viertel kam ein älterer Mann aus seinem Haus und verkaufte es mir direkt an der Tür. Es war viel günstiger als online.",
+        es: "Un dia fui al centro de la ciudad a por ella.<br>En un vecindario modesto, un anciano salió de su casa y me la vendió allí mismo, en la puerta. Estaba mucho más barata que en internet."
+      },
+      {
+        en: "Finish this site 100% and perhaps, as would be normal, aim for something bigger like a chan or imageboard.",
+        de: "Diese Website zu 100 % fertigstellen und vielleicht, wie es normal wäre, etwas Größeres wie einen Chan oder ein Imageboard anstreben.",
+        es: "Terminar al 100% este sitio y tal vez, como seria lo normal, apuntar a algo mas grande como un chan o tablon de imagenes."
+      },
+      {
+        en: "Attempts at Perl programs or websites, integrating them here, and propaganda videos encouraging the use of XMPP or software that doesn't spy on you.",
+        de: "Versuche mit Perl-Programmen oder Websites, sie hier einzubinden, sowie Propagandavideos, die zur Nutzung von XMPP oder nicht ausspionierender Software ermutigen.",
+        es: "Intentos de programas o sitios con perl, intentar integrarlo aqui mismo y videos de propaganda, alentando a usar xmpp o software no espiado."
+      }
+    ];
+    document.querySelectorAll('article.post').forEach((article, index) => {
+      const summary = article.querySelector('div > p:not(.date)');
+      const entry = summaries[index];
+      if (summary && entry) summary.innerHTML = entry[currentLang] || entry.en;
+    });
     const attrMap = { 'aria-label': dictionary, title: dictionary, placeholder: dictionary };
     document.querySelectorAll('[aria-label], [title], [placeholder]').forEach(el => {
       ['aria-label','title','placeholder'].forEach(attr => {
