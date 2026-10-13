@@ -103,8 +103,8 @@
 
     // Rellena estos dos valores con la URL del proyecto y la clave Publishable.
     // Nunca pegues aquí una clave Secret o service_role.
-    const SUPABASE_URL = 'PEGA_AQUI_LA_URL_DEL_PROYECTO';
-    const SUPABASE_PUBLISHABLE_KEY = 'PEGA_AQUI_LA_CLAVE_PUBLISHABLE';
+    const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
     const BUCKET = 'chan-images';
     const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
     const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
@@ -209,7 +209,9 @@
     $('refresh').addEventListener('click',loadThreads);
     $('thread-form').addEventListener('submit',async(event)=>{
       event.preventDefault();
-      const form=$('thread-form'); const button=event.submitter || form.querySelector('button[type="submit"]') || form.querySelector('button'); if(button) button.disabled=true; status('thread-status','Publicando hilo…');
+      const button=document.querySelector('#thread-form button[type="submit"]');
+      if (!button) { status('thread-status','Error interno: no se encontró el botón de publicación.',true); return; }
+      button.disabled=true; status('thread-status','Publicando hilo…');
       try{
         if(!supabase) throw new Error('Primero configura la URL y la clave Publishable en el código.');
         const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
@@ -219,7 +221,7 @@
         if(error) throw error;
         $('thread-form').reset(); status('thread-status','Hilo publicado.'); await loadThreads();
       }catch(e){status('thread-status',e.message || 'No se pudo publicar. Revisa la configuración y las políticas RLS.',true)}
-      finally{if(button) button.disabled=false}
+      finally{button.disabled=false}
     });
 
     if(!ready){
