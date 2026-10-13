@@ -56,7 +56,7 @@
       <nav class="nav"><a href="index.html">&lt;&lt; Volver a ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Crear hilo</a><a href="#tablones">Ver hilos</a></nav>
     </header>
 
-    <div class="notice">Las reglas estan esencialmente ligadas al sentido comun, tu sube lo que quieras y yo borro lo que quiera. Hay cierto tipo de contenidos que estan prohibidos por principio, si no aparece un tablon de ese tema, es por que esta prohibido</div>
+    <div class="notice">Reglas básicas: no publiques datos personales, amenazas, contenido ilegal ni material de otras personas sin permiso. El tablón no tiene cuentas; eso no garantiza anonimato técnico absoluto. Las publicaciones públicas pueden ser copiadas por terceros.</div>
 
     <div class="layout">
       <main class="main">
@@ -86,16 +86,16 @@
         <section class="panel">
           <h2>// Estado del sistema</h2>
           <div id="connection-status" class="status">Comprobando conexión…</div>
-          <p class="muted">El chan esta recien nacido. No se requiere usuario ni contraseña.</p>
+          <p class="muted">Los mensajes se guardan en Supabase. No se requiere usuario ni contraseña.</p>
         </section>
         <section class="panel">
           <h2>// Sobre el chan</h2>
-          <p class="muted">Un rincón comunitario de ESMAIWOL.ZN publica lo que quieras hasta que a mi no me guste y te patee.</p>
+          <p class="muted">Un rincón comunitario de ESMAIWOL. Mantén las publicaciones legibles y respeta a los demás.</p>
           <p class="muted">Las imágenes subidas se guardan en el bucket <code>chan-images</code>.</p>
         </section>
       </aside>
     </div>
-    <footer>ESMAIWOL.CHAN</footer>
+    <footer>ESMAIWOL.CHAN // SIN CUENTAS · CON RESPONSABILIDAD</footer>
   </div>
 
   <script type="module">
@@ -103,8 +103,8 @@
 
     // Rellena estos dos valores con la URL del proyecto y la clave Publishable.
     // Nunca pegues aquí una clave Secret o service_role.
-    const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
+    const SUPABASE_URL = 'PEGA_AQUI_LA_URL_DEL_PROYECTO';
+    const SUPABASE_PUBLISHABLE_KEY = 'PEGA_AQUI_LA_CLAVE_PUBLISHABLE';
     const BUCKET = 'chan-images';
     const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
     const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
@@ -209,7 +209,7 @@
     $('refresh').addEventListener('click',loadThreads);
     $('thread-form').addEventListener('submit',async(event)=>{
       event.preventDefault();
-      const button=$('#thread-form button[type="submit"]'); button.disabled=true; status('thread-status','Publicando hilo…');
+      const form=$('thread-form'); const button=event.submitter || form.querySelector('button[type="submit"]') || form.querySelector('button'); if(button) button.disabled=true; status('thread-status','Publicando hilo…');
       try{
         if(!supabase) throw new Error('Primero configura la URL y la clave Publishable en el código.');
         const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
@@ -219,7 +219,7 @@
         if(error) throw error;
         $('thread-form').reset(); status('thread-status','Hilo publicado.'); await loadThreads();
       }catch(e){status('thread-status',e.message || 'No se pudo publicar. Revisa la configuración y las políticas RLS.',true)}
-      finally{button.disabled=false}
+      finally{if(button) button.disabled=false}
     });
 
     if(!ready){
