@@ -12,9 +12,27 @@
     a{color:var(--green)}a:hover{color:#fff}
     .wrap{width:min(1050px,calc(100% - 24px));margin:22px auto 50px}
     header,.panel,.thread{border:1px solid var(--border);background:#070914ed;box-shadow:0 0 18px #00134c35}
-    header{padding:18px;margin-bottom:14px;background:linear-gradient(110deg,#101a3b,#070914 70%)}
+    header{
+      position:relative;
+      padding:18px;
+      margin-bottom:14px;
+      background-image:url('bannerchan.png');
+      background-size:cover;
+      background-position:center right;
+      background-repeat:no-repeat;
+      isolation:isolate;
+    }
+    header::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(110deg,rgba(7,9,20,.82) 0%,rgba(7,9,20,.55) 45%,rgba(7,9,20,.25) 100%);
+      z-index:0;
+      pointer-events:none;
+    }
+    header > *{position:relative;z-index:1}
     .eyebrow{color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase}
-    h1{margin:3px 0 8px;color:var(--green);font-size:clamp(27px,6vw,42px);line-height:1.1;text-shadow:0 0 14px #55ff9950}
+    h1{margin:3px 0 8px;color:var(--green);font-size:clamp(27px,6vw,42px);line-height:1.1;text-shadow:0 0 18px #000,0 0 14px #55ff9950,0 1px 3px #000}
     h2{margin:0 0 12px;color:var(--green);font-size:19px}
     .intro{margin:0;color:#c2c9e8}
     .nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px}
