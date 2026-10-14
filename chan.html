@@ -84,7 +84,7 @@
       <div class="eyebrow">ESMAIWOL NET.ZONE // imageboard</div>
       <h1>Esmaiwol.chan</h1>
       <p class="intro">𝕿𝖍𝖊𝖘𝖊 𝖈𝖍𝖆𝖒𝖇𝖊𝖗𝖘 𝖇𝖊𝖑𝖔𝖓𝖌 𝖙𝖔 𝕰𝖘𝖒𝖆𝖎𝖜𝖔𝖑𝖙𝖍𝖊𝖘𝖊 𝖉𝖚𝖓𝖌𝖊𝖔𝖓𝖘 𝖙𝖍𝖆𝖙 𝖆𝖗𝖊 𝖓𝖔𝖙𝖍𝖎𝖓𝖌 𝖒𝖔𝖗𝖊 𝖙𝖍𝖆𝖓 𝖕𝖆𝖗𝖙 𝖔𝖋 𝖒𝖞 𝖈𝖆𝖘𝖙𝖑𝖊.</p>
-      <nav class="nav"><a href="index.html">&lt;&lt; Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Create thread</a><a href="#tablones">View threads</a></nav>
+      <nav class="nav"><a href="index.html">&lt;&lt; Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Create thread</a><a href="#tablones">View threads</a><a href="fashfoids.html" id="fashfoids-entry">♡ FASHFOIDS [LOCKED]</a></nav>
     </header>
 
     <div class="notice">The rules here are based first and foremost on common sense; you can post whatever you want, and I’ll delete whatever I want. This isn't your virtual stomping ground for every kind of degenerate or moron—this place is for a select few.</div>
@@ -539,5 +539,55 @@
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
     }
   </script>
+
+  <style>
+    #fashfoids-transition{position:fixed;inset:0;z-index:999999;background:#000;display:none;align-items:center;justify-content:center}
+    #fashfoids-transition.is-active{display:flex}
+    #fashfoids-transition video{width:100%;height:100%;object-fit:contain;background:#000}
+    #fashfoids-transition .transition-skip{position:absolute;right:18px;bottom:18px;z-index:2;background:#090914;color:#fff;border:1px solid #ff70d8;padding:10px 14px;font:inherit;cursor:pointer}
+    #fashfoids-transition .transition-fallback{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;display:none;background:#090914;color:#fff;border:1px solid #ff70d8;padding:14px;text-align:center}
+    #fashfoids-transition .transition-fallback button{margin-top:10px}
+    @media(prefers-reduced-motion:reduce){#fashfoids-transition video{display:none}}
+  </style>
+  <div id="fashfoids-transition" aria-label="FASHFOIDS transition" aria-hidden="true">
+    <video id="fashfoids-transition-video" src="transicion.mp4" playsinline muted preload="auto"></video>
+    <button class="transition-skip" id="fashfoids-transition-skip" type="button">Saltar transición »</button>
+    <div class="transition-fallback" id="fashfoids-transition-fallback">
+      No se pudo reproducir la transición.
+      <br><button type="button" id="fashfoids-transition-continue">Entrar en FASHFOIDS »</button>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const link = document.getElementById('fashfoids-entry');
+      const overlay = document.getElementById('fashfoids-transition');
+      const video = document.getElementById('fashfoids-transition-video');
+      const skip = document.getElementById('fashfoids-transition-skip');
+      const fallback = document.getElementById('fashfoids-transition-fallback');
+      const go = () => { window.location.href = 'fashfoids.html'; };
+      const fail = () => {
+        fallback.style.display = 'block';
+        skip.style.display = 'none';
+      };
+      link?.addEventListener('click', (event) => {
+        event.preventDefault();
+        overlay.classList.add('is-active');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          go();
+          return;
+        }
+        video.currentTime = 0;
+        const playback = video.play();
+        if (playback && typeof playback.catch === 'function') playback.catch(fail);
+      });
+      video.addEventListener('ended', go);
+      video.addEventListener('error', fail);
+      skip.addEventListener('click', go);
+      document.getElementById('fashfoids-transition-continue').addEventListener('click', go);
+    })();
+  </script>
+
 </body>
 </html>
