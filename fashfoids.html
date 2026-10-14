@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#05060c">
-  <title>FASHFOIDS // ESMAIWOL.CHAN</title>
+  <title>FASHFOIDS // The Pink Room</title>
   <style>
     :root{color-scheme:dark;--bg:#05060c;--panel:#090b16;--panel2:#0d1122;--border:#253b87;--blue:#5d83ff;--green:#9cff9c;--text:#d8dcf4;--muted:#929bbd;--red:#ff6d86}
     *{box-sizing:border-box}
@@ -108,6 +108,57 @@
     .fash-hidden-board{visibility:hidden;opacity:0;transform:translateY(10px);transition:opacity .8s ease,transform .8s ease}
     .fash-hidden-board.ready{visibility:visible;opacity:1;transform:none}
     @media(max-width:520px){.thread{padding:13px}.fash-gate-card{padding:18px}}
+
+    /* FASHFOIDS: independent editorial layout */
+    :root{--ff-ink:#21091f;--ff-plum:#48123f;--ff-pink:#ff74d5;--ff-hot:#ff39bd;--ff-lilac:#c9a0ff;--ff-cream:#fff0fb}
+    body{background:radial-gradient(ellipse at 8% 4%,rgba(255,170,230,.8),transparent 30rem),radial-gradient(ellipse at 92% 20%,rgba(173,74,255,.55),transparent 32rem),linear-gradient(145deg,#250a2a 0%,#100817 48%,#08060e 100%);color:var(--ff-cream);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.01em}
+    a{color:#ffd2f3;text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:#fff;text-shadow:0 0 12px #ff74d5}
+    .wrap{width:min(1240px,calc(100% - 34px));margin:26px auto 58px}
+    header{min-height:290px;position:relative;overflow:hidden;padding:clamp(24px,5vw,54px);margin-bottom:18px;border:1px solid #ff9de8;border-radius:4px 42px 4px 42px;background:linear-gradient(105deg,rgba(37,5,39,.96) 0%,rgba(74,13,72,.84) 50%,rgba(28,7,42,.3) 100%),radial-gradient(circle at 82% 24%,#ff9de8 0,transparent 16rem),linear-gradient(135deg,#7e1d75,#210c31 70%);box-shadow:0 0 0 5px #ff74d51a,0 18px 55px #0008,inset 0 0 45px #ff74d51a}
+    header::before{content:"♡";position:absolute;right:5%;top:-.45em;font-size:clamp(180px,31vw,390px);line-height:1;color:#ffb6eb20;transform:rotate(12deg);pointer-events:none;text-shadow:0 0 40px #ff74d533}
+    header::after{content:"";position:absolute;inset:12px;border:1px solid #ffd2f344;border-radius:2px 30px 2px 30px;pointer-events:none}
+    header>*{position:relative;z-index:1}
+    .eyebrow{color:#ffc4ef;font-size:11px;letter-spacing:.24em;font-weight:800}
+    .hero-mark{position:absolute;right:10%;top:26px;color:#ffffff18;font-size:clamp(80px,15vw,180px);line-height:1;font-weight:1000;font-style:italic;letter-spacing:-.12em;pointer-events:none}
+    h1{margin:15px 0 10px;color:#fff0fb;font-size:clamp(42px,9vw,88px);letter-spacing:-.075em;font-weight:950;text-shadow:0 3px 0 #a72c8d,0 0 28px #ff39bd99}
+    h2{color:#ffd0f1;font-size:18px;letter-spacing:.025em}
+    .intro{max-width:610px;color:#ffe6f8;font-size:clamp(14px,2vw,17px)}
+    .hero-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+    .hero-tags span,.fash-stamp{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid #ffc8f0;background:#5a154d99;color:#fff2fc;font-size:10px;font-weight:800;letter-spacing:.14em}
+    .nav{gap:9px;margin-top:22px}.nav a{padding:8px 11px;border:1px solid #ff9de866;background:#300c3299;text-decoration:none;font-weight:700}.nav a:hover{background:#9c287d;border-color:#ffe0f7}
+    .fash-ticker{border:1px solid #ffd5f5;border-radius:0 14px 0 14px;background:linear-gradient(90deg,#8e1c7b,#c52e9e,#6f28ad);box-shadow:0 0 26px #ff4fca38}
+    .notice{border-left:4px solid var(--ff-pink);background:#32102fc9;color:#ffe7f8;border-radius:0 12px 12px 0}
+    .board-warning{border-radius:0 16px 0 16px}
+    .layout{grid-template-columns:minmax(0,1fr) 285px;gap:18px}
+    .panel,.thread{border:1px solid #ff9de866;background:linear-gradient(145deg,#351032f2,#1d0c26f5);box-shadow:0 12px 35px #0004,inset 0 1px #fff1;border-radius:4px 20px 4px 20px}
+    .panel{padding:20px;margin-bottom:18px}.side .panel{position:relative;overflow:hidden}.side .panel::before{content:"✦";position:absolute;right:15px;top:8px;color:#ff74d522;font-size:48px}
+    .thread{position:relative;padding:clamp(15px,2.5vw,27px);margin-bottom:22px;border-radius:4px 24px 4px 24px;overflow:hidden}
+    .thread::before{content:"";position:absolute;left:0;top:0;width:5px;height:100%;background:linear-gradient(#ff74d5,#a36aff);opacity:.9}
+    .thread:nth-child(5n+2){width:91%;margin-left:auto;border-radius:26px 4px 26px 4px}.thread:nth-child(5n+2)::before{left:auto;right:0}
+    .thread:nth-child(5n+3){width:96%;margin-right:auto}.thread:nth-child(5n+4){width:88%;margin-left:5%;background:linear-gradient(120deg,#401139f5,#21102ff5)}
+    .thread-head{border-bottom:1px solid #ff9de84c;padding:0 0 12px;margin-bottom:14px}.thread-title{color:#ffb9eb;font-size:clamp(18px,2.5vw,24px);font-weight:850}
+    .meta{color:#d4a8d2;font-size:11px}.thread-content{color:#fff0fb;line-height:1.7}
+    .post-image{max-width:100%;max-height:720px;width:auto;height:auto;object-fit:contain;object-position:center;margin:14px auto;border:1px solid #ff9de8a6;border-radius:3px 16px 3px 16px;box-shadow:0 10px 30px #0005,0 0 20px #ff39bd18;background:#100815}
+    .replies{margin:18px 0 0 8px;padding:0 0 0 18px;border-left:2px solid #d66bc7;position:relative}
+    .reply{position:relative;margin:10px 0;padding:12px 14px;border:1px solid #e68bdb40;border-radius:0 13px 0 13px;background:linear-gradient(100deg,#512047a8,#28142fa8)}
+    .reply::before{content:"";position:absolute;left:-20px;top:18px;width:12px;border-top:2px solid #d66bc7}.reply:last-child{border-bottom:1px solid #e68bdb40}
+    .reply-text{line-height:1.65}.reply-form{border-top:1px solid #ff9de84c;margin-top:18px;padding-top:15px}
+    label{color:#e8b9e0;font-weight:700}
+    input,textarea,select{border:1px solid #a94c99;border-radius:3px 10px 3px 10px;background:#180b20;color:#fff0fb}
+    input:focus,textarea:focus,select:focus{border-color:#ffb7ec;box-shadow:0 0 0 3px #ff74d522}
+    button,.button{border:1px solid #ff9de8;background:linear-gradient(120deg,#79205f,#4b1a66);color:#fff4fc;border-radius:3px 11px 3px 11px;font-weight:800}
+    button:hover,.button:hover{background:linear-gradient(120deg,#bd2b92,#792ac0);box-shadow:0 0 18px #ff39bd38}
+    .empty{border:1px dashed #e68bdb88;border-radius:4px 18px 4px 18px;background:#260e2e88;color:#f0c8e9}
+    .status{color:#dcb8d8}.status.error{color:#ff9bad}.post-ref{color:#e5baff}
+    .post-ref:target,.thread:target,.reply:target,.ref-highlight{outline:2px solid #ffb6ec;outline-offset:3px;background-color:#421441}
+    footer{color:#c58fbd;letter-spacing:.15em;padding:20px}
+    .fash-gate{background:radial-gradient(circle at 50% 25%,#ffb2e8 0,#a83acb 40%,#16051f 100%)}
+    .fash-gate-card{border:1px solid #ffe1f7;border-radius:4px 28px 4px 28px;background:linear-gradient(145deg,#42103eef,#1c0929f5);box-shadow:0 0 60px #ff4fca66}
+    .fash-gate-card h2{color:#fff0fb}.fash-gate-card p{color:#ffe1f7}
+    @media(max-width:760px){.wrap{width:calc(100% - 20px);margin-top:10px}.layout{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}header{min-height:0}.thread:nth-child(n){width:100%;margin-left:0;margin-right:0}}
+    @media(max-width:520px){.wrap{width:calc(100% - 12px)}header{padding:22px 17px;border-radius:3px 22px 3px 22px}.side{grid-template-columns:1fr}.panel{padding:15px}.thread{padding:16px}.hero-mark{right:8%;top:15px}.nav{gap:7px}.nav a{font-size:12px;padding:7px 8px}.board-warning{align-items:flex-start}.board-warning-gif{max-width:25%}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
   </style>
 </head>
 <body>
@@ -115,25 +166,27 @@
     <form class="fash-gate-card" id="fash-unlock-form">
       <div class="fash-stamp">PRIVATE AREA // 18+</div>
       <h2 id="fash-gate-title">♡ FASHFOIDS ♡</h2>
-      <p>Un tablón aparte. Otra estética. Solo quien tenga la clave entra.</p>
+      <p>A room apart. A different aesthetic. Enter with your access key.</p>
       <label for="fash-password">ACCESS KEY</label>
       <input id="fash-password" type="password" autocomplete="current-password" required maxlength="32" placeholder="••••••••">
       <button type="submit">[ UNLOCK THE PINK ROOM ]</button>
       <div id="fash-gate-status" class="status" role="status" aria-live="polite"></div>
-      <p class="muted">La clave tiene menos de 10 caracteres. No la compartas.</p>
+      <p class="muted">Keep your access key private.</p>
     </form>
   </div>
   <div class="wrap fash-hidden-board" id="fash-board">
     <header>
-      <div class="eyebrow">ESMAIWOL NET.ZONE // imageboard</div>
-      <h1>Esmaiwol.chan</h1>
-      <p class="intro">𝕿𝖍𝖊𝖘𝖊 𝖈𝖍𝖆𝖒𝖇𝖊𝖗𝖘 𝖇𝖊𝖑𝖔𝖓𝖌 𝖙𝖔 𝕰𝖘𝖒𝖆𝖎𝖜𝖔𝖑𝖙𝖍𝖊𝖘𝖊 𝖉𝖚𝖓𝖌𝖊𝖔𝖓𝖘 𝖙𝖍𝖆𝖙 𝖆𝖗𝖊 𝖓𝖔𝖙𝖍𝖎𝖓𝖌 𝖒𝖔𝖗𝖊 𝖙𝖍𝖆𝖓 𝖕𝖆𝖗𝖙 𝖔𝖋 𝖒𝖞 𝖈𝖆𝖘𝖙𝖑𝖊.</p>
-      <nav class="nav"><a href="index.html">&lt;&lt; Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Create thread</a><a href="#tablones">View threads</a><a href="fashfoids.html">♡ FASHFOIDS [LOCKED]</a></nav>
+      <div class="eyebrow">FASHFOIDS SOCIAL CLUB <span aria-hidden="true">✦</span> EST. 2026</div>
+      <div class="hero-mark" aria-hidden="true">FF</div>
+      <h1>FASHFOIDS</h1>
+      <p class="intro">A velvet-pink imageboard for fashion, characters, and alternative military aesthetics.</p>
+      <div class="hero-tags"><span>THE PINK ROOM</span><span>IMAGEBOARD / 01</span><span>COMMUNITY POSTS</span></div>
+      <nav class="nav"><a href="index.html">← Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">＋ Create a thread</a><a href="#tablones">Browse the board</a></nav>
     </header>
 
     <div class="fash-ticker" aria-label="FASHFOIDS community ticker"><span>♡ FASHFOIDS NEWS // fresh memes from the community // post your cursed image // pink transmission active // community highlights loading // ♡ FASHFOIDS NEWS // </span></div>
     <div class="notice">Welcome to FASHFOIDS. Keep it weird, keep it community-made, and don't post private information.</div>
-    <div class="notice" style="display:none">The rules here are based first and foremost on common sense; you can post whatever you want, and I’ll delete whatever I want. This isn't your virtual stomping ground for every kind of degenerate or moron—this place is for a select few.</div>
+
 
     <div class="board-warning" role="alert" aria-label="Board warning">
       <div class="board-warning-copy">
@@ -170,20 +223,20 @@
 
       <aside class="side">
         <section class="panel">
-          <h2>// System</h2>
+          <h2>✦ Board status</h2>
           <div id="connection-status" class="status">Checking connection…</div>
-          <p class="muted">post what you want</p>
+          <p class="muted">Share images, ideas, and character-inspired looks. Do not post private information.</p>
           <div class="form-actions"><button type="button" id="admin-login">[ ADMIN LOGIN ]</button></div>
           <div id="admin-status" class="status" role="status">Admin mode off.</div>
         </section>
         <section class="panel">
-          <h2>// BLACK LIST </h2>
-          <p class="muted">FEMBOYS NOT, TRANNIES NOT, THIS IS NOT YOUR SIDE</p>
-          <p class="muted">The image will be saved on bucket <code>chan-images</code>.</p><p class="anti-spam-note">zogbots or bots not</p>
+          <h2>✦ Board notes</h2>
+          <p class="muted">Keep posts on-topic and treat other visitors respectfully.</p>
+          <p class="muted">Images are stored in the board media bucket.</p><p class="anti-spam-note">Spam and automated abuse may be removed.</p>
         </section>
       </aside>
     </div>
-    <footer>ESMAIWOL.CHAN</footer>
+    <footer>FASHFOIDS SOCIAL CLUB <span aria-hidden="true">✦</span> MADE FOR THE PINK ROOM</footer>
   </div>
 
   <script type="module">
@@ -577,13 +630,13 @@
       event.preventDefault();
       const value = $('fash-password').value;
       if (value === '8814NX%') {
-        $('fash-gate-status').textContent = 'ACCESS GRANTED // welcome inside';
+        $('fash-gate-status').textContent = 'ACCESS GRANTED // welcome to the Pink Room';
         $('fash-gate').classList.add('unlocked');
         $('fash-board').classList.add('ready');
         try { sessionStorage.setItem('fashfoids_unlocked', '1'); } catch (_) {}
         if (supabase) loadThreads().catch(e => status('connection-status', e.message, true));
       } else {
-        $('fash-gate-status').textContent = 'ACCESS DENIED // wrong key';
+        $('fash-gate-status').textContent = 'ACCESS DENIED // incorrect key';
         $('fash-gate-status').classList.add('error');
         $('fash-password').select();
       }
@@ -596,8 +649,8 @@
     } catch (_) {}
 
     if(!ready){
-      status('connection-status','URL and Publishable key need to be configured in chan.html.',true);
-      $('threads-list').replaceChildren(safeText('div','empty','Edit chan.html and replace the two configuration values indicated in the code.'));
+      status('connection-status','The board connection needs its Supabase configuration.',true);
+      $('threads-list').replaceChildren(safeText('div','empty','Check the Supabase URL and Publishable key in this file.'));
     }else{
       supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
       $('admin-login').addEventListener('click', () => adminLogin().catch(e => status('admin-status', e.message || 'Admin sign-in failed.', true)));
