@@ -275,7 +275,7 @@
       insert(rows) { this.action='insert'; this.payload.rows=Array.isArray(rows)?rows:[rows]; return this; }
       update(values) { this.action='update'; this.payload.values=values; return this; }
       delete() { this.action='delete'; return this; }
-      then(resolve,reject) { return secureRequest('db',{...this.payload,action:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
+      then(resolve,reject) { return secureRequest('db',{...this.payload,mode:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
     }
     const secureDb = { from(table) { return new SecureQuery(table); } };
     const secureStorage = { from(bucket) {
