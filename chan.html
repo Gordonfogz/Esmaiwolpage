@@ -135,6 +135,23 @@
     const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
     let supabase = null;
 
+    // ---------- Ownership token (persistent per browser) ----------
+    const POSTER_TOKEN_KEY = 'esmaiwol_chan_poster_token';
+    function getPosterToken() {
+      try {
+        let token = localStorage.getItem(POSTER_TOKEN_KEY);
+        if (!token) {
+          token = crypto.randomUUID();
+          localStorage.setItem(POSTER_TOKEN_KEY, token);
+        }
+        return token;
+      } catch (_) {
+        // fallback if localStorage is blocked
+        return 'anonymous-' + Math.random().toString(36).slice(2);
+      }
+    }
+    const MY_TOKEN = getPosterToken();
+
     function status(id, message, error = false) {
       const el = $(id); el.textContent = message; el.classList.toggle('error', error);
     }
@@ -163,7 +180,6 @@
       try { localStorage.setItem(LAST_POST_KEY, String(Date.now())); } catch (_) {}
     }
     function renderPostText(container, text) {
-      // Convierte referencias >>123 en enlaces sin interpretar el texto como HTML.
       const pattern = />>([0-9]{1,18})/g;
       let lastIndex = 0, match;
       while ((match = pattern.exec(text)) !== null) {
@@ -176,7 +192,6 @@
         link.title = `Go to post ${targetId}`;
         link.addEventListener('click', (event) => {
           event.preventDefault();
-          // Thread and reply IDs are separate sequences; prioritize reply, then thread.
           const target = document.getElementById(`post-reply-${targetId}`) || document.getElementById(`post-thread-${targetId}`);
           if (target) {
             history.replaceState(null, '', `#${target.id}`);
@@ -208,14 +223,6 @@
       }
       alert('Report sent. Thanks for helping keep the board clean.');
     }
-    function addReportButton(container, postType, postId) {
-      const actions = document.createElement('div');
-      actions.className = 'post-actions';
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'report-button'; button.textContent = '[ REPORT ]';
-      button.addEventListener('click', () => reportPost(postType, postId).catch(() => alert('Could not send the report.')));
-      actions.append(button); container.append(actions);
-    }
     function makeImage(path) {
       if (!path) return Promise.resolve(null);
       return supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
@@ -236,12 +243,91 @@
       if (error) throw error;
       return path;
     }
+
+    // ---------- Edit / Delete own posts ----------
+    async function deleteOwnPost(table, id, token) {
+      if (!confirm('Delete this post permanently? This cannot be undone.')) return false;
+      const { error } = await supabase.from(table).delete().eq('id', id).eq('poster_token', token);
+      if (error) {
+        alert('Could not delete: ' + error.message);
+        return false;
+      }
+      return true;
+    }
+
+    async function editOwnPost(table, id, token, currentContent, currentTitle = null) {
+      let newContent = prompt('Edit message:', currentContent || '');
+      if (newContent === null) return false;
+      newContent = newContent.trim();
+      if (!newContent) { alert('Message cannot be empty.'); return false; }
+
+      const payload = { content: newContent };
+      if (table === 'threads' && currentTitle !== null) {
+        const newTitle = prompt('Edit title:', currentTitle || '');
+        if (newTitle === null) return false;
+        const t = newTitle.trim();
+        if (!t) { alert('Title cannot be empty.'); return false; }
+        payload.title = t;
+      }
+
+      const { error } = await supabase.from(table).update(payload).eq('id', id).eq('poster_token', token);
+      if (error) {
+        alert('Could not update: ' + error.message);
+        return false;
+      }
+      return true;
+    }
+
+    function addOwnerActions(container, table, id, token, content, title = null) {
+      if (token !== MY_TOKEN) return; // only show for own posts
+
+      const actions = document.createElement('div');
+      actions.className = 'post-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'report-button';
+      editBtn.style.color = '#9cff9c';
+      editBtn.style.borderColor = '#2a5a2a';
+      editBtn.textContent = '[ EDIT ]';
+      editBtn.addEventListener('click', async () => {
+        const ok = await editOwnPost(table, id, token, content, title);
+        if (ok) await loadThreads();
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'report-button';
+      delBtn.textContent = '[ DELETE ]';
+      delBtn.addEventListener('click', async () => {
+        const ok = await deleteOwnPost(table, id, token);
+        if (ok) await loadThreads();
+      });
+
+      actions.append(editBtn, delBtn);
+      container.append(actions);
+    }
+
+    function addReportButton(container, postType, postId) {
+      const actions = document.createElement('div');
+      actions.className = 'post-actions';
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'report-button'; button.textContent = '[ REPORT ]';
+      button.addEventListener('click', () => reportPost(postType, postId).catch(() => alert('Could not send the report.')));
+      actions.append(button); container.append(actions);
+    }
+
     async function loadThreads() {
       if (!supabase) return;
       const board = $('board').value;
       $('list-title').textContent = `// Threads on /${board}/`;
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
-      const { data: threads, error } = await supabase.from('threads').select('id, board, title, content, image_path, created_at').eq('board', board).order('created_at',{ascending:false}).limit(50);
+      const { data: threads, error } = await supabase
+        .from('threads')
+        .select('id, board, title, content, image_path, created_at, poster_token')
+        .eq('board', board)
+        .order('created_at',{ascending:false})
+        .limit(50);
       if (error) {
         $('threads-list').replaceChildren(safeText('div','empty','Could not load threads. Check the SELECT policies in Supabase.'));
         status('connection-status', `Read error: ${error.message}`, true); return;
@@ -258,10 +344,16 @@
         const body = document.createElement('div'); body.className = 'thread-content';
         renderPostText(body, thread.content || '');
         card.append(head,body);
+        addOwnerActions(card, 'threads', thread.id, thread.poster_token, thread.content, thread.title);
         addReportButton(card, 'thread', thread.id);
         const image = await makeImage(thread.image_path); if (image) card.append(image);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
-        const { data: replies, error: replyError } = await supabase.from('posts').select('id, thread_id, content, image_path, created_at').eq('thread_id',thread.id).order('created_at',{ascending:true}).limit(100);
+        const { data: replies, error: replyError } = await supabase
+          .from('posts')
+          .select('id, thread_id, content, image_path, created_at, poster_token')
+          .eq('thread_id',thread.id)
+          .order('created_at',{ascending:true})
+          .limit(100);
         if (replyError) repliesBox.append(safeText('div','muted','Could not load replies.'));
         else if (!replies?.length) repliesBox.append(safeText('div','muted','No replies yet.'));
         else {
@@ -273,6 +365,7 @@
               safeText('div','meta',`>> No. ${reply.id} · ${formatDate(reply.created_at)}`),
               replyText
             );
+            addOwnerActions(item, 'posts', reply.id, reply.poster_token, reply.content);
             addReportButton(item, 'reply', reply.id);
             const replyImage = await makeImage(reply.image_path); if (replyImage) item.append(replyImage);
             repliesBox.append(item);
@@ -292,8 +385,14 @@
             checkPostCooldown();
             const content = textarea.value.trim(); if (!content) throw new Error('Write a reply.');
             const image_path = await uploadImage(file.files[0]);
-            const { error } = await supabase.from('posts').insert({thread_id:thread.id,content,image_path});
+            const { error } = await supabase.from('posts').insert({
+              thread_id: thread.id,
+              content,
+              image_path,
+              poster_token: MY_TOKEN
+            });
             if (error) throw error;
+            markPostPublished();
             await loadThreads();
           } catch (e) { statusFrom(msg,e.message || 'Could not post.',true); }
           finally { submit.disabled = false; }
@@ -318,8 +417,15 @@
         const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('Title and message are required.');
         const image_path=await uploadImage($('thread-image').files[0]);
-        const {error}=await supabase.from('threads').insert({board,title,content,image_path});
+        const {error}=await supabase.from('threads').insert({
+          board,
+          title,
+          content,
+          image_path,
+          poster_token: MY_TOKEN
+        });
         if(error) throw error;
+        markPostPublished();
         $('thread-form').reset(); status('thread-status','Thread posted.'); await loadThreads();
       }catch(e){status('thread-status',e.message || 'Could not post. Check configuration and RLS policies.',true)}
       finally{button.disabled=false}
