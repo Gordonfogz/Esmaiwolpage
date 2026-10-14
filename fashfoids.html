@@ -621,7 +621,7 @@
         if(error) throw error;
         markPostPublished();
         $('thread-form').reset(); status('thread-status','Thread posted.'); await loadThreads();
-      }catch(e){status('thread-status',e.message || 'Could not post. Check configuration and RLS policies.',true)}
+      }catch(e){status('thread-status',e.message || 'Could not post. Check the FASHFOIDS board INSERT policy, table columns, and Storage permissions.',true)}
       finally{button.disabled=false}
     });
 
@@ -633,6 +633,7 @@
         $('fash-gate-status').textContent = 'ACCESS GRANTED // welcome to the Pink Room';
         $('fash-gate').classList.add('unlocked');
         $('fash-board').classList.add('ready');
+        $('fash-gate-status').classList.remove('error');
         try { sessionStorage.setItem('fashfoids_unlocked', '1'); } catch (_) {}
         if (supabase) loadThreads().catch(e => status('connection-status', e.message, true));
       } else {
@@ -657,9 +658,10 @@
       supabase.auth.onAuthStateChange((_event, session) => {
         isAdmin = session?.user?.app_metadata?.role === 'admin';
         status('admin-status', isAdmin ? `Admin authenticated: ${session.user.email || 'administrator'}.` : (session?.user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!session?.user && !isAdmin);
-        loadThreads().catch(e => status('connection-status', e.message, true));
+        if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
       });
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
+      if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
     }
   </script>
 </body>
