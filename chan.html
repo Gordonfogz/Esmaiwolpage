@@ -110,8 +110,8 @@
             <input id="thread-title" name="title" maxlength="120" required placeholder="Thread title">
             <label for="thread-content">Message</label>
             <textarea id="thread-content" name="content" maxlength="10000" required placeholder="Write your post..."></textarea>
-            <label for="thread-image">Image (optional: JPG, PNG, GIF or WebP; max 5 MB)</label>
-            <input id="thread-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+            <label for="thread-image">Images (optional: up to 7; JPG, PNG, GIF or WebP; max 5 MB each)</label>
+            <input id="thread-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
             <div class="form-actions"><button type="submit">[ POST THREAD ]</button><button type="button" id="refresh">[ REFRESH ]</button></div>
             <div id="thread-status" class="status" role="status"></div>
           </form>
@@ -128,6 +128,8 @@
           <h2>// System</h2>
           <div id="connection-status" class="status">Checking connection…</div>
           <p class="muted">post what you want</p>
+          <div class="form-actions"><button type="button" id="admin-login">[ ADMIN LOGIN ]</button></div>
+          <div id="admin-status" class="status" role="status">Admin mode off.</div>
         </section>
         <section class="panel">
           <h2>// BLACK LIST </h2>
@@ -152,6 +154,7 @@
     const $ = (id) => document.getElementById(id);
     const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
     let supabase = null;
+    let isAdmin = false;
 
     // ---------- Ownership token (persistent per browser) ----------
     const POSTER_TOKEN_KEY = 'esmaiwol_chan_poster_token';
@@ -250,16 +253,36 @@
         return img;
       });
     }
-    async function uploadImage(file) {
-      if (!file || !file.name) return null;
-      if (file.size > MAX_IMAGE_BYTES) throw new Error('Image exceeds the 5 MB limit.');
-      const ext = file.name.split('.').pop().toLowerCase();
-      if (!allowedExtensions.has(ext)) throw new Error('Format not allowed. Use JPG, PNG, GIF or WebP.');
-      if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) throw new Error('The file does not appear to be a compatible image.');
-      const path = `${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
-      if (error) throw error;
-      return path;
+    async function uploadImages(fileList) {
+      const files = Array.from(fileList || []);
+      if (files.length > 7) throw new Error('A post can contain a maximum of 7 images.');
+      const paths = [];
+      for (const file of files) {
+        if (!file || !file.name) continue;
+        if (file.size > MAX_IMAGE_BYTES) throw new Error(`Image ${file.name} exceeds the 5 MB limit.`);
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.has(ext)) throw new Error('Format not allowed. Use JPG, PNG, GIF or WebP.');
+        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) throw new Error(`File ${file.name} does not appear to be a compatible image.`);
+      }
+      for (const file of files) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const path = `${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
+        if (error) throw error;
+        paths.push(path);
+      }
+      return paths;
+    }
+
+    function getPostImagePaths(post) {
+      if (Array.isArray(post.image_paths)) return post.image_paths.filter(Boolean).slice(0, 7);
+      return post.image_path ? [post.image_path] : [];
+    }
+    async function appendPostImages(container, post) {
+      for (const path of getPostImagePaths(post)) {
+        const image = await makeImage(path);
+        if (image) container.append(image);
+      }
     }
 
     // ---------- Edit / Delete own posts ----------
@@ -335,6 +358,55 @@
       actions.append(button); container.append(actions);
     }
 
+    async function refreshAdminState() {
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      isAdmin = user?.app_metadata?.role === 'admin';
+      status('admin-status', isAdmin ? `Admin authenticated: ${user.email || 'administrator'}.` : (user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!user && !isAdmin);
+      await loadThreads();
+    }
+    async function adminLogin() {
+      if (!supabase) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        isAdmin = false;
+        status('admin-status', 'Signed out.');
+        await loadThreads();
+        return;
+      }
+      const email = prompt('Administrator email (created in Supabase Auth):');
+      if (email === null) return;
+      const password = prompt('Administrator password:');
+      if (password === null) return;
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      await refreshAdminState();
+    }
+    async function adminDeletePost(table, post) {
+      const label = table === 'threads' ? 'thread and all its replies' : 'reply';
+      if (!confirm(`ADMIN: permanently delete this ${label}?`)) return;
+      if (table === 'threads') {
+        const { error: replyError } = await supabase.from('posts').delete().eq('thread_id', post.id);
+        if (replyError) throw new Error(`Could not delete replies: ${replyError.message}`);
+      }
+      const { error } = await supabase.from(table).delete().eq('id', post.id);
+      if (error) throw new Error(`Admin deletion failed: ${error.message}. Check the admin DELETE policies in Supabase.`);
+      await loadThreads();
+    }
+    function addAdminDeleteButton(container, table, post) {
+      if (!isAdmin) return;
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'report-button';
+      button.style.color = '#ff6d86'; button.style.borderColor = '#75404b';
+      button.textContent = '[ ADMIN DELETE ]';
+      button.addEventListener('click', () => adminDeletePost(table, post).catch(e => alert(e.message || 'Admin deletion failed.')));
+      let actions = container.querySelector('.post-actions');
+      if (!actions) { actions = document.createElement('div'); actions.className = 'post-actions'; container.append(actions); }
+      actions.append(button);
+    }
+
     async function loadThreads() {
       if (!supabase) return;
       const board = $('board').value;
@@ -342,7 +414,7 @@
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
       const { data: threads, error } = await supabase
         .from('threads')
-        .select('id, board, title, content, image_path, created_at, poster_token')
+        .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
         .eq('board', board)
         .order('created_at',{ascending:false})
         .limit(50);
@@ -363,12 +435,13 @@
         renderPostText(body, thread.content || '');
         card.append(head,body);
         addOwnerActions(card, 'threads', thread.id, thread.poster_token, thread.content, thread.title);
+        addAdminDeleteButton(card, 'threads', thread);
         addReportButton(card, 'thread', thread.id);
-        const image = await makeImage(thread.image_path); if (image) card.append(image);
+        await appendPostImages(card, thread);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
         const { data: replies, error: replyError } = await supabase
           .from('posts')
-          .select('id, thread_id, content, image_path, created_at, poster_token')
+          .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
           .eq('thread_id',thread.id)
           .order('created_at',{ascending:true})
           .limit(100);
@@ -384,16 +457,17 @@
               replyText
             );
             addOwnerActions(item, 'posts', reply.id, reply.poster_token, reply.content);
+            addAdminDeleteButton(item, 'posts', reply);
             addReportButton(item, 'reply', reply.id);
-            const replyImage = await makeImage(reply.image_path); if (replyImage) item.append(replyImage);
+            await appendPostImages(item, reply);
             repliesBox.append(item);
           }
         }
         const form = document.createElement('form'); form.className = 'reply-form';
         const label = safeText('label','','Reply to this thread');
         const textarea = document.createElement('textarea'); textarea.required = true; textarea.maxLength = 5000; textarea.placeholder = 'Your reply…';
-        const fileLabel = safeText('label','','Optional image (max 5 MB)');
-        const file = document.createElement('input'); file.type='file'; file.accept='image/jpeg,image/png,image/gif,image/webp';
+        const fileLabel = safeText('label','','Optional images (up to 7; max 5 MB each)');
+        const file = document.createElement('input'); file.type='file'; file.accept='image/jpeg,image/png,image/gif,image/webp'; file.multiple = true;
         const submit = document.createElement('button'); submit.type='submit'; submit.textContent='[ REPLY ]';
         const msg = safeText('div','status',''); msg.setAttribute('role','status');
         form.append(label,textarea,fileLabel,file,submit,msg);
@@ -402,11 +476,12 @@
           try {
             checkPostCooldown();
             const content = textarea.value.trim(); if (!content) throw new Error('Write a reply.');
-            const image_path = await uploadImage(file.files[0]);
+            const image_paths = await uploadImages(file.files);
             const { error } = await supabase.from('posts').insert({
               thread_id: thread.id,
               content,
-              image_path,
+              image_path: image_paths[0] || null,
+              image_paths,
               poster_token: MY_TOKEN
             });
             if (error) throw error;
@@ -434,12 +509,13 @@
         checkPostCooldown();
         const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('Title and message are required.');
-        const image_path=await uploadImage($('thread-image').files[0]);
+        const image_paths=await uploadImages($('thread-image').files);
         const {error}=await supabase.from('threads').insert({
           board,
           title,
           content,
-          image_path,
+          image_path: image_paths[0] || null,
+          image_paths,
           poster_token: MY_TOKEN
         });
         if(error) throw error;
@@ -454,7 +530,13 @@
       $('threads-list').replaceChildren(safeText('div','empty','Edit chan.html and replace the two configuration values indicated in the code.'));
     }else{
       supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-      loadThreads().catch(e=>status('connection-status',e.message,true));
+      $('admin-login').addEventListener('click', () => adminLogin().catch(e => status('admin-status', e.message || 'Admin sign-in failed.', true)));
+      supabase.auth.onAuthStateChange((_event, session) => {
+        isAdmin = session?.user?.app_metadata?.role === 'admin';
+        status('admin-status', isAdmin ? `Admin authenticated: ${session.user.email || 'administrator'}.` : (session?.user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!session?.user && !isAdmin);
+        loadThreads().catch(e => status('connection-status', e.message, true));
+      });
+      refreshAdminState().catch(e=>status('connection-status',e.message,true));
     }
   </script>
 </body>
