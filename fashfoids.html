@@ -208,7 +208,7 @@
             <input id="thread-title" name="title" maxlength="120" required placeholder="Thread title">
             <label for="thread-content">Message</label>
             <textarea id="thread-content" name="content" maxlength="10000" required placeholder="Write your post..."></textarea>
-            <label for="thread-image">Images (optional: up to 7; JPG, PNG, GIF or WebP; max 5 MB each)</label>
+            <label for="thread-image">Images (optional: up to 7; JPG, PNG, GIF or WebP; max 4 MB each)</label>
             <input id="thread-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
             <div class="form-actions"><button type="submit">[ POST THREAD ]</button><button type="button" id="refresh">[ REFRESH ]</button></div>
             <div id="thread-status" class="status" role="status"></div>
@@ -246,8 +246,53 @@
     // Never paste a Secret or service_role key here.
     const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
-    const BUCKET = 'chan-images';
-    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+    // Public project URL/key are identifiers only. All FASHFOIDS data operations go through
+    // the Edge Function, which verifies a server-side shared password session before using service_role.
+    const API_URL = SUPABASE_URL + '/functions/v1/fashfoids-gateway';
+    const BUCKET = 'fashfoids-private';
+    const SESSION_KEY = 'fashfoids_secure_session';
+    let secureSession = null;
+    try { secureSession = sessionStorage.getItem(SESSION_KEY); } catch (_) {}
+    async function secureRequest(action, payload = {}) {
+      if (!secureSession && action !== 'login') throw new Error('Please unlock FASHFOIDS first.');
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
+          ...(secureSession ? {'x-fashfoids-session': secureSession} : {}) },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.error) throw new Error(result.error || `Request failed (${response.status})`);
+      return result;
+    }
+    class SecureQuery {
+      constructor(table) { this.table=table; this.action='select'; this.payload={table,filters:[],order:null,limit:null}; }
+      select(columns='*') { this.payload.columns=columns; return this; }
+      eq(column,value) { this.payload.filters.push({column,op:'eq',value}); return this; }
+      order(column,opts={}) { this.payload.order={column,ascending:opts.ascending!==false}; return this; }
+      limit(n) { this.payload.limit=n; return this; }
+      insert(rows) { this.action='insert'; this.payload.rows=Array.isArray(rows)?rows:[rows]; return this; }
+      update(values) { this.action='update'; this.payload.values=values; return this; }
+      delete() { this.action='delete'; return this; }
+      then(resolve,reject) { return secureRequest('db',{...this.payload,action:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
+    }
+    const secureDb = { from(table) { return new SecureQuery(table); } };
+    const secureStorage = { from(bucket) {
+      return {
+        async upload(path,file,opts={}) {
+          const data = await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)});
+          await secureRequest('upload_image',{path,contentType:opts.contentType||file.type,data});
+          return {error:null};
+        },
+        async createSignedUrl(path,expiresIn=3600) {
+          const result=await secureRequest('signed_image',{path,expiresIn});
+          return {data:{signedUrl:result.signedUrl},error:null};
+        }
+      };
+    }};
+
+    const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
     const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
     const $ = (id) => document.getElementById(id);
     const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
@@ -331,7 +376,7 @@
       if (reason === null) return;
       const cleanReason = reason.trim().slice(0, 500);
       if (!cleanReason) { alert('Please write a reason for the report.'); return; }
-      const { error } = await supabase.from('reports').insert({
+      const { error } = await secureDb.from('reports').insert({
         post_type: postType,
         post_id: Number(postId),
         reason: cleanReason
@@ -344,7 +389,7 @@
     }
     function makeImage(path) {
       if (!path) return Promise.resolve(null);
-      return supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
+      return secureStorage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
         if (error || !data?.signedUrl) return null;
         const img = document.createElement('img');
         img.className = 'post-image'; img.loading = 'lazy'; img.alt = 'Attached image'; img.src = data.signedUrl;
@@ -357,7 +402,7 @@
       const paths = [];
       for (const file of files) {
         if (!file || !file.name) continue;
-        if (file.size > MAX_IMAGE_BYTES) throw new Error(`Image ${file.name} exceeds the 5 MB limit.`);
+        if (file.size > MAX_IMAGE_BYTES) throw new Error(`Image ${file.name} exceeds the 4 MB limit.`);
         const ext = file.name.split('.').pop().toLowerCase();
         if (!allowedExtensions.has(ext)) throw new Error('Format not allowed. Use JPG, PNG, GIF or WebP.');
         if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) throw new Error(`File ${file.name} does not appear to be a compatible image.`);
@@ -365,7 +410,7 @@
       for (const file of files) {
         const ext = file.name.split('.').pop().toLowerCase();
         const path = `${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
+        const { error } = await secureStorage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
         if (error) throw error;
         paths.push(path);
       }
@@ -386,7 +431,7 @@
     // ---------- Edit / Delete own posts ----------
     async function deleteOwnPost(table, id, token) {
       if (!confirm('Delete this post permanently? This cannot be undone.')) return false;
-      const { error } = await supabase.from(table).delete().eq('id', id).eq('poster_token', token);
+      const { error } = await secureDb.from(table).delete().eq('id', id).eq('poster_token', token);
       if (error) {
         alert('Could not delete: ' + error.message);
         return false;
@@ -409,7 +454,7 @@
         payload.title = t;
       }
 
-      const { error } = await supabase.from(table).update(payload).eq('id', id).eq('poster_token', token);
+      const { error } = await secureDb.from(table).update(payload).eq('id', id).eq('poster_token', token);
       if (error) {
         alert('Could not update: ' + error.message);
         return false;
@@ -461,7 +506,6 @@
       const { data: { user } } = await supabase.auth.getUser();
       isAdmin = user?.app_metadata?.role === 'admin';
       status('admin-status', isAdmin ? `Admin authenticated: ${user.email || 'administrator'}.` : (user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!user && !isAdmin);
-      await loadThreads();
     }
     async function adminLogin() {
       if (!supabase) return;
@@ -486,10 +530,10 @@
       const label = table === 'threads' ? 'thread and all its replies' : 'reply';
       if (!confirm(`ADMIN: permanently delete this ${label}?`)) return;
       if (table === 'threads') {
-        const { error: replyError } = await supabase.from('posts').delete().eq('thread_id', post.id);
+        const { error: replyError } = await secureDb.from('posts').delete().eq('thread_id', post.id);
         if (replyError) throw new Error(`Could not delete replies: ${replyError.message}`);
       }
-      const { error } = await supabase.from(table).delete().eq('id', post.id);
+      const { error } = await secureDb.from(table).delete().eq('id', post.id);
       if (error) throw new Error(`Admin deletion failed: ${error.message}. Check the admin DELETE policies in Supabase.`);
       await loadThreads();
     }
@@ -566,7 +610,7 @@
         const form = document.createElement('form'); form.className = 'reply-form';
         const label = safeText('label','','Reply to this thread');
         const textarea = document.createElement('textarea'); textarea.required = true; textarea.maxLength = 5000; textarea.placeholder = 'Your reply…';
-        const fileLabel = safeText('label','','Optional images (up to 7; max 5 MB each)');
+        const fileLabel = safeText('label','','Optional images (up to 7; max 4 MB each)');
         const file = document.createElement('input'); file.type='file'; file.accept='image/jpeg,image/png,image/gif,image/webp'; file.multiple = true;
         const submit = document.createElement('button'); submit.type='submit'; submit.textContent='[ REPLY ]';
         const msg = safeText('div','status',''); msg.setAttribute('role','status');
@@ -577,7 +621,7 @@
             checkPostCooldown();
             const content = textarea.value.trim(); if (!content) throw new Error('Write a reply.');
             const image_paths = await uploadImages(file.files);
-            const { error } = await supabase.from('posts').insert({
+            const { error } = await secureDb.from('posts').insert({
               thread_id: thread.id,
               content,
               image_path: image_paths[0] || null,
@@ -610,7 +654,7 @@
         const board='fashfoids', title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('Title and message are required.');
         const image_paths=await uploadImages($('thread-image').files);
-        const {error}=await supabase.from('threads').insert({
+        const {error}=await secureDb.from('threads').insert({
           board,
           title,
           content,
@@ -625,33 +669,44 @@
       finally{button.disabled=false}
     });
 
-    // Password transition: client-side gate only; real confidentiality requires server-side RLS.
-    $('fash-unlock-form').addEventListener('submit', (event) => {
+    // Password is checked only by the server. The shared secret is never embedded in this HTML.
+    $('fash-unlock-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      const value = $('fash-password').value;
-      if (value === '8814NX%') {
+      const input = $('fash-password');
+      const button = $('fash-unlock-form').querySelector('button[type="submit"]');
+      if (button) button.disabled = true;
+      $('fash-gate-status').textContent = 'VERIFYING ACCESS…';
+      try {
+        const result = await secureRequest('login', { password: input.value });
+        secureSession = result.session;
+        try { sessionStorage.setItem(SESSION_KEY, secureSession); } catch (_) {}
+        input.value = '';
         $('fash-gate-status').textContent = 'ACCESS GRANTED // welcome to the Pink Room';
         $('fash-gate').classList.add('unlocked');
         $('fash-board').classList.add('ready');
         $('fash-gate-status').classList.remove('error');
-        try { sessionStorage.setItem('fashfoids_unlocked', '1'); } catch (_) {}
-        if (supabase) loadThreads().catch(e => status('connection-status', e.message, true));
-      } else {
-        $('fash-gate-status').textContent = 'ACCESS DENIED // incorrect key';
+        await loadThreads();
+      } catch (e) {
+        $('fash-gate-status').textContent = 'ACCESS DENIED // ' + (e.message || 'verification failed');
         $('fash-gate-status').classList.add('error');
-        $('fash-password').select();
-      }
+        input.select();
+      } finally { if (button) button.disabled = false; }
     });
-    try {
-      if (sessionStorage.getItem('fashfoids_unlocked') === '1') {
+    // A stored session token is not trusted until the server validates it.
+    if (secureSession) {
+      secureRequest('verify_session').then(() => {
         $('fash-gate').classList.add('unlocked');
         $('fash-board').classList.add('ready');
-      }
-    } catch (_) {}
+        return loadThreads();
+      }).catch(() => {
+        secureSession = null;
+        try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+      });
+    }
 
     if(!ready){
-      status('connection-status','The board connection needs its Supabase configuration.',true);
-      $('threads-list').replaceChildren(safeText('div','empty','Check the Supabase URL and Publishable key in this file.'));
+      status('connection-status','The secure FASHFOIDS gateway needs to be deployed and configured.',true);
+      $('threads-list').replaceChildren(safeText('div','empty','Deploy the fashfoids-gateway Edge Function and configure its server secrets.'));
     }else{
       supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
       $('admin-login').addEventListener('click', () => adminLogin().catch(e => status('admin-status', e.message || 'Admin sign-in failed.', true)));
@@ -661,7 +716,7 @@
         if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
       });
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
-      if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
+      // Data loading is triggered only after the server validates the shared-password session.
     }
   </script>
 </body>
