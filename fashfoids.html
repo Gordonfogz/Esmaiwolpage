@@ -275,7 +275,7 @@
       insert(rows) { this.action='insert'; this.payload.rows=Array.isArray(rows)?rows:[rows]; return this; }
       update(values) { this.action='update'; this.payload.values=values; return this; }
       delete() { this.action='delete'; return this; }
-      then(resolve,reject) { return secureRequest('db',{...this.payload,action:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
+      then(resolve,reject) { return secureRequest('db',{...this.payload,mode:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
     }
     const secureDb = { from(table) { return new SecureQuery(table); } };
     const secureStorage = { from(bucket) {
@@ -554,7 +554,8 @@
       const board = 'fashfoids';
       $('list-title').textContent = `// Threads on /${board}/`;
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
-      const { data: threads, error } = await supabase
+      // All FASHFOIDS thread reads must pass through the password-gated server gateway.
+      const { data: threads, error } = await secureDb
         .from('threads')
         .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
         .eq('board', board)
@@ -583,7 +584,8 @@
         addReportButton(card, 'thread', thread.id);
         await appendPostImages(card, thread);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
-        const { data: replies, error: replyError } = await supabase
+        // Replies also pass through the same server-side session check.
+        const { data: replies, error: replyError } = await secureDb
           .from('posts')
           .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
           .eq('thread_id',thread.id)
