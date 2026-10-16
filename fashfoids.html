@@ -99,6 +99,51 @@
     .fash-stamp{display:inline-block;border:1px solid #ffc8f0;background:#721b68;color:#fff;padding:3px 8px;margin:4px 4px 4px 0;font-size:11px;letter-spacing:1px}
     .fash-gate{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 30%,#ff9be7 0,#a529cf 43%,#16051f 100%);transition:opacity .65s ease,visibility .65s ease}
     .fash-gate.unlocked{opacity:0;visibility:hidden;pointer-events:none}
+    /* Background music - discreet volume control */
+    .fash-music {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 8000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid #ff9de888;
+      border-radius: 999px;
+      background: rgba(30, 6, 36, 0.82);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 18px #0006;
+      font-size: 11px;
+      color: #ffd2f3;
+      user-select: none;
+    }
+    .fash-music label { margin: 0; color: #ffc4ef; font-size: 11px; letter-spacing: .04em; }
+    .fash-music input[type="range"] {
+      width: 88px;
+      height: 4px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      accent-color: #ff74d5;
+      cursor: pointer;
+    }
+    .fash-music button {
+      border: 1px solid #ff9de8;
+      background: #57104f;
+      color: #fff;
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      line-height: 1.2;
+    }
+    .fash-music button:hover { background: #9b1b83; }
+    @media (max-width: 520px) {
+      .fash-music { right: 8px; bottom: 8px; padding: 6px 9px; }
+      .fash-music input[type="range"] { width: 70px; }
+    }
+
     .fash-gate-card{width:min(480px,100%);padding:26px;text-align:center;border:2px solid #ffd5f5;background:#30082feF;box-shadow:0 0 40px #ff4fca99;animation:fash-pop .8s ease both}
     .fash-gate-card h2{font-size:clamp(26px,7vw,42px);margin-bottom:6px}
     .fash-gate-card p{color:#ffe1f7}
@@ -179,7 +224,7 @@
       <div class="eyebrow">FASHFOIDS SOCIAL CLUB <span aria-hidden="true">✦</span> EST. 2026</div>
       <div class="hero-mark" aria-hidden="true">FF</div>
       <h1>FASHFOIDS</h1>
-      <p class="intro">A velvet-pink imageboard for fashion, characters, and alternative military aesthetics.</p>
+      <p class="intro">The hyperborean space trads waifus waiting four you.</p>
       <div class="hero-tags"><span>THE PINK ROOM</span><span>IMAGEBOARD / 01</span><span>COMMUNITY POSTS</span></div>
       <nav class="nav"><a href="index.html">← Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">＋ Create a thread</a><a href="#tablones">Browse the board</a></nav>
     </header>
@@ -720,6 +765,74 @@
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
       // Data loading is triggered only after the server validates the shared-password session.
     }
-  </script>
+  
+    // ---------- Background music player (10 tracks) ----------
+    (function initFashMusic() {
+      const tracks = [
+        '1.mp3','2.mp3','3.mp3','4.mp3','5.mp3',
+        '6.mp3','7.mp3','8.mp3','9.mp3','10.mp3'
+      ];
+      let index = 0;
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      audio.volume = 0.35;
+      audio.loop = false;
+
+      function loadTrack(i) {
+        index = ((i % tracks.length) + tracks.length) % tracks.length;
+        audio.src = tracks[index];
+        audio.load();
+      }
+
+      function playCurrent() {
+        audio.play().then(() => {
+          const btn = document.getElementById('fash-music-toggle');
+          if (btn) btn.textContent = '❚❚';
+        }).catch(() => {});
+      }
+
+      audio.addEventListener('ended', () => {
+        loadTrack(index + 1);
+        playCurrent();
+      });
+
+      loadTrack(0);
+
+      const vol = document.getElementById('fash-music-volume');
+      const toggle = document.getElementById('fash-music-toggle');
+      if (vol) {
+        vol.addEventListener('input', () => {
+          audio.volume = Number(vol.value);
+        });
+      }
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          if (audio.paused) {
+            if (!audio.src) loadTrack(index);
+            playCurrent();
+          } else {
+            audio.pause();
+            toggle.textContent = '▶';
+          }
+        });
+      }
+
+      const unlock = () => {
+        if (audio.paused) playCurrent();
+        document.removeEventListener('click', unlock);
+        document.removeEventListener('keydown', unlock);
+      };
+      document.addEventListener('click', unlock, { once: true });
+      document.addEventListener('keydown', unlock, { once: true });
+    })();
+
+</script>
+
+  <div class="fash-music" id="fash-music" aria-label="Background music volume">
+    <button type="button" id="fash-music-toggle" title="Play / Pause">▶</button>
+    <label for="fash-music-volume">VOL</label>
+    <input type="range" id="fash-music-volume" min="0" max="1" step="0.01" value="0.35" aria-label="Volume">
+  </div>
+
 </body>
 </html>
