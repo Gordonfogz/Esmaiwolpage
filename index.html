@@ -1128,10 +1128,18 @@
     "Proyectos (1)": {en:"Projects (1)",de:"Projekte (1)",es:"Proyectos (1)"},
     "Debian": {en:"Debian",de:"Debian",es:"Debian"},
     "Arch Linux": {en:"Arch Linux",de:"Arch Linux",es:"Arch Linux"},
-    "RACIAL THOUGHTS // ENTRAR": {en:"RACIAL THOUGHTS // ENTER",de:"RACIAL THOUGHTS // EINTRETEN",es:"RACIAL THOUGHTS // ENTRAR"},
+    "RACIAL THOUGHTS // ENTRAR": {en:"RACIAL THOUGHTS // ENTER",de:"RASSEDENKEN // EINTRETEN",es:"PENSAMIENTOS RACIALES // ENTRAR"},
+    "PENSAMIENTOS RACIALES // ENTRAR": {en:"RACIAL THOUGHTS // ENTER",de:"RASSEDENKEN // EINTRETEN",es:"PENSAMIENTOS RACIALES // ENTRAR"},
     "RACIAL THOUGHTS": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
+    "PENSAMIENTOS RACIALES": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
     "Racial Thoughts": {en:"Racial Thoughts",de:"Rassengedanken",es:"Pensamientos raciales"},
-    "RACIAL THOUGHTS": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
+    "Pensamientos raciales": {en:"Racial Thoughts",de:"Rassengedanken",es:"Pensamientos raciales"},
+    "RASSEDENKEN": {en:"RACIAL THOUGHTS",de:"RASSEDENKEN",es:"PENSAMIENTOS RACIALES"},
+    "Rassengedanken": {en:"Racial Thoughts",de:"Rassengedanken",es:"Pensamientos raciales"},
+    "Abrir la página Pensamientos raciales": {en:"Open the Racial Thoughts page",de:"Die Seite Rassengedanken öffnen",es:"Abrir la página Pensamientos raciales"},
+    "Abrir la página Racial Thoughts": {en:"Open the Racial Thoughts page",de:"Die Seite Rassengedanken öffnen",es:"Abrir la página Pensamientos raciales"},
+    "Entrar en Pensamientos raciales": {en:"Enter Racial Thoughts",de:"Rassengedanken betreten",es:"Entrar en Pensamientos raciales"},
+    "Banner de Racial Thoughts": {en:"Racial Thoughts banner",de:"Banner Rassengedanken",es:"Banner de Pensamientos raciales"},
     "El ser humano, al igual que cualquier otro animal, se diferencian por castas en este apartado cubrire mis opiniones y no opiniones sobre el tema racial tanto contemporaneo como antiguo": {en:"Human beings, like other animals, are often divided into social groups. In this section, I share my thoughts and reflections on racial topics, both contemporary and historical.",de:"Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.",es:"El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos."},
     "Esmaiwol.chan": {en:"Esmaiwol.chan",de:"Esmaiwol.chan",es:"Esmaiwol.chan"}
   };
@@ -1198,26 +1206,29 @@
     langSelect.value = currentLang;
   }
   // Translate the Racial Thoughts card description as a complete paragraph in all three languages.
+  // Must run AFTER applyLanguage so TreeWalker does not overwrite it with partial node matches.
   const racialDescription = document.querySelector('#racial-thoughts > div:last-child p:not(.date)');
-  if (racialDescription) {
-    const racialDescriptions = {
-      en: 'Human beings, like other animals, are often divided into social groups. In this section, I share my thoughts and reflections on racial topics, both contemporary and historical.',
-      de: 'Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.',
-      es: 'El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos.'
-    };
-    const updateRacialDescription = () => { racialDescription.textContent = racialDescriptions[langSelect.value] || racialDescriptions.en; };
-    updateRacialDescription();
-    langSelect.addEventListener('change', updateRacialDescription);
+  const racialDescriptions = {
+    en: 'Human beings, like other animals, are often divided into social groups. In this section, I share my thoughts and reflections on racial topics, both contemporary and historical.',
+    de: 'Menschen werden wie andere Tiere oft in soziale Gruppen eingeteilt. In diesem Abschnitt teile ich meine Gedanken und Überlegungen zu zeitgenössischen und historischen Rassenthemen.',
+    es: 'El ser humano, al igual que otros animales, suele dividirse en grupos sociales. En este apartado compartiré mis pensamientos y reflexiones sobre temas raciales, tanto contemporáneos como históricos.'
+  };
+  function updateRacialDescription() {
+    if (!racialDescription) return;
+    const lang = langSelect.value || 'en';
+    racialDescription.textContent = racialDescriptions[lang] || racialDescriptions.en;
   }
 
   langSelect.addEventListener('change', () => {
     applyLanguage(langSelect.value);
+    updateRacialDescription();
     try { localStorage.setItem('esmaiwol-language', langSelect.value); } catch (e) {}
   });
   // English is the default on a first visit; remember the visitor's explicit choice.
   let saved = 'en';
   try { saved = localStorage.getItem('esmaiwol-language') || 'en'; } catch (e) {}
   applyLanguage(saved);
+  updateRacialDescription();
   // Translate text inserted later by the music player or other page scripts.
   const observer = new MutationObserver(records => {
     for (const record of records) {
