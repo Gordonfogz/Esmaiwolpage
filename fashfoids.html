@@ -326,7 +326,9 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.error) {
         const msg = result.error || result.message || ('Gateway error (' + response.status + ')');
-        if (response.status === 401 || /session|unauthorized|invalid|not found/i.test(String(msg))) {
+        // Only kill the session on real auth failures. DB/storage errors must NOT lock the user out.
+        const authFail = response.status === 401 || /invalid or expired session|unauthorized|please unlock/i.test(String(msg));
+        if (authFail) {
           secureSession = null;
           try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
           try {
