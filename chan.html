@@ -412,15 +412,23 @@
       const board = $('board').value;
       $('list-title').textContent = `// Threads on /${board}/`;
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
-      const { data: threads, error } = await supabase
-        .from('threads')
-        .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
-        .eq('board', board)
-        .order('created_at',{ascending:false})
-        .limit(50);
-      if (error) {
-        $('threads-list').replaceChildren(safeText('div','empty','Could not load threads. Check the SELECT policies in Supabase.'));
-        status('connection-status', `Read error: ${error.message}`, true); return;
+      // Fetch threads in pages so older threads are not silently hidden
+      // after the first 50. This does not delete or modify any database rows.
+      const threads = [];
+      const pageSize = 500;
+      for (let offset = 0; ; offset += pageSize) {
+        const { data: batch, error } = await supabase
+          .from('threads')
+          .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
+          .eq('board', board)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        if (error) {
+          $('threads-list').replaceChildren(safeText('div','empty','Could not load threads. Check the SELECT policies in Supabase.'));
+          status('connection-status', `Read error: ${error.message}`, true); return;
+        }
+        if (batch?.length) threads.push(...batch);
+        if (!batch || batch.length < pageSize) break;
       }
       if (!threads?.length) {
         $('threads-list').replaceChildren(safeText('div','empty','No threads on this board yet. You can start the first one!'));
@@ -439,12 +447,21 @@
         addReportButton(card, 'thread', thread.id);
         await appendPostImages(card, thread);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
-        const { data: replies, error: replyError } = await supabase
-          .from('posts')
-          .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
-          .eq('thread_id',thread.id)
-          .order('created_at',{ascending:true})
-          .limit(100);
+        // Fetch every reply for this thread in pages rather than stopping at 100.
+        const replies = [];
+        let replyError = null;
+        const replyPageSize = 500;
+        for (let offset = 0; ; offset += replyPageSize) {
+          const { data: batch, error } = await supabase
+            .from('posts')
+            .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
+            .eq('thread_id', thread.id)
+            .order('created_at', { ascending: true })
+            .range(offset, offset + replyPageSize - 1);
+          if (error) { replyError = error; break; }
+          if (batch?.length) replies.push(...batch);
+          if (!batch || batch.length < replyPageSize) break;
+        }
         if (replyError) repliesBox.append(safeText('div','muted','Could not load replies.'));
         else if (!replies?.length) repliesBox.append(safeText('div','muted','No replies yet.'));
         else {
