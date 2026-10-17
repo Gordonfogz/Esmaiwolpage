@@ -299,7 +299,15 @@
     let secureSession = null;
     try { secureSession = sessionStorage.getItem(SESSION_KEY); } catch (_) {}
     async function secureRequest(action, payload = {}) {
-      if (!secureSession && action !== 'login') throw new Error('Please unlock FASHFOIDS first.');
+      if (!secureSession && action !== 'login') {
+        try {
+          const gate = document.getElementById('fash-gate');
+          const board = document.getElementById('fash-board');
+          if (gate) gate.classList.remove('unlocked');
+          if (board) board.classList.remove('ready');
+        } catch (_) {}
+        throw new Error('Please unlock FASHFOIDS first.');
+      }
       let response;
       try {
         response = await fetch(API_URL, {
@@ -318,9 +326,15 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.error) {
         const msg = result.error || result.message || ('Gateway error (' + response.status + ')');
-        if (response.status === 401 || /session|unauthorized|invalid/i.test(String(msg))) {
+        if (response.status === 401 || /session|unauthorized|invalid|not found/i.test(String(msg))) {
           secureSession = null;
           try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+          try {
+            const gate = document.getElementById('fash-gate');
+            const board = document.getElementById('fash-board');
+            if (gate) gate.classList.remove('unlocked');
+            if (board) board.classList.remove('ready');
+          } catch (_) {}
         }
         throw new Error(msg);
       }
@@ -798,6 +812,12 @@
         }).catch((e) => {
           secureSession = null;
           try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+          try {
+            const gate = document.getElementById('fash-gate');
+            const board = document.getElementById('fash-board');
+            if (gate) gate.classList.remove('unlocked');
+            if (board) board.classList.remove('ready');
+          } catch (_) {}
           status('connection-status', 'Previous session expired. Unlock again.' + (e && e.message ? ' ('+e.message+')' : ''), true);
         });
       }
