@@ -300,15 +300,30 @@
     try { secureSession = sessionStorage.getItem(SESSION_KEY); } catch (_) {}
     async function secureRequest(action, payload = {}) {
       if (!secureSession && action !== 'login') throw new Error('Please unlock FASHFOIDS first.');
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
-          ...(secureSession ? {'x-fashfoids-session': secureSession} : {}) },
-        body: JSON.stringify({ action, ...payload })
-      });
+      let response;
+      try {
+        response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
+            ...(secureSession ? { 'x-fashfoids-session': secureSession } : {})
+          },
+          body: JSON.stringify({ action, ...payload })
+        });
+      } catch (netErr) {
+        throw new Error('Gateway unreachable. Is fashfoids-gateway deployed?');
+      }
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.error) throw new Error(result.error || `Request failed (${response.status})`);
+      if (!response.ok || result.error) {
+        const msg = result.error || result.message || ('Gateway error (' + response.status + ')');
+        if (response.status === 401 || /session|unauthorized|invalid/i.test(String(msg))) {
+          secureSession = null;
+          try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+        }
+        throw new Error(msg);
+      }
       return result;
     }
     class SecureQuery {
@@ -320,7 +335,21 @@
       insert(rows) { this.action='insert'; this.payload.rows=Array.isArray(rows)?rows:[rows]; return this; }
       update(values) { this.action='update'; this.payload.values=values; return this; }
       delete() { this.action='delete'; return this; }
-      then(resolve,reject) { return secureRequest('db',{...this.payload,mode:this.action}).then(data=>resolve({data:data.data??null,error:null}),reject); }
+      then(resolve, reject) {
+        return Promise.resolve(
+          secureRequest('db', { ...this.payload, mode: this.action })
+        ).then(
+          (data) => {
+            const out = { data: data.data ?? null, error: null };
+            if (typeof resolve === 'function') resolve(out);
+            return out;
+          },
+          (err) => {
+            if (typeof reject === 'function') reject(err);
+            else throw err;
+          }
+        );
+      }
     }
     const secureDb = { from(table) { return new SecureQuery(table); } };
     const secureStorage = { from(bucket) {
@@ -595,20 +624,25 @@
     }
 
     async function loadThreads() {
-      if (!supabase) return;
       const board = 'fashfoids';
       $('list-title').textContent = `// Threads on /${board}/`;
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
-      // All FASHFOIDS thread reads must pass through the password-gated server gateway.
-      const { data: threads, error } = await secureDb
-        .from('threads')
-        .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
-        .eq('board', board)
-        .order('created_at',{ascending:false})
-        .limit(50);
-      if (error) {
-        $('threads-list').replaceChildren(safeText('div','empty','Could not load threads. Check the SELECT policies in Supabase.'));
-        status('connection-status', `Read error: ${error.message}`, true); return;
+      let threads = null;
+      try {
+        // All FASHFOIDS thread reads must pass through the password-gated server gateway.
+        const result = await secureDb
+          .from('threads')
+          .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
+          .eq('board', board)
+          .order('created_at',{ascending:false})
+          .limit(50);
+        if (result && result.error) throw new Error(result.error.message || result.error);
+        threads = result ? result.data : null;
+      } catch (e) {
+        const msg = (e && e.message) ? e.message : String(e);
+        $('threads-list').replaceChildren(safeText('div','empty','Could not load threads: ' + msg));
+        status('connection-status', 'Read error: ' + msg, true);
+        return;
       }
       const ticker = document.querySelector('.fash-ticker span');
       if (ticker && threads?.length) ticker.textContent = '♡ FASHFOIDS COMMUNITY NEWS // ' + threads.slice(0, 8).map(t => t.title || 'untitled post').join(' ✦ ') + ' ✦ new memes welcome ✦ ';
@@ -732,25 +766,15 @@
         $('fash-gate').classList.add('unlocked');
         $('fash-board').classList.add('ready');
         $('fash-gate-status').classList.remove('error');
-        await loadThreads();
+        status('connection-status', 'Session OK — loading threads…');
+        try { await loadThreads(); }
+        catch (loadErr) { status('connection-status', 'Unlocked, but load failed: ' + (loadErr.message || loadErr), true); }
       } catch (e) {
         $('fash-gate-status').textContent = 'ACCESS DENIED // ' + (e.message || 'verification failed');
         $('fash-gate-status').classList.add('error');
         input.select();
       } finally { if (button) button.disabled = false; }
     });
-    // A stored session token is not trusted until the server validates it.
-    if (secureSession) {
-      secureRequest('verify_session').then(() => {
-        $('fash-gate').classList.add('unlocked');
-        $('fash-board').classList.add('ready');
-        return loadThreads();
-      }).catch(() => {
-        secureSession = null;
-        try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
-      });
-    }
-
     if(!ready){
       status('connection-status','The secure FASHFOIDS gateway needs to be deployed and configured.',true);
       $('threads-list').replaceChildren(safeText('div','empty','Deploy the fashfoids-gateway Edge Function and configure its server secrets.'));
@@ -763,7 +787,20 @@
         if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
       });
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
-      // Data loading is triggered only after the server validates the shared-password session.
+
+      // Restore session ONLY after the client exists (loadThreads no longer depends on it, but keep order clean).
+      if (secureSession) {
+        secureRequest('verify_session').then(() => {
+          $('fash-gate').classList.add('unlocked');
+          $('fash-board').classList.add('ready');
+          status('connection-status', 'Session restored — loading threads…');
+          return loadThreads();
+        }).catch((e) => {
+          secureSession = null;
+          try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+          status('connection-status', 'Previous session expired. Unlock again.' + (e && e.message ? ' ('+e.message+')' : ''), true);
+        });
+      }
     }
   
     // ---------- Background music player (10 tracks) ----------
