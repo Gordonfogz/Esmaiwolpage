@@ -500,14 +500,20 @@
       position: absolute;
       inset: 0;
       opacity: 0;
-      transition: opacity 1s ease;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
+      transition: opacity 0.8s ease;
+      z-index: 0;
+      pointer-events: none;
     }
     .banner-carousel .slide.active {
       opacity: 1;
       z-index: 1;
+    }
+    .banner-carousel .slide img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
     }
     .banner-carousel .slide::after {
       content: "";
@@ -515,6 +521,21 @@
       inset: 0;
       background: linear-gradient(180deg, rgba(10,15,26,0.15) 0%, rgba(10,15,26,0.55) 100%);
       pointer-events: none;
+    }
+    /* Side decorative treasure image */
+    .side-deco {
+      border: 1px solid var(--border);
+      background: #060a12;
+      padding: 0;
+      overflow: hidden;
+    }
+    .side-deco img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: contain;
+      background: #000;
     }
     .banner-carousel .dots {
       position: absolute;
@@ -585,14 +606,14 @@
 
     <div class="banner-carousel" id="banner-carousel" aria-label="Wallpaper carousel">
       <div class="slides" id="banner-slides">
-        <div class="slide active" style="background-image:url('gupimages/1.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/2.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/3.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/4.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/5.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/6.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/7.jpg')"></div>
-        <div class="slide" style="background-image:url('gupimages/8.png')"></div>
+        <div class="slide active"><img src="gupimages/1.jpg" alt="Wallpaper 1" loading="eager"></div>
+        <div class="slide"><img src="gupimages/2.jpg" alt="Wallpaper 2" loading="eager"></div>
+        <div class="slide"><img src="gupimages/3.jpg" alt="Wallpaper 3" loading="eager"></div>
+        <div class="slide"><img src="gupimages/4.jpg" alt="Wallpaper 4" loading="eager"></div>
+        <div class="slide"><img src="gupimages/5.jpg" alt="Wallpaper 5" loading="eager"></div>
+        <div class="slide"><img src="gupimages/6.jpg" alt="Wallpaper 6" loading="eager"></div>
+        <div class="slide"><img src="gupimages/7.jpg" alt="Wallpaper 7" loading="eager"></div>
+        <div class="slide"><img src="gupimages/8.png" alt="Wallpaper 8" loading="eager"></div>
       </div>
       <button type="button" class="nav-btn prev" id="banner-prev" aria-label="Previous">‹</button>
       <button type="button" class="nav-btn next" id="banner-next" aria-label="Next">›</button>
@@ -708,6 +729,10 @@
           <strong>Genre:</strong> Military, School, Sports<br><br>
           <span style="color:var(--green);">●</span> Supabase connected
         </div>
+      </div>
+
+      <div class="side-deco" aria-hidden="true">
+        <img src="treasure.png" alt="">
       </div>
     </aside>
 
@@ -1066,14 +1091,17 @@
       if (!slides.length) return;
       let current = 0;
       let timer = null;
-      const INTERVAL = 4500;
+      const INTERVAL = 4000;
 
       function goTo(i) {
+        const n = slides.length;
+        const nextIndex = ((i % n) + n) % n;
+        if (nextIndex === current) return;
         slides[current].classList.remove('active');
-        dots[current].classList.remove('active');
-        current = ((i % slides.length) + slides.length) % slides.length;
+        if (dots[current]) dots[current].classList.remove('active');
+        current = nextIndex;
         slides[current].classList.add('active');
-        dots[current].classList.add('active');
+        if (dots[current]) dots[current].classList.add('active');
       }
 
       function next() { goTo(current + 1); }
@@ -1084,8 +1112,7 @@
         timer = setInterval(next, INTERVAL);
       }
       function stop() {
-        if (timer) clearInterval(timer);
-        timer = null;
+        if (timer) { clearInterval(timer); timer = null; }
       }
 
       document.getElementById('banner-next')?.addEventListener('click', () => { next(); start(); });
@@ -1098,6 +1125,15 @@
       const carousel = document.getElementById('banner-carousel');
       carousel?.addEventListener('mouseenter', stop);
       carousel?.addEventListener('mouseleave', start);
+
+      // Preload all slide images so the sequence does not flash empty frames
+      slides.forEach(slide => {
+        const img = slide.querySelector('img');
+        if (img && !img.complete) {
+          const preload = new Image();
+          preload.src = img.src;
+        }
+      });
 
       start();
     })();
