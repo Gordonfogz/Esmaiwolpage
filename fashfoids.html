@@ -651,7 +651,8 @@
           .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
           .eq('board', board)
           .order('created_at',{ascending:false})
-          .limit(50);
+          // Raise the old 50-thread ceiling so archived threads remain visible.
+          .limit(500);
         if (result && result.error) throw new Error(result.error.message || result.error);
         threads = result ? result.data : null;
       } catch (e) {
@@ -685,7 +686,8 @@
           .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
           .eq('thread_id',thread.id)
           .order('created_at',{ascending:true})
-          .limit(100);
+          // Raise the old reply ceiling so older replies are not hidden.
+          .limit(500);
         if (replyError) repliesBox.append(safeText('div','muted','Could not load replies.'));
         else if (!replies?.length) repliesBox.append(safeText('div','muted','No replies yet.'));
         else {
