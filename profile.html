@@ -149,6 +149,12 @@
           </div>
         </div>
 
+        <label for="stamp-file">Stamp / sticker / GIF (optional decoration)</label>
+        <input id="stamp-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+        <div id="stamp-preview-wrap" class="hidden" style="margin-top:8px">
+          <img id="stamp-preview" alt="Stamp" style="max-width:120px;max-height:80px;border:1px solid #293a79;display:block">
+        </div>
+
         <label for="username">Username</label>
         <input id="username" maxlength="24" pattern="[A-Za-z0-9_]+" title="Letters, numbers, underscore" required>
 
@@ -201,7 +207,7 @@
 
     async function loadProfile() {
       const { data, error } = await sb.from("profiles")
-        .select("username, display_name, bio, avatar_url")
+        .select("username, display_name, bio, avatar_url, stamp_url")
         .eq("id", session.user.id)
         .maybeSingle();
       if (error) throw error;
@@ -227,13 +233,17 @@
       $("display-name").value = data.display_name || "";
       $("bio").value = data.bio || "";
       showAvatar(data.avatar_url || null);
+      if (data.stamp_url) {
+        $("stamp-preview").src = data.stamp_url;
+        $("stamp-preview-wrap").classList.remove("hidden");
+      }
     }
 
-    async function uploadAvatar(file) {
+    async function uploadUserImage(file, basename) {
       if (!file) return null;
       if (file.size > 2.5 * 1024 * 1024) throw new Error("Image too large (max ~2 MB)");
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = session.user.id + "/avatar." + ext;
+      const path = session.user.id + "/" + basename + "." + ext;
       const { error } = await sb.storage.from(AVATAR_BUCKET).upload(path, file, {
         upsert: true,
         contentType: file.type || "image/jpeg",
@@ -241,7 +251,6 @@
       });
       if (error) throw error;
       const { data } = sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
-      // cache-bust
       return data.publicUrl + "?t=" + Date.now();
     }
 
@@ -250,6 +259,12 @@
       if (!file) return;
       const url = URL.createObjectURL(file);
       showAvatar(url);
+    });
+    $("stamp-file").addEventListener("change", () => {
+      const file = $("stamp-file").files?.[0];
+      if (!file) return;
+      $("stamp-preview").src = URL.createObjectURL(file);
+      $("stamp-preview-wrap").classList.remove("hidden");
     });
 
     $("form-profile").addEventListener("submit", async (e) => {
@@ -267,10 +282,16 @@
         }
 
         let avatar_url = undefined;
+        let stamp_url = undefined;
         const file = $("avatar-file").files?.[0];
+        const stampFile = $("stamp-file").files?.[0];
         if (file) {
           setStatus("Uploading avatar…");
-          avatar_url = await uploadAvatar(file);
+          avatar_url = await uploadUserImage(file, "avatar");
+        }
+        if (stampFile) {
+          setStatus("Uploading stamp…");
+          stamp_url = await uploadUserImage(stampFile, "stamp");
         }
 
         const payload = {
@@ -280,12 +301,18 @@
           bio: bio || null
         };
         if (avatar_url) payload.avatar_url = avatar_url;
+        if (stamp_url) payload.stamp_url = stamp_url;
 
         const { error } = await sb.from("profiles").upsert(payload);
         if (error) throw error;
 
         if (avatar_url) showAvatar(avatar_url);
+        if (stamp_url) {
+          $("stamp-preview").src = stamp_url;
+          $("stamp-preview-wrap").classList.remove("hidden");
+        }
         $("avatar-file").value = "";
+        $("stamp-file").value = "";
         setStatus("Profile saved.", "ok");
       } catch (err) {
         setStatus(err.message || "Save failed", "error");
