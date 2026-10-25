@@ -52,6 +52,7 @@
     }
 
     .masthead {
+      position: relative;
       display: grid;
       grid-template-columns: 200px minmax(0, 1fr) 150px;
       align-items: center;
@@ -59,6 +60,23 @@
       padding: 14px;
       border-bottom: 2px solid var(--border);
       min-height: 130px;
+      isolation: isolate;
+      background-image: url('bannerindex.png');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+    .masthead::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(5,5,9,0.82) 0%, rgba(5,5,9,0.72) 40%, rgba(5,5,9,0.55) 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .masthead > * {
+      position: relative;
+      z-index: 1;
     }
 
     .pixel-art {
