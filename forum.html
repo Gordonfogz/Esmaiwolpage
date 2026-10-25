@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050509">
+  <title>FORUM // ESMAIWOL.ZN</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #050509;
+      --panel: #080914;
+      --blue: #1768ff;
+      --green: #00ff83;
+      --text: #cbd5ff;
+      --muted: #91b7bb;
+      --border: #164cff;
+      --red: #ff6d86;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 15px;
+      line-height: 1.5;
+      background-image:
+        radial-gradient(ellipse at 15% 0%, #0a1840 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 80%, #061030 0%, transparent 40%);
+    }
+    a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+    a:hover { color: var(--green); background: #10172c; }
+    .site {
+      width: min(960px, calc(100% - 28px));
+      margin: 16px auto 40px;
+      border: 2px solid var(--border);
+      box-shadow: 0 0 0 1px #080d36, 0 0 18px #00134c55;
+      background: #05060c;
+    }
+    header {
+      padding: 14px 16px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    header h1 {
+      margin: 0;
+      color: var(--green);
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+    .userbar { font-size: 13px; color: var(--muted); }
+    .userbar strong { color: var(--green); }
+    .nav {
+      padding: 8px 16px;
+      border-bottom: 2px solid var(--border);
+      background: #050610;
+      font-weight: bold;
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+    }
+    .nav a::before { content: "[ "; color: var(--text); }
+    .nav a::after { content: " ]"; color: var(--text); }
+    main { padding: 14px 16px 20px; }
+    .panel {
+      border: 2px solid var(--border);
+      background: #05060c;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .panel h2 {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 17px;
+    }
+    .muted { color: var(--muted); font-size: 12px; }
+    .status { min-height: 18px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .status.error { color: var(--red); }
+    .status.ok { color: var(--green); }
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin: 10px 0 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid #293a79;
+      background: #03040a;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--green); }
+    textarea { min-height: 90px; resize: vertical; }
+    button, .button {
+      border: 1px solid var(--blue);
+      background: #0a1025;
+      color: var(--green);
+      font: inherit;
+      padding: 8px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button:hover, .button:hover { background: #172348; }
+    button:disabled { opacity: 0.55; cursor: wait; }
+    .board-list { list-style: none; margin: 0; padding: 0; }
+    .board-list li {
+      border-bottom: 1px dashed #1c2b61;
+      padding: 10px 0;
+    }
+    .board-list li:last-child { border-bottom: 0; }
+    .board-list a { font-weight: bold; font-size: 16px; }
+    .thread {
+      border: 1px solid #1c2b61;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #070914;
+    }
+    .thread-title { color: var(--green); font-weight: bold; font-size: 16px; margin: 0 0 6px; }
+    .thread-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .thread-body { white-space: pre-wrap; word-break: break-word; }
+    .reply {
+      border-left: 2px solid var(--blue);
+      margin: 10px 0 0 8px;
+      padding: 8px 0 8px 12px;
+      border-bottom: 1px dotted #1c2b61;
+    }
+    .gate {
+      text-align: center;
+      padding: 28px 12px;
+      border: 1px dashed #293a79;
+      color: var(--muted);
+    }
+    .hidden { display: none !important; }
+    footer {
+      padding: 10px 16px;
+      border-top: 2px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <header>
+      <h1>// FORUM</h1>
+      <div class="userbar" id="userbar">Checking session…</div>
+    </header>
+    <nav class="nav">
+      <a href="index.html">INDEX</a>
+      <a href="forum.html">FORUM</a>
+      <a href="login.html">LOGIN</a>
+      <a href="#" id="nav-logout" class="hidden">LOGOUT</a>
+    </nav>
+
+    <main>
+      <!-- BOARD LIST -->
+      <section id="view-boards">
+        <div class="panel">
+          <h2>Boards</h2>
+          <p class="muted">Login required to post. Read may be open depending on policies.</p>
+          <ul class="board-list" id="board-list">
+            <li class="muted">Loading boards…</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- THREAD LIST -->
+      <section id="view-threads" class="hidden">
+        <div class="panel">
+          <p class="muted"><a href="#" id="back-boards">← all boards</a></p>
+          <h2 id="threads-title">// board</h2>
+          <div id="threads-list"></div>
+        </div>
+
+        <div class="panel" id="new-thread-panel">
+          <h2>New thread</h2>
+          <div id="new-thread-gate" class="gate hidden">
+            You must <a href="login.html">login</a> to create threads.
+          </div>
+          <form id="form-new-thread">
+            <label for="thread-title">Title</label>
+            <input id="thread-title" maxlength="120" required>
+            <label for="thread-body">Message</label>
+            <textarea id="thread-body" required></textarea>
+            <p style="margin-top:12px">
+              <button type="submit" id="btn-new-thread">[ POST THREAD ]</button>
+            </p>
+            <div class="status" id="thread-status"></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- SINGLE THREAD -->
+      <section id="view-thread" class="hidden">
+        <div class="panel">
+          <p class="muted"><a href="#" id="back-threads">← back to board</a></p>
+          <div id="thread-view"></div>
+        </div>
+
+        <div class="panel" id="reply-panel">
+          <h2>Reply</h2>
+          <div id="reply-gate" class="gate hidden">
+            You must <a href="login.html">login</a> to reply.
+          </div>
+          <form id="form-reply">
+            <label for="reply-body">Message</label>
+            <textarea id="reply-body" required></textarea>
+            <p style="margin-top:12px">
+              <button type="submit" id="btn-reply">[ POST REPLY ]</button>
+            </p>
+            <div class="status" id="reply-status"></div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>ESMAIWOL.ZN // FORUM — accounts required // chan stays separate</footer>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let session = null;
+    let profile = null;
+    let currentBoard = null;
+    let currentThreadId = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function show(view) {
+      ["view-boards", "view-threads", "view-thread"].forEach(id => {
+        $(id).classList.toggle("hidden", id !== view);
+      });
+    }
+
+    function setStatus(id, msg, type) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = msg || "";
+      el.className = "status" + (type ? " " + type : "");
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement("div");
+      d.textContent = str ?? "";
+      return d.innerHTML;
+    }
+
+    function fmtDate(iso) {
+      try {
+        return new Date(iso).toLocaleString();
+      } catch {
+        return iso || "";
+      }
+    }
+
+    async function refreshSession() {
+      const { data } = await sb.auth.getSession();
+      session = data.session || null;
+      profile = null;
+      if (session?.user) {
+        const { data: p } = await sb.from("profiles")
+          .select("username, display_name")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        profile = p;
+      }
+      renderUserbar();
+      updatePostGates();
+    }
+
+    function renderUserbar() {
+      const bar = $("userbar");
+      const logout = $("nav-logout");
+      if (session?.user) {
+        const name = profile?.username || session.user.email || "user";
+        bar.innerHTML = 'Signed in as <strong>' + escapeHtml(name) + '</strong>';
+        logout.classList.remove("hidden");
+      } else {
+        bar.innerHTML = 'Not signed in — <a href="login.html">login</a> to post';
+        logout.classList.add("hidden");
+      }
+    }
+
+    function updatePostGates() {
+      const logged = !!session;
+      $("new-thread-gate").classList.toggle("hidden", logged);
+      $("form-new-thread").classList.toggle("hidden", !logged);
+      $("reply-gate").classList.toggle("hidden", logged);
+      $("form-reply").classList.toggle("hidden", !logged);
+    }
+
+    async function loadBoards() {
+      const list = $("board-list");
+      list.innerHTML = '<li class="muted">Loading boards…</li>';
+      const { data, error } = await sb.from("forum_boards")
+        .select("id, title, description")
+        .order("id");
+      if (error) {
+        list.innerHTML = '<li class="status error">Could not load boards: ' + escapeHtml(error.message) + '</li>';
+        return;
+      }
+      if (!data?.length) {
+        list.innerHTML = '<li class="muted">No boards yet. Insert rows into forum_boards in Supabase.</li>';
+        return;
+      }
+      list.innerHTML = data.map(b =>
+        '<li><a href="#" data-board="' + escapeHtml(b.id) + '">/' + escapeHtml(b.id) + '/</a>' +
+        ' — <span class="muted">' + escapeHtml(b.title || "") +
+        (b.description ? " · " + escapeHtml(b.description) : "") +
+        '</span></li>'
+      ).join("");
+      list.querySelectorAll("a[data-board]").forEach(a => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          openBoard(a.getAttribute("data-board"), a.textContent);
+        });
+      });
+    }
+
+    async function openBoard(boardId) {
+      currentBoard = boardId;
+      $("threads-title").textContent = "// /" + boardId + "/";
+      show("view-threads");
+      const box = $("threads-list");
+      box.innerHTML = '<p class="muted">Loading threads…</p>';
+      const { data, error } = await sb.from("forum_threads")
+        .select("id, title, body, created_at, user_id, profiles(username)")
+        .eq("board_id", boardId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) {
+        box.innerHTML = '<p class="status error">' + escapeHtml(error.message) + '</p>';
+        return;
+      }
+      if (!data?.length) {
+        box.innerHTML = '<p class="muted">No threads yet. Be the first.</p>';
+        return;
+      }
+      box.innerHTML = data.map(t => {
+        const user = t.profiles?.username || "user";
+        return '<article class="thread">' +
+          '<p class="thread-title"><a href="#" data-thread="' + t.id + '">' + escapeHtml(t.title) + '</a></p>' +
+          '<div class="thread-meta">by ' + escapeHtml(user) + ' · ' + escapeHtml(fmtDate(t.created_at)) + '</div>' +
+          '<div class="thread-body">' + escapeHtml((t.body || "").slice(0, 280)) + ((t.body || "").length > 280 ? "…" : "") + '</div>' +
+          '</article>';
+      }).join("");
+      box.querySelectorAll("a[data-thread]").forEach(a => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          openThread(a.getAttribute("data-thread"));
+        });
+      });
+    }
+
+    async function openThread(threadId) {
+      currentThreadId = threadId;
+      show("view-thread");
+      const box = $("thread-view");
+      box.innerHTML = '<p class="muted">Loading…</p>';
+
+      const { data: thread, error } = await sb.from("forum_threads")
+        .select("id, board_id, title, body, created_at, profiles(username)")
+        .eq("id", threadId)
+        .single();
+      if (error) {
+        box.innerHTML = '<p class="status error">' + escapeHtml(error.message) + '</p>';
+        return;
+      }
+      currentBoard = thread.board_id;
+
+      const { data: replies, error: rErr } = await sb.from("forum_posts")
+        .select("id, body, created_at, profiles(username)")
+        .eq("thread_id", threadId)
+        .order("created_at", { ascending: true });
+      if (rErr) {
+        box.innerHTML = '<p class="status error">' + escapeHtml(rErr.message) + '</p>';
+        return;
+      }
+
+      let html = '<h2 class="thread-title">' + escapeHtml(thread.title) + '</h2>' +
+        '<div class="thread-meta">by ' + escapeHtml(thread.profiles?.username || "user") +
+        ' · ' + escapeHtml(fmtDate(thread.created_at)) + '</div>' +
+        '<div class="thread-body">' + escapeHtml(thread.body) + '</div>';
+
+      if (replies?.length) {
+        html += '<div style="margin-top:14px"><strong style="color:var(--green)">Replies</strong></div>';
+        html += replies.map(r =>
+          '<div class="reply">' +
+          '<div class="thread-meta">' + escapeHtml(r.profiles?.username || "user") +
+          ' · ' + escapeHtml(fmtDate(r.created_at)) + '</div>' +
+          '<div class="thread-body">' + escapeHtml(r.body) + '</div></div>'
+        ).join("");
+      } else {
+        html += '<p class="muted" style="margin-top:12px">No replies yet.</p>';
+      }
+      box.innerHTML = html;
+    }
+
+    $("back-boards").addEventListener("click", (e) => {
+      e.preventDefault();
+      currentBoard = null;
+      show("view-boards");
+      loadBoards();
+    });
+
+    $("back-threads").addEventListener("click", (e) => {
+      e.preventDefault();
+      if (currentBoard) openBoard(currentBoard);
+      else show("view-boards");
+    });
+
+    $("nav-logout").addEventListener("click", async (e) => {
+      e.preventDefault();
+      await sb.auth.signOut();
+      session = null;
+      profile = null;
+      renderUserbar();
+      updatePostGates();
+    });
+
+    $("form-new-thread").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!session) return;
+      const btn = $("btn-new-thread");
+      btn.disabled = true;
+      setStatus("thread-status", "Posting…");
+      try {
+        const title = $("thread-title").value.trim();
+        const body = $("thread-body").value.trim();
+        if (!title || !body) throw new Error("Title and message required");
+        if (!currentBoard) throw new Error("No board selected");
+        const { data, error } = await sb.from("forum_threads").insert({
+          board_id: currentBoard,
+          user_id: session.user.id,
+          title,
+          body
+        }).select("id").single();
+        if (error) throw error;
+        $("form-new-thread").reset();
+        setStatus("thread-status", "Thread posted.", "ok");
+        await openThread(data.id);
+      } catch (err) {
+        setStatus("thread-status", err.message || "Failed", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $("form-reply").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!session) return;
+      const btn = $("btn-reply");
+      btn.disabled = true;
+      setStatus("reply-status", "Posting…");
+      try {
+        const body = $("reply-body").value.trim();
+        if (!body) throw new Error("Write a reply");
+        if (!currentThreadId) throw new Error("No thread");
+        const { error } = await sb.from("forum_posts").insert({
+          thread_id: currentThreadId,
+          user_id: session.user.id,
+          body
+        });
+        if (error) throw error;
+        $("form-reply").reset();
+        setStatus("reply-status", "Reply posted.", "ok");
+        await openThread(currentThreadId);
+      } catch (err) {
+        setStatus("reply-status", err.message || "Failed", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Init
+    (async () => {
+      await refreshSession();
+      sb.auth.onAuthStateChange(() => { refreshSession(); });
+      show("view-boards");
+      await loadBoards();
+    })();
+  </script>
+</body>
+</html>

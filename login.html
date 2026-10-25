@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050509">
+  <title>LOGIN // ESMAIWOL.ZN</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #050509;
+      --panel: #080914;
+      --blue: #1768ff;
+      --green: #00ff83;
+      --text: #cbd5ff;
+      --muted: #91b7bb;
+      --border: #164cff;
+      --red: #ff6d86;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 15px;
+      line-height: 1.5;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, #0a1840 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, #061030 0%, transparent 45%);
+    }
+    a { color: var(--blue); }
+    a:hover { color: var(--green); background: #10172c; }
+    .wrap {
+      width: min(440px, calc(100% - 28px));
+      margin: 48px auto;
+    }
+    .panel {
+      border: 2px solid var(--border);
+      background: #05060c;
+      box-shadow: 0 0 0 1px #080d36, 0 0 18px #00134c55;
+      padding: 22px 20px;
+    }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin: 0 0 6px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      color: var(--green);
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: #050610;
+      color: var(--text);
+      font: inherit;
+      padding: 8px;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: #0a1528;
+    }
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin: 12px 0 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #293a79;
+      background: #03040a;
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+    input:focus { border-color: var(--green); }
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      border: 1px solid var(--blue);
+      background: #0a1025;
+      color: var(--green);
+      font: inherit;
+      padding: 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn:hover { background: #172348; }
+    .btn:disabled { opacity: 0.55; cursor: wait; }
+    .status {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status.error { color: var(--red); }
+    .status.ok { color: var(--green); }
+    .nav {
+      margin-bottom: 14px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .hint {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px dashed #1c2b61;
+      padding-top: 12px;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a href="index.html">← INDEX</a>
+      &nbsp;//&nbsp;
+      <a href="forum.html">FORUM</a>
+    </div>
+
+    <div class="panel">
+      <p class="eyebrow">ESMAIWOL.ZN // AUTH</p>
+      <h1>ACCESS TERMINAL</h1>
+
+      <div class="tabs">
+        <button type="button" class="tab active" id="tab-login">Login</button>
+        <button type="button" class="tab" id="tab-register">Register</button>
+      </div>
+
+      <form id="form-login">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="email" required>
+
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required minlength="6">
+
+        <button class="btn" type="submit" id="btn-login">[ AUTHENTICATE ]</button>
+      </form>
+
+      <form id="form-register" class="hidden">
+        <label for="reg-username">Username</label>
+        <input id="reg-username" type="text" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" title="Letters, numbers, underscore only">
+
+        <label for="reg-email">Email</label>
+        <input id="reg-email" type="email" autocomplete="email" required>
+
+        <label for="reg-password">Password (min 6)</label>
+        <input id="reg-password" type="password" autocomplete="new-password" required minlength="6">
+
+        <button class="btn" type="submit" id="btn-register">[ CREATE ACCOUNT ]</button>
+      </form>
+
+      <div class="status" id="status" role="status"></div>
+
+      <p class="hint">
+        Forums require an account.<br>
+        The imageboard (chan) stays anonymous and separate.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const statusEl = document.getElementById("status");
+    function setStatus(msg, type) {
+      statusEl.textContent = msg || "";
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    // Tabs
+    const tabLogin = document.getElementById("tab-login");
+    const tabRegister = document.getElementById("tab-register");
+    const formLogin = document.getElementById("form-login");
+    const formRegister = document.getElementById("form-register");
+
+    tabLogin.addEventListener("click", () => {
+      tabLogin.classList.add("active");
+      tabRegister.classList.remove("active");
+      formLogin.classList.remove("hidden");
+      formRegister.classList.add("hidden");
+      setStatus("");
+    });
+    tabRegister.addEventListener("click", () => {
+      tabRegister.classList.add("active");
+      tabLogin.classList.remove("active");
+      formRegister.classList.remove("hidden");
+      formLogin.classList.add("hidden");
+      setStatus("");
+    });
+
+    // Already logged in?
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setStatus("Already signed in. Redirecting…", "ok");
+        setTimeout(() => { location.href = "forum.html"; }, 600);
+      }
+    });
+
+    formLogin.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btn-login");
+      btn.disabled = true;
+      setStatus("Authenticating…");
+      try {
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        setStatus("ACCESS GRANTED — entering forum…", "ok");
+        setTimeout(() => { location.href = "forum.html"; }, 500);
+      } catch (err) {
+        setStatus(err.message || "Login failed", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    formRegister.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btn-register");
+      btn.disabled = true;
+      setStatus("Creating account…");
+      try {
+        const username = document.getElementById("reg-username").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const password = document.getElementById("reg-password").value;
+
+        if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
+          throw new Error("Username: 3–24 chars, letters/numbers/_ only");
+        }
+
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: { data: { username } }
+        });
+        if (error) throw error;
+
+        // Create profile row (also covered by trigger if you add one)
+        if (data.user) {
+          const { error: pErr } = await sb.from("profiles").upsert({
+            id: data.user.id,
+            username,
+            display_name: username
+          });
+          if (pErr && !/duplicate|unique/i.test(pErr.message)) {
+            console.warn(pErr);
+          }
+        }
+
+        if (data.session) {
+          setStatus("Account created. Entering forum…", "ok");
+          setTimeout(() => { location.href = "forum.html"; }, 500);
+        } else {
+          setStatus("Account created. Check your email to confirm, then login.", "ok");
+          tabLogin.click();
+        }
+      } catch (err) {
+        setStatus(err.message || "Register failed", "error");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
