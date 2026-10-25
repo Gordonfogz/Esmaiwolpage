@@ -136,6 +136,98 @@
       padding: 8px 0 8px 12px;
       border-bottom: 1px dotted #1c2b61;
     }
+
+    /* Classic forum post layout */
+    .fpost {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      border: 1px solid #1c2b61;
+      background: #070914;
+      margin-bottom: 12px;
+      min-height: 140px;
+    }
+    .fpost-side {
+      border-right: 1px solid #1c2b61;
+      padding: 12px 10px;
+      background: #060812;
+      text-align: center;
+    }
+    .fpost-avatar {
+      width: 96px;
+      height: 96px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #03040a;
+      display: block;
+      margin: 0 auto 8px;
+    }
+    .fpost-avatar.ph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 28px;
+      margin: 0 auto 8px;
+    }
+    .fpost-nick {
+      color: var(--green);
+      font-weight: bold;
+      font-size: 14px;
+      word-break: break-word;
+    }
+    .fpost-role {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .fpost-stamp {
+      margin-top: 10px;
+      max-width: 120px;
+      max-height: 80px;
+      object-fit: contain;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+      border: 1px solid #1c2b61;
+    }
+    .fpost-stats {
+      margin-top: 10px;
+      font-size: 10px;
+      color: var(--muted);
+      text-align: left;
+      line-height: 1.45;
+    }
+    .fpost-main {
+      padding: 12px 14px 14px;
+      min-width: 0;
+    }
+    .fpost-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-bottom: 1px dashed #1c2b61;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .fpost-head strong { color: var(--text); }
+    .fpost-title {
+      color: var(--green);
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 10px;
+    }
+    .fpost-body {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+    }
+    @media (max-width: 640px) {
+      .fpost { grid-template-columns: 1fr; }
+      .fpost-side { border-right: 0; border-bottom: 1px solid #1c2b61; }
+    }
     .gate {
       text-align: center;
       padding: 28px 12px;
@@ -370,46 +462,108 @@
       });
     }
 
+    function renderFpost(opts) {
+      const nick = opts.username || "user";
+      const avatar = opts.avatar_url;
+      const stamp = opts.stamp_url;
+      const joined = opts.joined_at ? fmtDate(opts.joined_at) : "";
+      let side = '<div class="fpost-side">';
+      if (avatar) {
+        side += '<img class="fpost-avatar" src="' + escapeHtml(avatar) + '" alt="">';
+      } else {
+        side += '<div class="fpost-avatar ph">?</div>';
+      }
+      side += '<div class="fpost-nick">' + escapeHtml(nick) + '</div>';
+      side += '<div class="fpost-role">Member</div>';
+      if (stamp) {
+        side += '<img class="fpost-stamp" src="' + escapeHtml(stamp) + '" alt="">';
+      }
+      side += '<div class="fpost-stats">';
+      if (joined) side += 'Joined: ' + escapeHtml(joined) + '<br>';
+      side += 'Posts: —';
+      side += '</div></div>';
+
+      let main = '<div class="fpost-main">';
+      main += '<div class="fpost-head"><span><strong>#' + escapeHtml(String(opts.num || 1)) + '</strong></span>';
+      main += '<span>' + escapeHtml(fmtDate(opts.created_at)) + '</span></div>';
+      if (opts.title) main += '<div class="fpost-title">' + escapeHtml(opts.title) + '</div>';
+      main += '<div class="fpost-body">' + escapeHtml(opts.body || "") + '</div>';
+      main += '</div>';
+      return '<article class="fpost">' + side + main + '</article>';
+    }
+
     async function openThread(threadId) {
       currentThreadId = threadId;
       show("view-thread");
       const box = $("thread-view");
       box.innerHTML = '<p class="muted">Loading…</p>';
 
-      const { data: thread, error } = await sb.from("forum_threads")
-        .select("id, board_id, title, body, created_at, profiles(username)")
-        .eq("id", threadId)
-        .single();
-      if (error) {
-        box.innerHTML = '<p class="status error">' + escapeHtml(error.message) + '</p>';
-        return;
+      let t = null;
+      {
+        let res = await sb.from("forum_threads")
+          .select("id, board_id, title, body, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .eq("id", threadId)
+          .single();
+        if (res.error) {
+          res = await sb.from("forum_threads")
+            .select("id, board_id, title, body, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .eq("id", threadId)
+            .single();
+        }
+        if (res.error) {
+          box.innerHTML = '<p class="status error">' + escapeHtml(res.error.message) + '</p>';
+          return;
+        }
+        t = res.data;
       }
-      currentBoard = thread.board_id;
+      currentBoard = t.board_id;
 
-      const { data: replies, error: rErr } = await sb.from("forum_posts")
-        .select("id, body, created_at, profiles(username)")
-        .eq("thread_id", threadId)
-        .order("created_at", { ascending: true });
-      if (rErr) {
-        box.innerHTML = '<p class="status error">' + escapeHtml(rErr.message) + '</p>';
-        return;
+      let replies = [];
+      {
+        let res = await sb.from("forum_posts")
+          .select("id, body, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .eq("thread_id", threadId)
+          .order("created_at", { ascending: true });
+        if (res.error) {
+          res = await sb.from("forum_posts")
+            .select("id, body, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .eq("thread_id", threadId)
+            .order("created_at", { ascending: true });
+        }
+        if (res.error) {
+          box.innerHTML = '<p class="status error">' + escapeHtml(res.error.message) + '</p>';
+          return;
+        }
+        replies = res.data || [];
       }
 
-      let html = '<h2 class="thread-title">' + escapeHtml(thread.title) + '</h2>' +
-        '<div class="thread-meta">by ' + escapeHtml(thread.profiles?.username || "user") +
-        ' · ' + escapeHtml(fmtDate(thread.created_at)) + '</div>' +
-        '<div class="thread-body">' + escapeHtml(thread.body) + '</div>';
+      const tp = t.profiles || {};
+      let html = renderFpost({
+        num: 1,
+        title: t.title,
+        body: t.body,
+        created_at: t.created_at,
+        username: tp.display_name || tp.username,
+        avatar_url: tp.avatar_url,
+        stamp_url: tp.stamp_url,
+        joined_at: tp.created_at
+      });
 
-      if (replies?.length) {
-        html += '<div style="margin-top:14px"><strong style="color:var(--green)">Replies</strong></div>';
-        html += replies.map(r =>
-          '<div class="reply">' +
-          '<div class="thread-meta">' + escapeHtml(r.profiles?.username || "user") +
-          ' · ' + escapeHtml(fmtDate(r.created_at)) + '</div>' +
-          '<div class="thread-body">' + escapeHtml(r.body) + '</div></div>'
-        ).join("");
+      if (replies.length) {
+        html += replies.map((r, i) => {
+          const p = r.profiles || {};
+          return renderFpost({
+            num: i + 2,
+            body: r.body,
+            created_at: r.created_at,
+            username: p.display_name || p.username,
+            avatar_url: p.avatar_url,
+            stamp_url: p.stamp_url,
+            joined_at: p.created_at
+          });
+        }).join("");
       } else {
-        html += '<p class="muted" style="margin-top:12px">No replies yet.</p>';
+        html += '<p class="muted" style="margin-top:4px">No replies yet.</p>';
       }
       box.innerHTML = html;
     }
