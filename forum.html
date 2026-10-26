@@ -228,6 +228,97 @@
       .fpost { grid-template-columns: 1fr; }
       .fpost-side { border-right: 0; border-bottom: 1px solid #1c2b61; }
     }
+    .fpost-media {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .fpost-media img, .fpost-media video {
+      max-width: min(100%, 420px);
+      max-height: 360px;
+      border: 1px solid #1c2b61;
+      background: #000;
+      cursor: pointer;
+    }
+    .fpost-media a.file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1px solid #1c2b61;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      background: #060812;
+    }
+    .fpost-media a.file-chip:hover { border-color: var(--green); color: var(--green); }
+    .compose-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin: 6px 0 4px;
+      padding: 6px;
+      border: 1px solid #1c2b61;
+      background: linear-gradient(180deg, #0c1228, #080c18);
+    }
+    .compose-bar .sep {
+      width: 1px;
+      height: 18px;
+      background: #293a79;
+      margin: 0 3px;
+    }
+    .compose-bar button {
+      border: 1px solid #2a3d7a;
+      background: #121a33;
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      min-width: 28px;
+      padding: 4px 7px;
+      cursor: pointer;
+      line-height: 1.2;
+    }
+    .compose-bar button:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: #152038;
+    }
+    .compose-bar button strong { font-weight: bold; }
+    .compose-bar button em { font-style: italic; }
+    .compose-bar button u { text-decoration: underline; }
+    .compose-bar button s { text-decoration: line-through; }
+    .file-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .attach-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .attach-preview .chip {
+      font-size: 11px;
+      border: 1px solid #1c2b61;
+      padding: 4px 8px;
+      color: var(--muted);
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .lightbox.on { display: flex; }
+    .lightbox img { max-width: 92%; max-height: 92%; border: 1px solid var(--border); }
+
     .gate {
       text-align: center;
       padding: 28px 12px;
@@ -287,7 +378,28 @@
             <label for="thread-title">Title</label>
             <input id="thread-title" maxlength="120" required>
             <label for="thread-body">Message</label>
+            <div class="compose-bar" data-target="thread-body">
+              <button type="button" data-wrap="**" title="Bold"><strong>B</strong></button>
+              <button type="button" data-wrap="*" title="Italic"><em>I</em></button>
+              <button type="button" data-wrap="__" title="Underline"><u>U</u></button>
+              <button type="button" data-wrap="~~" title="Strike"><s>S</s></button>
+              <span class="sep"></span>
+              <button type="button" data-wrap="`" title="Code">code</button>
+              <button type="button" data-action="quote" title="Quote">“ ”</button>
+              <button type="button" data-wrap="||" title="Spoiler">spoiler</button>
+              <span class="sep"></span>
+              <button type="button" data-action="link" title="Link">🔗</button>
+              <button type="button" data-action="image" title="Image URL">🖼</button>
+              <button type="button" data-action="list" title="List">☰</button>
+              <span class="sep"></span>
+              <button type="button" data-insert="→ " title="Arrow">→</button>
+              <button type="button" data-insert="★ " title="Star">★</button>
+            </div>
             <textarea id="thread-body" required></textarea>
+            <label for="thread-files">Attachments (images, gif, webp, pdf, txt, zip — max 4 files, 4 MB each)</label>
+            <input id="thread-files" type="file" accept="image/*,.gif,.webp,.pdf,.txt,.zip,audio/*,video/mp4,video/webm" multiple>
+            <div class="file-hint">Logged-in users only. Files are stored on Supabase.</div>
+            <div class="attach-preview" id="thread-attach-preview"></div>
             <p style="margin-top:12px">
               <button type="submit" id="btn-new-thread">[ POST THREAD ]</button>
             </p>
@@ -310,7 +422,28 @@
           </div>
           <form id="form-reply">
             <label for="reply-body">Message</label>
+            <div class="compose-bar" data-target="reply-body">
+              <button type="button" data-wrap="**" title="Bold"><strong>B</strong></button>
+              <button type="button" data-wrap="*" title="Italic"><em>I</em></button>
+              <button type="button" data-wrap="__" title="Underline"><u>U</u></button>
+              <button type="button" data-wrap="~~" title="Strike"><s>S</s></button>
+              <span class="sep"></span>
+              <button type="button" data-wrap="`" title="Code">code</button>
+              <button type="button" data-action="quote" title="Quote">“ ”</button>
+              <button type="button" data-wrap="||" title="Spoiler">spoiler</button>
+              <span class="sep"></span>
+              <button type="button" data-action="link" title="Link">🔗</button>
+              <button type="button" data-action="image" title="Image URL">🖼</button>
+              <button type="button" data-action="list" title="List">☰</button>
+              <span class="sep"></span>
+              <button type="button" data-insert="→ " title="Arrow">→</button>
+              <button type="button" data-insert="★ " title="Star">★</button>
+            </div>
             <textarea id="reply-body" required></textarea>
+            <label for="reply-files">Attachments (optional)</label>
+            <input id="reply-files" type="file" accept="image/*,.gif,.webp,.pdf,.txt,.zip,audio/*,video/mp4,video/webm" multiple>
+            <div class="file-hint">Up to 4 files · 4 MB each</div>
+            <div class="attach-preview" id="reply-attach-preview"></div>
             <p style="margin-top:12px">
               <button type="submit" id="btn-reply">[ POST REPLY ]</button>
             </p>
@@ -362,6 +495,157 @@
         return iso || "";
       }
     }
+
+    const MEDIA_BUCKET = "forum-media";
+    const MAX_FILES = 4;
+    const MAX_BYTES = 4 * 1024 * 1024;
+
+    function openLightbox(src) {
+      const box = $("lightbox");
+      const img = $("lightbox-img");
+      if (!box || !img) return;
+      img.src = src;
+      box.classList.add("on");
+    }
+
+    function formatBytes(n) {
+      if (n < 1024) return n + " B";
+      if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
+      return (n / 1048576).toFixed(1) + " MB";
+    }
+
+    function wireComposeBars() {
+      function insertAtCursor(ta, insert) {
+        const start = ta.selectionStart ?? ta.value.length;
+        const end = ta.selectionEnd ?? ta.value.length;
+        ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
+        const pos = start + insert.length;
+        ta.focus();
+        try { ta.setSelectionRange(pos, pos); } catch (_) {}
+      }
+      document.querySelectorAll(".compose-bar").forEach(bar => {
+        const targetId = bar.getAttribute("data-target");
+        const ta = $(targetId);
+        if (!ta) return;
+        bar.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const start = ta.selectionStart ?? ta.value.length;
+            const end = ta.selectionEnd ?? ta.value.length;
+            const selected = ta.value.slice(start, end);
+            let insert = "";
+            const action = btn.dataset.action;
+            if (btn.dataset.wrap) {
+              const w = btn.dataset.wrap;
+              insert = w + (selected || "text") + w;
+            } else if (action === "link") {
+              const url = prompt("URL:", "https://");
+              if (!url) return;
+              insert = selected ? ("[" + selected + "](" + url + ")") : ("[link](" + url + ")");
+            } else if (action === "image") {
+              const url = prompt("Image URL:", "https://");
+              if (!url) return;
+              insert = "![image](" + url + ")";
+            } else if (action === "quote") {
+              if (selected) {
+                insert = selected.split("\n").map(l => "> " + l).join("\n");
+              } else {
+                insert = "> quote";
+              }
+            } else if (action === "list") {
+              if (selected) {
+                insert = selected.split("\n").map(l => "- " + l).join("\n");
+              } else {
+                insert = "- item 1\n- item 2";
+              }
+            } else if (btn.dataset.insert) {
+              insert = btn.dataset.insert + (selected || "");
+            }
+            insertAtCursor(ta, insert);
+          });
+        });
+      });
+    }
+
+
+    function wireFilePreviews() {
+      function bind(inputId, previewId) {
+        const input = $(inputId);
+        const prev = $(previewId);
+        if (!input || !prev) return;
+        input.addEventListener("change", () => {
+          const files = Array.from(input.files || []).slice(0, MAX_FILES);
+          prev.innerHTML = files.map(f =>
+            '<span class="chip">' + escapeHtml(f.name) + " (" + formatBytes(f.size) + ")</span>"
+          ).join("");
+        });
+      }
+      bind("thread-files", "thread-attach-preview");
+      bind("reply-files", "reply-attach-preview");
+    }
+
+    async function uploadAttachments(fileList) {
+      const files = Array.from(fileList || []).slice(0, MAX_FILES);
+      const out = [];
+      for (const file of files) {
+        if (file.size > MAX_BYTES) throw new Error(file.name + " exceeds 4 MB");
+        const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+        const path = session.user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+        const { error } = await sb.storage.from(MEDIA_BUCKET).upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+          cacheControl: "3600"
+        });
+        if (error) throw new Error("Upload failed (" + file.name + "): " + error.message);
+        const { data } = sb.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+        out.push({
+          name: file.name,
+          type: file.type || "application/octet-stream",
+          size: file.size,
+          url: data.publicUrl,
+          path
+        });
+      }
+      return out;
+    }
+
+    function renderAttachments(atts) {
+      if (!atts || !atts.length) return "";
+      let html = '<div class="fpost-media">';
+      for (const a of atts) {
+        const type = a.type || "";
+        const url = a.url || "";
+        const name = a.name || "file";
+        if (type.startsWith("image/")) {
+          html += '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(name) + '" onclick="openLightbox(this.src)">';
+        } else if (type.startsWith("video/")) {
+          html += '<video controls src="' + escapeHtml(url) + '"></video>';
+        } else if (type.startsWith("audio/")) {
+          html += '<audio controls src="' + escapeHtml(url) + '" style="width:min(100%,360px)"></audio>';
+        } else {
+          html += '<a class="file-chip" href="' + escapeHtml(url) + '" target="_blank" rel="noopener">📎 ' +
+            escapeHtml(name) + (a.size ? " (" + formatBytes(a.size) + ")" : "") + "</a>";
+        }
+      }
+      html += "</div>";
+      return html;
+    }
+
+    // Lightweight display: **bold** *italic* `code` and > quotes
+    function formatBody(text) {
+      let s = escapeHtml(text || "");
+      s = s.replace(/^&gt; ?(.*)$/gm, '<span style="color:#7f9fd4">＞ $1</span>');
+      s = s.replace(/^\- (.*)$/gm, '• $1');
+      s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      s = s.replace(/__(.+?)__/g, "<u>$1</u>");
+      s = s.replace(/~~(.+?)~~/g, "<s>$1</s>");
+      s = s.replace(/\|\|(.+?)\|\|/g, '<span style="background:#cbd5ff;color:#cbd5ff;cursor:pointer" onclick="this.style.background=\'transparent\';this.style.color=\'inherit\'" title="Spoiler">$1</span>');
+      s = s.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+      s = s.replace(/`([^`]+)`/g, '<code style="background:#0a1025;padding:1px 4px;border:1px solid #1c2b61">$1</code>');
+      s = s.replace(/!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:min(100%,420px);max-height:360px;border:1px solid #1c2b61;display:block;margin:8px 0;cursor:pointer" onclick="openLightbox(this.src)">');
+      s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      return s;
+    }
+
 
     async function refreshSession() {
       const { data } = await sb.auth.getSession();
@@ -487,7 +771,8 @@
       main += '<div class="fpost-head"><span><strong>#' + escapeHtml(String(opts.num || 1)) + '</strong></span>';
       main += '<span>' + escapeHtml(fmtDate(opts.created_at)) + '</span></div>';
       if (opts.title) main += '<div class="fpost-title">' + escapeHtml(opts.title) + '</div>';
-      main += '<div class="fpost-body">' + escapeHtml(opts.body || "") + '</div>';
+      main += '<div class="fpost-body">' + formatBody(opts.body || "") + '</div>';
+      main += renderAttachments(opts.attachments || []);
       main += '</div>';
       return '<article class="fpost">' + side + main + '</article>';
     }
@@ -501,12 +786,12 @@
       let t = null;
       {
         let res = await sb.from("forum_threads")
-          .select("id, board_id, title, body, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .select("id, board_id, title, body, attachments, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
           .eq("id", threadId)
           .single();
         if (res.error) {
           res = await sb.from("forum_threads")
-            .select("id, board_id, title, body, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .select("id, board_id, title, body, attachments, created_at, profiles(username, display_name, avatar_url, created_at)")
             .eq("id", threadId)
             .single();
         }
@@ -521,12 +806,12 @@
       let replies = [];
       {
         let res = await sb.from("forum_posts")
-          .select("id, body, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .select("id, body, attachments, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
           .eq("thread_id", threadId)
           .order("created_at", { ascending: true });
         if (res.error) {
           res = await sb.from("forum_posts")
-            .select("id, body, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .select("id, body, attachments, created_at, profiles(username, display_name, avatar_url, created_at)")
             .eq("thread_id", threadId)
             .order("created_at", { ascending: true });
         }
@@ -546,7 +831,8 @@
         username: tp.display_name || tp.username,
         avatar_url: tp.avatar_url,
         stamp_url: tp.stamp_url,
-        joined_at: tp.created_at
+        joined_at: tp.created_at,
+        attachments: t.attachments || []
       });
 
       if (replies.length) {
@@ -559,7 +845,8 @@
             username: p.display_name || p.username,
             avatar_url: p.avatar_url,
             stamp_url: p.stamp_url,
-            joined_at: p.created_at
+            joined_at: p.created_at,
+            attachments: r.attachments || []
           });
         }).join("");
       } else {
@@ -601,14 +888,22 @@
         const body = $("thread-body").value.trim();
         if (!title || !body) throw new Error("Title and message required");
         if (!currentBoard) throw new Error("No board selected");
+        const files = $("thread-files").files;
+        let attachments = [];
+        if (files && files.length) {
+          setStatus("thread-status", "Uploading files…");
+          attachments = await uploadAttachments(files);
+        }
         const { data, error } = await sb.from("forum_threads").insert({
           board_id: currentBoard,
           user_id: session.user.id,
           title,
-          body
+          body,
+          attachments
         }).select("id").single();
         if (error) throw error;
         $("form-new-thread").reset();
+        $("thread-attach-preview").innerHTML = "";
         setStatus("thread-status", "Thread posted.", "ok");
         await openThread(data.id);
       } catch (err) {
@@ -628,13 +923,21 @@
         const body = $("reply-body").value.trim();
         if (!body) throw new Error("Write a reply");
         if (!currentThreadId) throw new Error("No thread");
+        const files = $("reply-files").files;
+        let attachments = [];
+        if (files && files.length) {
+          setStatus("reply-status", "Uploading files…");
+          attachments = await uploadAttachments(files);
+        }
         const { error } = await sb.from("forum_posts").insert({
           thread_id: currentThreadId,
           user_id: session.user.id,
-          body
+          body,
+          attachments
         });
         if (error) throw error;
         $("form-reply").reset();
+        $("reply-attach-preview").innerHTML = "";
         setStatus("reply-status", "Reply posted.", "ok");
         await openThread(currentThreadId);
       } catch (err) {
@@ -646,11 +949,16 @@
 
     // Init
     (async () => {
+      wireComposeBars();
+      wireFilePreviews();
       await refreshSession();
       sb.auth.onAuthStateChange(() => { refreshSession(); });
       show("view-boards");
       await loadBoards();
     })();
   </script>
+  <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
+    <img id="lightbox-img" alt="Full size">
+  </div>
 </body>
 </html>
