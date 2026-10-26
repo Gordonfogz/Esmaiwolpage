@@ -20,45 +20,96 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--bg);
       color: var(--text);
       font-family: "Courier New", Courier, monospace;
       font-size: 15px;
       line-height: 1.5;
-      background-image:
-        radial-gradient(ellipse at 15% 0%, #0a1840 0%, transparent 45%),
-        radial-gradient(ellipse at 85% 80%, #061030 0%, transparent 40%);
+      min-height: 100vh;
+      background-color: #0a0a12;
+      background-image: url('forum-bg.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 12, 0.45);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body > .site { position: relative; z-index: 1; }
     a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
     a:hover { color: var(--green); background: #10172c; }
     .site {
       width: min(960px, calc(100% - 28px));
       margin: 16px auto 40px;
-      border: 2px solid var(--border);
-      box-shadow: 0 0 0 1px #080d36, 0 0 18px #00134c55;
-      background: #05060c;
+      border: 3px solid #3a5f8a;
+      border-top-color: #9ec0e8;
+      border-left-color: #7aa3d4;
+      border-right-color: #1e3a5c;
+      border-bottom-color: #1a334f;
+      box-shadow:
+        inset 1px 1px 0 #c5dbf5,
+        inset -1px -1px 0 #0d2138,
+        4px 4px 0 rgba(0,0,0,0.45);
+      background: linear-gradient(180deg, #1a3a5c 0%, #0d1a2e 28px, #0a1220 28px);
+      padding: 0;
+      overflow: hidden;
     }
     header {
-      padding: 14px 16px;
-      border-bottom: 2px solid var(--border);
+      padding: 6px 10px 8px;
+      border-bottom: 2px solid #0a1a30;
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
+      background: linear-gradient(180deg, #6ba3e0 0%, #2b6cb0 45%, #1a4a8a 100%);
+      box-shadow: inset 0 1px 0 #b8d4f5, inset 0 -1px 0 #0d2a50;
     }
     header h1 {
       margin: 0;
-      color: var(--green);
-      font-size: 22px;
+      color: #fff;
+      font-size: 18px;
       letter-spacing: 1px;
+      text-shadow: 1px 1px 0 #0a2a55;
+      font-family: Tahoma, "Segoe UI", sans-serif;
     }
-    .userbar { font-size: 13px; color: var(--muted); }
-    .userbar strong { color: var(--green); }
+    .win-controls {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+    .win-btn {
+      width: 22px;
+      height: 20px;
+      border: 1px solid #0a2a50;
+      background: linear-gradient(180deg, #e8f0fa, #a0b8d8);
+      box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #6080a8;
+      color: #1a2a40;
+      font-size: 11px;
+      line-height: 18px;
+      text-align: center;
+      font-family: Tahoma, sans-serif;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .win-btn.close {
+      background: linear-gradient(180deg, #f8a0a0, #d04040);
+      color: #fff;
+      box-shadow: inset 1px 1px 0 #ffd0d0, inset -1px -1px 0 #801010;
+    }
+    .userbar { font-size: 12px; color: #dceaff; font-family: Tahoma, sans-serif; }
+    .userbar strong { color: #fff; }
+    .userbar a { color: #b8e0ff; }
+    .userbar a:hover { color: #fff; background: rgba(0,0,0,0.2); }
     .nav {
-      padding: 8px 16px;
-      border-bottom: 2px solid var(--border);
-      background: #050610;
+      padding: 8px 12px;
+      border-bottom: 2px solid #1a334f;
+      background: linear-gradient(180deg, #1a2a44, #101c30);
       font-weight: bold;
       font-size: 13px;
       display: flex;
@@ -67,18 +118,56 @@
     }
     .nav a::before { content: "[ "; color: var(--text); }
     .nav a::after { content: " ]"; color: var(--text); }
-    main { padding: 14px 16px 20px; }
+    main {
+      padding: 14px 16px 20px;
+      background: rgba(8, 12, 22, 0.88);
+    }
     .panel {
-      border: 2px solid var(--border);
-      background: #05060c;
-      padding: 14px;
+      border: 2px solid #3a5f8a;
+      border-top-color: #8eb4de;
+      border-left-color: #6a9acc;
+      border-right-color: #1e3a5c;
+      border-bottom-color: #152a45;
+      background: linear-gradient(180deg, #243a58 0%, #152033 22px, #0e1628 22px);
+      padding: 0 0 12px;
       margin-bottom: 14px;
+      box-shadow:
+        inset 1px 1px 0 #a8c8ec,
+        3px 3px 0 rgba(0,0,0,0.35);
     }
     .panel h2 {
-      margin: 0 0 10px;
-      color: var(--green);
-      font-size: 17px;
+      margin: 0 0 12px;
+      padding: 5px 10px 6px;
+      color: #fff;
+      font-size: 14px;
+      font-family: Tahoma, "Segoe UI", sans-serif;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 0 #0a2a55;
+      background: linear-gradient(180deg, #6ba3e0 0%, #2b6cb0 50%, #1a4a8a 100%);
+      border-bottom: 1px solid #0a1a30;
+      box-shadow: inset 0 1px 0 #c5dbf5;
     }
+    .panel > .muted:first-child,
+    .panel > p.muted:first-of-type {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .panel > #threads-list,
+    .panel > #thread-view,
+    .panel > #board-list,
+    .panel > form,
+    .panel > .gate,
+    .panel > #threads-title {
+      margin-left: 12px;
+      margin-right: 12px;
+    }
+    .panel form, .panel .gate, .panel #threads-list, .panel #thread-view, .panel .board-list {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .panel h2 + * { margin-top: 0; }
+    .panel > p.muted { padding: 8px 12px 0; }
     .muted { color: var(--muted); font-size: 12px; }
     .status { min-height: 18px; font-size: 12px; color: var(--muted); margin-top: 8px; }
     .status.error { color: var(--red); }
@@ -122,10 +211,15 @@
     .board-list li:last-child { border-bottom: 0; }
     .board-list a { font-weight: bold; font-size: 16px; }
     .thread {
-      border: 1px solid #1c2b61;
+      border: 2px solid #3a5f8a;
+      border-top-color: #8eb4de;
+      border-left-color: #6a9acc;
+      border-right-color: #1e3a5c;
+      border-bottom-color: #152a45;
       padding: 12px;
       margin-bottom: 10px;
-      background: #070914;
+      background: #0e1628;
+      box-shadow: inset 1px 1px 0 #6a9acc, 2px 2px 0 rgba(0,0,0,0.25);
     }
     .thread-title { color: var(--green); font-weight: bold; font-size: 16px; margin: 0 0 6px; }
     .thread-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
@@ -141,15 +235,22 @@
     .fpost {
       display: grid;
       grid-template-columns: 160px minmax(0, 1fr);
-      border: 1px solid #1c2b61;
-      background: #070914;
+      border: 2px solid #3a5f8a;
+      border-top-color: #8eb4de;
+      border-left-color: #6a9acc;
+      border-right-color: #1e3a5c;
+      border-bottom-color: #152a45;
+      background: #0e1628;
       margin-bottom: 12px;
       min-height: 140px;
+      box-shadow:
+        inset 1px 1px 0 #a8c8ec,
+        2px 2px 0 rgba(0,0,0,0.3);
     }
     .fpost-side {
-      border-right: 1px solid #1c2b61;
+      border-right: 2px solid #1e3a5c;
       padding: 12px 10px;
-      background: #060812;
+      background: linear-gradient(180deg, #1a2e4a, #101c30);
       text-align: center;
     }
     .fpost-avatar {
@@ -259,9 +360,14 @@
       align-items: center;
       gap: 4px;
       margin: 6px 0 4px;
-      padding: 6px;
-      border: 1px solid #1c2b61;
-      background: linear-gradient(180deg, #0c1228, #080c18);
+      padding: 5px 6px;
+      border: 2px solid #3a5f8a;
+      border-top-color: #8eb4de;
+      border-left-color: #6a9acc;
+      border-right-color: #1e3a5c;
+      border-bottom-color: #152a45;
+      background: linear-gradient(180deg, #2a4060, #152033);
+      box-shadow: inset 1px 1px 0 #a8c8ec;
     }
     .compose-bar .sep {
       width: 1px;
@@ -328,10 +434,11 @@
     .hidden { display: none !important; }
     footer {
       padding: 10px 16px;
-      border-top: 2px solid var(--border);
+      border-top: 2px solid #1a334f;
       color: var(--muted);
       font-size: 11px;
       text-align: center;
+      background: rgba(8, 12, 22, 0.92);
     }
   </style>
 </head>
@@ -340,6 +447,11 @@
     <header>
       <h1>// FORUM</h1>
       <div class="userbar" id="userbar">Checking session…</div>
+      <div class="win-controls" aria-hidden="true">
+        <span class="win-btn">_</span>
+        <span class="win-btn">□</span>
+        <span class="win-btn close">×</span>
+      </div>
     </header>
     <nav class="nav">
       <a href="index.html">INDEX</a>
