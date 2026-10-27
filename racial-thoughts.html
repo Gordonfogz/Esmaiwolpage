@@ -1,68 +1,71 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050509">
+  <meta name="description" content="Racial Thoughts — personal essays and notes on race, history, society, and the construction of human categories.">
   <title>RACIAL THOUGHTS // ESMAIWOL</title>
   <style>
-    :root { --bg:#050509; --panel:#080914; --blue:#1768ff; --green:#00ff83; --text:#cbd5ff; --muted:#91b7bb; --border:#164cff; }
-    * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; }
-    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 "Courier New",Courier,monospace; }
-    a { color:var(--blue); text-underline-offset:3px; }
-    a:hover,a:focus { color:var(--green); background:#10172c; }
-    .site { width:min(1100px,calc(100% - 24px)); margin:14px auto; border:2px solid var(--border); box-shadow:0 0 0 1px #080d36,0 0 18px #00134c55; }
-    header { padding:18px; border-bottom:2px solid var(--border); background:linear-gradient(135deg,#050509,#080d2b); }
-    .eyebrow { margin:0; color:var(--muted); font-size:13px; letter-spacing:2px; }
-    h1 { margin:4px 0 8px; color:var(--green); font-size:clamp(26px,5vw,44px); line-height:1.15; overflow-wrap:anywhere; }
-    header p:last-child { margin-bottom:0; }
-    nav { display:flex; flex-wrap:wrap; gap:10px 22px; padding:10px 16px; border-bottom:2px solid var(--border); background:#050610; font-weight:bold; }
-    nav a::before { content:"[ "; color:var(--text); } nav a::after { content:" ]"; color:var(--text); }
-    main { padding:18px; }
-    .banner { display:block; width:100%; max-height:280px; object-fit:cover; border:1px solid var(--blue); margin-bottom:18px; }
-    .panel { border:2px solid var(--border); background:#05060c; margin:0 0 16px; }
-    .panel h2 { margin:0; padding:6px 12px; border-bottom:2px solid var(--border); color:var(--green); background:linear-gradient(90deg,#07123c,#080914); font-size:20px; }
-    .panel-body { padding:12px 14px; }
-    .panel-body p:first-child { margin-top:0; } .panel-body p:last-child { margin-bottom:0; }
-    .tag { color:var(--green); }
-    .back { display:inline-block; padding:8px 12px; border:1px solid var(--blue); font-weight:bold; text-decoration:none; }
-    footer { padding:12px 16px; border-top:2px solid var(--border); color:var(--green); font-weight:bold; }
-    footer span { color:var(--muted); }
-    @media(max-width:540px) { body{font-size:14px}.site{width:calc(100% - 12px);margin:6px auto}header,main{padding:12px}nav{gap:8px 12px;padding:10px} }
+    :root{--bg:#050509;--panel:#080914;--blue:#1768ff;--green:#00ff83;--text:#cbd5ff;--muted:#91b7bb;--border:#164cff;--red:#ff3434}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "Courier New",Courier,monospace}
+    a{color:var(--blue);text-underline-offset:3px}a:hover,a:focus{color:var(--green);background:#10172c}
+    .site{width:min(1100px,calc(100% - 24px));margin:14px auto;border:2px solid var(--border);box-shadow:0 0 0 1px #080d36,0 0 18px #00134c55}
+    header{padding:18px;border-bottom:2px solid var(--border);background:linear-gradient(135deg,#050509,#080d2b)}.eyebrow{margin:0;color:var(--muted);font-size:13px;letter-spacing:2px}
+    h1{margin:4px 0 8px;color:var(--green);font-size:clamp(26px,5vw,44px);line-height:1.15;overflow-wrap:anywhere}header p:last-child{margin-bottom:0}
+    nav{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 16px;border-bottom:2px solid var(--border);background:#050610;font-weight:bold}nav a::before{content:"[ ";color:var(--text)}nav a::after{content:" ]";color:var(--text)}main{padding:18px}
+    .banner{display:block;width:100%;max-height:280px;object-fit:cover;border:1px solid var(--blue);margin-bottom:18px}.panel{border:2px solid var(--border);background:#05060c;margin:0 0 16px}.panel h2{margin:0;padding:6px 12px;border-bottom:2px solid var(--border);color:var(--green);background:linear-gradient(90deg,#07123c,#080914);font-size:20px}.panel-body{padding:12px 14px}.panel-body p:first-child{margin-top:0}.panel-body p:last-child{margin-bottom:0}.tag{color:var(--green)}
+    .back,.button{display:inline-block;padding:8px 12px;border:1px solid var(--blue);font-weight:bold;text-decoration:none;background:#050610;color:var(--text);font:inherit;cursor:pointer}.button:hover,.back:hover{border-color:var(--green);color:var(--green)}
+    .post{border:1px solid #173b9e;margin:0 0 14px;background:#070914}.post-head{padding:10px 12px;border-bottom:1px dashed #164cff;background:#070b1b}.post-head h3{margin:0;color:var(--green);font-size:20px;overflow-wrap:anywhere}.post-meta{font-size:12px;color:var(--muted);margin-top:3px}.post-content{padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}.empty{color:var(--muted);font-style:italic}
+    .auth-grid{display:grid;grid-template-columns:1fr auto;gap:8px}input,textarea{width:100%;background:#03040a;border:1px solid #1768ff;color:var(--text);padding:10px;font:inherit;border-radius:0}textarea{min-height:220px;resize:vertical}label{display:block;color:var(--green);margin:12px 0 5px}.status{min-height:1.6em;color:var(--muted);font-size:13px}.error{color:#ff7777}.editor{display:none}.editor.visible{display:block}.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.small{font-size:12px;color:var(--muted)}footer{padding:12px 16px;border-top:2px solid var(--border);color:var(--green);font-weight:bold}footer span{color:var(--muted)}
+    @media(max-width:540px){body{font-size:14px}.site{width:calc(100% - 12px);margin:6px auto}header,main{padding:12px}nav{gap:8px 12px;padding:10px}.auth-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="site">
-    <header>
-      <p class="eyebrow">ESMAIWOL.ZN // ARCHIVO DE OPINIONES</p>
-      <h1>RACIAL THOUGHTS</h1>
-      <p>Ideas, preguntas y apuntes sobre raza, historia, sociedad y cómo se construyen nuestras categorías.</p>
-    </header>
-    <nav aria-label="Navegación">
-      <a href="index.html">Inicio</a>
-      <a href="#archivo">Archivo</a>
-      <a href="#notas">Notas</a>
-    </nav>
-    <main>
-      <img class="banner" src="images/racial-thoughts/banner.jpg" alt="Banner de Racial Thoughts" onerror="this.hidden=true">
-      <section class="panel" id="archivo">
-        <h2>/// INTRODUCCIÓN</h2>
-        <div class="panel-body">
-          <p>El ser humano, al igual que cualquier otro animal, presenta diferencias individuales y colectivas. En este espacio reuniré mis opiniones y preguntas sobre el tema racial, tanto contemporáneo como histórico.</p>
-          <p>La idea es desarrollar cada tema por separado, contrastar argumentos y distinguir entre hechos, interpretaciones y opiniones personales.</p>
-        </div>
-      </section>
-      <section class="panel" id="notas">
-        <h2>/// NOTAS Y ENSAYOS</h2>
-        <div class="panel-body">
-          <p class="tag">[ PRÓXIMAMENTE ]</p>
-          <p>Este archivo está preparado para añadir entradas, fuentes y reflexiones individuales. Cada artículo podrá enlazarse aquí cuando esté listo.</p>
-        </div>
-      </section>
-      <a class="back" href="index.html">&lt; VOLVER A ESMAIWOL NET.ZONE</a>
-    </main>
-    <footer>RACIAL THOUGHTS <span>//</span> ESMAIWOL.ZN</footer>
-  </div>
-</body>
-</html>
+<div class="site">
+  <header><p class="eyebrow">ESMAIWOL.ZN // PERSONAL ARCHIVE</p><h1>RACIAL THOUGHTS</h1><p>Essays, questions, and notes on race, history, society, and how human categories are constructed.</p></header>
+  <nav aria-label="Main navigation"><a href="index.html">Home</a><a href="#archive">Archive</a><a href="#articles">Articles</a><a href="#author">Author access</a></nav>
+  <main>
+    <img class="banner" src="images/racial-thoughts/banner.jpg" alt="Racial Thoughts banner" onerror="this.hidden=true">
+    <section class="panel" id="archive"><h2>/// INTRODUCTION</h2><div class="panel-body">
+      <p>Human beings, like any other animals, display individual and collective differences. This space is where I will collect my thoughts and questions about race, both in contemporary society and throughout history.</p>
+      <p>The aim is to examine each subject separately, compare arguments, and distinguish between facts, interpretations, and personal opinions.</p>
+    </div></section>
+    <section class="panel" id="articles"><h2>/// ARTICLES &amp; ESSAYS</h2><div class="panel-body"><div id="posts"><p class="empty">Loading the archive…</p></div><p id="read-status" class="status" role="status"></p></div></section>
+    <section class="panel" id="author"><h2>/// AUTHOR ACCESS</h2><div class="panel-body">
+      <p>Publishing is restricted to the site owner. Readers can browse the archive; only the owner password unlocks the article editor.</p>
+      <form id="login-form"><label for="password">Owner password</label><div class="auth-grid"><input id="password" type="password" autocomplete="current-password" required placeholder="Enter owner password"><button class="button" type="submit">Unlock editor</button></div></form>
+      <p id="auth-status" class="status" role="status"></p>
+      <div id="editor" class="editor">
+        <form id="post-form"><label for="post-title">Article title</label><input id="post-title" maxlength="180" required placeholder="Title of the essay"><label for="post-summary">Short introduction (optional)</label><input id="post-summary" maxlength="300" placeholder="A brief summary"><label for="post-body">Article text</label><textarea id="post-body" maxlength="50000" required placeholder="Write your article here…"></textarea><div class="row"><button class="button" type="submit">Publish article</button><button class="button" type="button" id="logout">Lock editor</button></div></form>
+        <p class="small">Articles are published to the shared archive. Do not put passwords or private information in article text.</p>
+      </div>
+    </div></section>
+    <a class="back" href="index.html">&lt; BACK TO ESMAIWOL NET.ZONE</a>
+  </main><footer>RACIAL THOUGHTS <span>//</span> ESMAIWOL.ZN</footer>
+</div>
+<script>
+// Set this to the deployed Supabase Edge Function URL after following SETUP.md.
+const GATEWAY_URL = "https://YOUR_PROJECT_REF.supabase.co/functions/v1/racial-thoughts-gateway";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+let ownerToken = null;
+const $ = id => document.getElementById(id);
+function setStatus(id, message, error=false){$(id).textContent=message;$(id).classList.toggle('error',error)}
+function gatewayReady(){return !GATEWAY_URL.includes('YOUR_PROJECT_REF') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY')}
+async function api(action, payload={}){
+  if(!gatewayReady()) throw new Error('Setup required: add your Supabase project URL and anon key in racial-thoughts.html. See SETUP.md.');
+  const response=await fetch(GATEWAY_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({action, ...payload})});
+  let data={};try{data=await response.json()}catch{}
+  if(!response.ok||data.error) throw new Error(data.error||`Request failed (${response.status})`);
+  return data;
+}
+function safeText(tag,text,className){const el=document.createElement(tag);el.textContent=text||'';if(className)el.className=className;return el}
+function renderPosts(posts){const root=$('posts');root.replaceChildren();if(!posts||!posts.length){root.append(safeText('p','No articles have been published yet. Check back later.','empty'));return}
+  for(const post of posts){const card=safeText('article','','post');const head=safeText('div','','post-head');head.append(safeText('h3',post.title));const date=post.created_at?new Date(post.created_at).toLocaleDateString('en-GB',{year:'numeric',month:'long',day:'numeric'}):'Date unavailable';head.append(safeText('div',date,'post-meta'));card.append(head);if(post.summary)card.append(safeText('p',post.summary,'post-content'));card.append(safeText('div',post.body,'post-content'));root.append(card)}
+}
+async function loadPosts(){try{const data=await api('list');renderPosts(data.posts||[]);setStatus('read-status','Archive loaded.')}catch(e){$('posts').replaceChildren(safeText('p',gatewayReady()?`Could not load articles: ${e.message}`:'The archive backend has not been connected yet. Follow SETUP.md to enable published articles.','empty'));setStatus('read-status','',true)}}
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();setStatus('auth-status','Checking password…');try{const data=await api('login',{password:$('password').value});ownerToken=data.token;$('editor').classList.add('visible');$('login-form').hidden=true;$('password').value='';setStatus('auth-status','Owner access granted. The editor is unlocked.')}catch(err){ownerToken=null;setStatus('auth-status',err.message||'Access denied.',true)}});
+$('post-form').addEventListener('submit',async e=>{e.preventDefault();if(!ownerToken){setStatus('auth-status','Unlock the editor first.',true);return}const button=$('post-form').querySelector('[type=submit]');button.disabled=true;button.textContent='Publishing…';try{await api('create',{token:ownerToken,title:$('post-title').value.trim(),summary:$('post-summary').value.trim(),body:$('post-body').value.trim()});$('post-form').reset();setStatus('auth-status','Article published successfully.');await loadPosts()}catch(err){setStatus('auth-status',err.message||'Could not publish article.',true)}finally{button.disabled=false;button.textContent='Publish article'}});
+$('logout').addEventListener('click',()=>{ownerToken=null;$('editor').classList.remove('visible');$('login-form').hidden=false;setStatus('auth-status','Editor locked.');});
+loadPosts();
+</script>
+</body></html>
