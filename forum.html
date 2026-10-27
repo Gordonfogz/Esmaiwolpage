@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050509">
-  <title>FORUM // ESMAIWOL.ZN</title>
+  <title>FORUMS BASE // ESMAIWOL.ZN</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -72,11 +72,14 @@
     }
     header h1 {
       margin: 0;
-      color: #fff;
-      font-size: 18px;
-      letter-spacing: 1px;
-      text-shadow: 1px 1px 0 #0a2a55;
-      font-family: Tahoma, "Segoe UI", sans-serif;
+      line-height: 0;
+    }
+    header h1 img.forums-base-logo {
+      display: block;
+      height: 28px;
+      width: auto;
+      max-width: min(280px, 55vw);
+      object-fit: contain;
     }
     .win-controls {
       display: flex;
@@ -476,7 +479,7 @@
 <body>
   <div class="site">
     <header>
-      <h1>// FORUM</h1>
+      <h1><img class="forums-base-logo" src="forums-base.png" alt="FORUMS BASE"></h1>
       <div class="userbar" id="userbar">Checking session…</div>
       <div class="win-controls" aria-hidden="true">
         <span class="win-btn">_</span>
@@ -598,7 +601,7 @@
       </section>
     </main>
 
-    <footer>ESMAIWOL.ZN // FORUM — accounts required // chan stays separate</footer>
+    <footer>ESMAIWOL.ZN // FORUMS BASE — accounts required // chan stays separate</footer>
   </div>
 
   <script>
