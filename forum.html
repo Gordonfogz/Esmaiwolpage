@@ -433,58 +433,34 @@
     }
     .hidden { display: none !important; }
 
-    /* Community meme / gak strip — add filenames to GAKS in JS */
-    .gak-strip {
-      margin: 0 0 14px;
-      border: 2px solid #3a5f8a;
-      border-top-color: #8eb4de;
-      border-left-color: #6a9acc;
-      border-right-color: #1e3a5c;
-      border-bottom-color: #152a45;
-      background: #0a101c;
-      box-shadow: inset 1px 1px 0 #a8c8ec, 2px 2px 0 rgba(0,0,0,0.3);
-      overflow: hidden;
-    }
-    .gak-strip-title {
-      margin: 0;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-family: Tahoma, "Segoe UI", sans-serif;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 1px 1px 0 #0a2a55;
-      background: linear-gradient(180deg, #6ba3e0 0%, #2b6cb0 50%, #1a4a8a 100%);
-      border-bottom: 1px solid #0a1a30;
-    }
-    .gak-strip-body {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      min-height: 80px;
-    }
-    .gak-strip-body img {
+    /* Plain community gak between nav and boards — no frame */
+    .gak-banner {
       display: block;
+      width: 100%;
+      text-align: center;
+      line-height: 0;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+    }
+    .gak-banner img {
+      display: block;
+      width: 100%;
       max-width: 100%;
-      max-height: 160px;
-      width: auto;
       height: auto;
-      border: 1px solid #1e3a5c;
-      background: #000;
+      margin: 0 auto;
+      border: 0;
     }
     .gak-inline {
-      margin: 10px 0 14px;
+      margin: 10px 0;
       text-align: center;
+      line-height: 0;
     }
     .gak-inline img {
       max-width: min(100%, 420px);
       max-height: 140px;
-      border: 2px solid #3a5f8a;
-      border-top-color: #8eb4de;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-      background: #000;
+      border: 0;
+      background: transparent;
     }
 
     footer {
@@ -516,6 +492,8 @@
       <a href="#" id="nav-logout" class="hidden">LOGOUT</a>
     </nav>
 
+    <div class="gak-banner" id="gak-banner" aria-hidden="true"></div>
+
     <main>
       <!-- BOARD LIST -->
       <section id="view-boards">
@@ -526,10 +504,6 @@
             <li class="muted">Loading boards…</li>
           </ul>
         </div>
-        <div class="gak-strip" id="gak-boards" aria-label="Community gak">
-          <p class="gak-strip-title">// COMMUNITY GAK</p>
-          <div class="gak-strip-body"></div>
-        </div>
       </section>
 
       <!-- THREAD LIST -->
@@ -538,11 +512,6 @@
           <p class="muted"><a href="#" id="back-boards">← all boards</a></p>
           <h2 id="threads-title">// board</h2>
           <div id="threads-list"></div>
-        </div>
-
-        <div class="gak-strip" id="gak-threads" aria-label="Community gak">
-          <p class="gak-strip-title">// COMMUNITY GAK</p>
-          <div class="gak-strip-body"></div>
         </div>
 
         <div class="panel" id="new-thread-panel">
@@ -589,11 +558,6 @@
         <div class="panel">
           <p class="muted"><a href="#" id="back-threads">← back to board</a></p>
           <div id="thread-view"></div>
-        </div>
-
-        <div class="gak-strip" id="gak-thread" aria-label="Community gak">
-          <p class="gak-strip-title">// COMMUNITY GAK</p>
-          <div class="gak-strip-body"></div>
         </div>
 
         <div class="panel" id="reply-panel">
@@ -1019,7 +983,7 @@
       if (replies.length) {
         html += replies.map((r, i) => {
           const p = r.profiles || {};
-          let block = renderFpost({
+          return renderFpost({
             num: i + 2,
             body: r.body,
             created_at: r.created_at,
@@ -1029,18 +993,11 @@
             joined_at: p.created_at,
             attachments: r.attachments || []
           });
-          // Every 3rd reply, sneak a random gak between posts
-          if (GAKS.length && (i + 1) % 3 === 0) {
-            const g = pickGaks(1)[0];
-            if (g) block += '<div class="gak-inline"><img src="' + escapeHtml(g) + '" alt="gak" loading="lazy"></div>';
-          }
-          return block;
         }).join("");
       } else {
         html += '<p class="muted" style="margin-top:4px">No replies yet.</p>';
       }
       box.innerHTML = html;
-      fillGakStrip(document.getElementById("gak-thread"), 1);
     }
 
     $("back-boards").addEventListener("click", (e) => {
@@ -1145,45 +1102,27 @@
       // "gak2.gif",
     ];
 
-    function pickGaks(count) {
-      if (!GAKS.length) return [];
-      const n = Math.min(count || 1, GAKS.length);
-      const pool = GAKS.slice();
-      const out = [];
-      for (let i = 0; i < n; i++) {
-        const idx = Math.floor(Math.random() * pool.length);
-        out.push(pool.splice(idx, 1)[0]);
-        if (!pool.length) break;
-      }
-      return out;
+    function pickGak() {
+      if (!GAKS.length) return null;
+      return GAKS[Math.floor(Math.random() * GAKS.length)];
     }
 
-    function fillGakStrip(el, count) {
+    function refreshGakBanner() {
+      const el = document.getElementById("gak-banner");
       if (!el) return;
-      const body = el.querySelector(".gak-strip-body");
-      if (!body) return;
-      const picks = pickGaks(count || 1);
-      if (!picks.length) {
-        el.classList.add("hidden");
+      const src = pickGak();
+      if (!src) {
+        el.innerHTML = "";
         return;
       }
-      el.classList.remove("hidden");
-      body.innerHTML = picks.map(src =>
-        '<img src="' + escapeHtml(src) + '" alt="gak" loading="lazy">'
-      ).join("");
-    }
-
-    function refreshAllGaks() {
-      fillGakStrip(document.getElementById("gak-boards"), 1);
-      fillGakStrip(document.getElementById("gak-threads"), 1);
-      fillGakStrip(document.getElementById("gak-thread"), 1);
+      el.innerHTML = '<img src="' + escapeHtml(src) + '" alt="">';
     }
 
     // Init
     (async () => {
       wireComposeBars();
       wireFilePreviews();
-      refreshAllGaks();
+      refreshGakBanner();
       await refreshSession();
       sb.auth.onAuthStateChange(() => { refreshSession(); });
       show("view-boards");
