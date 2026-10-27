@@ -438,21 +438,26 @@
 
     /* Plain community gak between nav and boards — no frame */
     .gak-banner {
-      display: block;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 100%;
-      text-align: center;
-      line-height: 0;
       background: transparent;
       margin: 0;
-      padding: 0;
+      padding: 6px 8px;
+      line-height: 0;
     }
     .gak-banner img {
       display: block;
-      width: 100%;
-      max-width: 100%;
+      width: auto;
       height: auto;
+      max-width: 140px;
+      max-height: 56px;
+      object-fit: contain;
       margin: 0 auto;
       border: 0;
+      image-rendering: auto;
+      opacity: 0.95;
     }
     .gak-inline {
       margin: 10px 0;
