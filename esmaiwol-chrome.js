@@ -1,7 +1,7 @@
 /**
  * ESMAIWOL.ZN — universal top chrome
- * Include on every page: <script src="esmaiwol-chrome.js" defer></script>
- * Assets: bar-disk.png, esmaiwol-tabuser.png (same folder)
+ * Include: <script src="esmaiwol-chrome.js" defer></script>
+ * Root assets: bar-disk.png, esmaiwol-tabuser.png
  */
 (function () {
   if (window.__esmaiwolChromeLoaded) return;
@@ -15,7 +15,7 @@
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 99990;
-  height: 72px;
+  height: 84px;
   pointer-events: none;
 }
 #esmaiwol-chrome * { box-sizing: border-box; }
@@ -34,13 +34,13 @@
 #esmaiwol-chrome .ec-inner {
   position: relative;
   z-index: 1;
-  height: 72px;
+  height: 84px;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 0 12px 0 14px;
+  padding: 0 10px 0 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   pointer-events: auto;
 }
 #esmaiwol-chrome .ec-nav {
@@ -65,72 +65,60 @@
   color: #00ff83;
   background: rgba(0,0,0,0.35);
 }
-
-/* Gadget: full device image, pfp in metal sphere, text in blue screen */
 #esmaiwol-chrome .ec-device {
   position: relative;
   flex-shrink: 0;
-  width: min(340px, 58vw);
-  height: 64px;
+  width: 300px;
+  height: 78px;
   margin-left: auto;
+  background: url('esmaiwol-tabuser.png') center center / 100% 100% no-repeat;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
 }
-#esmaiwol-chrome .ec-device-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center right;
-  pointer-events: none;
-  display: block;
-}
-/* Clickable overlay covering whole gadget */
-#esmaiwol-chrome .ec-device-ui {
+#esmaiwol-chrome a.ec-device-ui {
   position: absolute;
   inset: 0;
   display: block;
   text-decoration: none;
   color: #e8f4ff;
 }
-#esmaiwol-chrome .ec-device-ui:hover { filter: brightness(1.08); }
-
-/* Metal sphere zone (left disc of the gadget) */
+#esmaiwol-chrome a.ec-device-ui:hover { filter: brightness(1.06); }
 #esmaiwol-chrome .ec-pfp,
 #esmaiwol-chrome .ec-pfp.ph {
   position: absolute;
-  left: 3.5%;
+  left: 11px;
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: none;
+  border: 0;
   background: #0a1520;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+  z-index: 2;
 }
 #esmaiwol-chrome .ec-pfp.ph {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
-  color: #8ab4d8;
+  color: #9ec8e8;
   font-family: Tahoma, "Segoe UI", sans-serif;
 }
-
-/* Blue screen zone (horizontal display) */
 #esmaiwol-chrome .ec-meta {
   position: absolute;
-  left: 22%;
-  right: 10%;
+  left: 72px;
+  right: 22px;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 2;
   min-width: 0;
   overflow: hidden;
   font-family: Tahoma, "Segoe UI", sans-serif;
   line-height: 1.2;
   text-align: left;
+  pointer-events: none;
 }
 #esmaiwol-chrome .ec-nick {
   display: block;
@@ -138,42 +126,44 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: bold;
-  font-size: 13px;
-  color: #f2f9ff;
-  text-shadow: 0 0 6px #2a8ad4, 0 1px 1px #000;
+  font-size: 14px;
+  color: #f4faff;
+  text-shadow: 0 0 8px #2a8ad4, 0 1px 2px #000;
   max-width: 100%;
 }
 #esmaiwol-chrome .ec-clock {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: #b8e4ff;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.6px;
-  text-shadow: 0 0 4px #1a6aaa;
-  margin-top: 1px;
+  letter-spacing: 0.7px;
+  text-shadow: 0 0 5px #1a6aaa;
+  margin-top: 2px;
 }
-
-body.esmaiwol-chrome-on { padding-top: 72px !important; }
-
+body.esmaiwol-chrome-on { padding-top: 84px !important; }
 @media (max-width: 640px) {
-  #esmaiwol-chrome { height: 64px; }
-  #esmaiwol-chrome .ec-inner { height: 64px; }
-  body.esmaiwol-chrome-on { padding-top: 64px !important; }
+  #esmaiwol-chrome { height: 70px; }
+  #esmaiwol-chrome .ec-inner { height: 70px; }
+  body.esmaiwol-chrome-on { padding-top: 70px !important; }
   #esmaiwol-chrome .ec-nav { display: none; }
   #esmaiwol-chrome .ec-device {
-    width: min(280px, 92vw);
-    height: 56px;
+    width: min(260px, 94vw);
+    height: 64px;
     margin-left: auto;
     margin-right: auto;
   }
   #esmaiwol-chrome .ec-pfp,
   #esmaiwol-chrome .ec-pfp.ph {
-    width: 32px;
-    height: 32px;
-    left: 3.2%;
+    width: 40px;
+    height: 40px;
+    left: 9px;
+  }
+  #esmaiwol-chrome .ec-meta {
+    left: 58px;
+    right: 16px;
   }
   #esmaiwol-chrome .ec-nick { font-size: 12px; }
-  #esmaiwol-chrome .ec-clock { font-size: 10px; }
+  #esmaiwol-chrome .ec-clock { font-size: 11px; }
 }
 `;
 
@@ -218,19 +208,6 @@ body.esmaiwol-chrome-on { padding-top: 72px !important; }
     inner.appendChild(nav);
 
     const device = el("div", { className: "ec-device" });
-    const devImg = el("img", {
-      className: "ec-device-bg",
-      src: "esmaiwol-tabuser.png",
-      alt: "user tab"
-    });
-    devImg.addEventListener("error", function () {
-      console.warn("[esmaiwol-chrome] Missing esmaiwol-tabuser.png — put it in the site root next to index.html");
-      this.style.outline = "1px dashed #f66";
-      this.style.background = "#223";
-    });
-    device.appendChild(devImg);
-
-    // Overlay: pfp sits on sphere, meta sits in screen
     const ui = el("a", {
       className: "ec-device-ui",
       href: "login.html",
