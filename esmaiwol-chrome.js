@@ -65,6 +65,85 @@
   color: #00ff83;
   background: rgba(0,0,0,0.35);
 }
+#esmaiwol-chrome .ec-search {
+  position: relative;
+  flex-shrink: 0;
+  width: min(220px, 28vw);
+}
+#esmaiwol-chrome .ec-search input {
+  width: 100%;
+  height: 28px;
+  border: 1px solid #4a5568;
+  border-radius: 3px;
+  background: rgba(8, 12, 20, 0.85);
+  color: #e8f0ff;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  padding: 0 10px 0 28px;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+#esmaiwol-chrome .ec-search input::placeholder { color: #7a8aa0; }
+#esmaiwol-chrome .ec-search input:focus {
+  border-color: #6ba3e0;
+  box-shadow: 0 0 0 1px #2b6cb0, inset 0 1px 3px rgba(0,0,0,0.5);
+}
+#esmaiwol-chrome .ec-search .ec-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #8ab4d8;
+  pointer-events: none;
+}
+#esmaiwol-chrome .ec-search-results {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 260px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: #0c1524;
+  border: 1px solid #3a5f8a;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.55);
+  z-index: 99999;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+}
+#esmaiwol-chrome .ec-search-results.open { display: block; }
+#esmaiwol-chrome .ec-search-results a,
+#esmaiwol-chrome .ec-search-results .ec-hit {
+  display: block;
+  padding: 8px 10px;
+  color: #c8e0ff;
+  text-decoration: none;
+  border-bottom: 1px solid #1a2a40;
+  cursor: pointer;
+}
+#esmaiwol-chrome .ec-search-results a:hover,
+#esmaiwol-chrome .ec-search-results .ec-hit:hover {
+  background: #152038;
+  color: #00ff83;
+}
+#esmaiwol-chrome .ec-search-results .ec-hit-title {
+  font-weight: bold;
+  color: #fff;
+}
+#esmaiwol-chrome .ec-search-results .ec-hit-meta {
+  font-size: 10px;
+  color: #7a9ab8;
+  margin-top: 2px;
+}
+#esmaiwol-chrome .ec-search-results .ec-empty {
+  padding: 10px;
+  color: #7a9ab8;
+}
+@media (max-width: 640px) {
+  #esmaiwol-chrome .ec-search { width: min(140px, 36vw); }
+}
 #esmaiwol-chrome .ec-device {
   position: relative;
   flex-shrink: 0;
@@ -207,6 +286,24 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     });
     inner.appendChild(nav);
 
+    const searchWrap = el("div", { className: "ec-search" });
+    searchWrap.appendChild(el("span", { className: "ec-search-icon", text: "⌕" }));
+    const searchInput = el("input", {
+      type: "search",
+      id: "ec-search-input",
+      placeholder: "Buscar…",
+      autocomplete: "off",
+      "aria-label": "Buscar en el sitio"
+    });
+    const searchResults = el("div", {
+      className: "ec-search-results",
+      id: "ec-search-results",
+      role: "listbox"
+    });
+    searchWrap.appendChild(searchInput);
+    searchWrap.appendChild(searchResults);
+    inner.appendChild(searchWrap);
+
     const device = el("div", { className: "ec-device" });
     const ui = el("a", {
       className: "ec-device-ui",
@@ -333,9 +430,150 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     }
   }
 
+  // ---- Site search index (pages + keywords). Extend freely. ----
+  const SITE_INDEX = [
+    { title: "Inicio", url: "index.html", keywords: "inicio home index blog esmaiwol portada" },
+    { title: "Foro", url: "forum.html", keywords: "foro forum boards hilos threads posts cuenta login" },
+    { title: "Chat", url: "chat.html", keywords: "chat sala general cafe containment tiempo real" },
+    { title: "Perfil", url: "profile.html", keywords: "perfil profile avatar bio stamp foto usuario" },
+    { title: "Login / Registro", url: "login.html", keywords: "login registro register cuenta password email" },
+    { title: "Esmaiwol.chan", url: "chan.html", keywords: "chan imageboard anónimo tablón 4chan" },
+    { title: "Girls und Panzer", url: "girls-und-panzer.html", keywords: "girls und panzer gup anime tanks" },
+    { title: "Fashfoids", url: "fashfoids.html", keywords: "fashfoids board tablón" },
+    { title: "Racial Thoughts", url: "racial-thoughts.html", keywords: "racial thoughts pensamientos" },
+    { title: "About me", url: "about.html", keywords: "about sobre mí about me" },
+  ];
+
+  function normalize(s) {
+    return (s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+  }
+
+  function searchSite(query) {
+    const q = normalize(query).trim();
+    if (q.length < 2) return [];
+    const terms = q.split(/\s+/).filter(Boolean);
+    const hits = [];
+
+    // 1) Indexed pages
+    SITE_INDEX.forEach(item => {
+      const hay = normalize(item.title + " " + item.keywords + " " + item.url);
+      const score = terms.reduce((acc, t) => acc + (hay.includes(t) ? 2 : 0), 0);
+      if (score > 0) {
+        hits.push({
+          title: item.title,
+          url: item.url,
+          meta: "Página del sitio",
+          score: score + (normalize(item.title).includes(terms[0]) ? 3 : 0)
+        });
+      }
+    });
+
+    // 2) Current page visible text (headings + links)
+    try {
+      const nodes = document.querySelectorAll("h1, h2, h3, a, article, .post, .thread-title, .panel h2");
+      const seen = new Set();
+      nodes.forEach(node => {
+        const text = (node.textContent || "").replace(/\s+/g, " ").trim();
+        if (text.length < 3 || text.length > 120) return;
+        const hay = normalize(text);
+        if (!terms.every(t => hay.includes(t))) return;
+        let url = location.pathname.split("/").pop() || "index.html";
+        if (node.tagName === "A" && node.getAttribute("href")) {
+          const href = node.getAttribute("href");
+          if (href && !href.startsWith("javascript:") && href !== "#") url = href;
+        } else if (node.id) {
+          url = (location.pathname.split("/").pop() || "index.html") + "#" + node.id;
+        }
+        const key = text + "|" + url;
+        if (seen.has(key)) return;
+        seen.add(key);
+        hits.push({
+          title: text.slice(0, 80),
+          url: url,
+          meta: "En esta página",
+          score: 1
+        });
+      });
+    } catch (_) {}
+
+    hits.sort((a, b) => b.score - a.score);
+    // dedupe by url+title
+    const out = [];
+    const keys = new Set();
+    for (const h of hits) {
+      const k = h.url + "|" + h.title;
+      if (keys.has(k)) continue;
+      keys.add(k);
+      out.push(h);
+      if (out.length >= 12) break;
+    }
+    return out;
+  }
+
+  function renderSearchResults(hits) {
+    const box = document.getElementById("ec-search-results");
+    if (!box) return;
+    if (!hits.length) {
+      box.innerHTML = '<div class="ec-empty">Sin resultados</div>';
+      box.classList.add("open");
+      return;
+    }
+    box.innerHTML = hits.map(h =>
+      '<a href="' + h.url.replace(/"/g, "&quot;") + '">' +
+        '<div class="ec-hit-title"></div>' +
+        '<div class="ec-hit-meta"></div>' +
+      '</a>'
+    ).join("");
+    // set text safely
+    const links = box.querySelectorAll("a");
+    hits.forEach((h, i) => {
+      if (!links[i]) return;
+      links[i].querySelector(".ec-hit-title").textContent = h.title;
+      links[i].querySelector(".ec-hit-meta").textContent = h.meta + " · " + h.url;
+    });
+    box.classList.add("open");
+  }
+
+  function wireSearch() {
+    const input = document.getElementById("ec-search-input");
+    const box = document.getElementById("ec-search-results");
+    if (!input || !box) return;
+    let timer = null;
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const q = input.value.trim();
+        if (q.length < 2) {
+          box.classList.remove("open");
+          box.innerHTML = "";
+          return;
+        }
+        renderSearchResults(searchSite(q));
+      }, 150);
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        box.classList.remove("open");
+        input.blur();
+      } else if (e.key === "Enter") {
+        const first = box.querySelector("a");
+        if (first) {
+          e.preventDefault();
+          location.href = first.getAttribute("href");
+        }
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!box.contains(e.target) && e.target !== input) {
+        box.classList.remove("open");
+      }
+    });
+  }
+
   function init() {
     injectStyle();
     buildChrome();
+    wireSearch();
     tickClock();
     setInterval(tickClock, 1000);
     loadUser();
