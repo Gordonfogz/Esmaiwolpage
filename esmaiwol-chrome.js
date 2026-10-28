@@ -85,11 +85,11 @@
 #esmaiwol-chrome .ec-pfp,
 #esmaiwol-chrome .ec-pfp.ph {
   position: absolute;
-  left: 11px;
+  left: 22px;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   object-fit: cover;
   border: 0;
@@ -108,7 +108,7 @@
 }
 #esmaiwol-chrome .ec-meta {
   position: absolute;
-  left: 72px;
+  left: 78px;
   right: 22px;
   top: 50%;
   transform: translateY(-50%);
@@ -154,9 +154,9 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
   }
   #esmaiwol-chrome .ec-pfp,
   #esmaiwol-chrome .ec-pfp.ph {
-    width: 40px;
-    height: 40px;
-    left: 9px;
+    width: 38px;
+    height: 38px;
+    left: 18px;
   }
   #esmaiwol-chrome .ec-meta {
     left: 58px;
