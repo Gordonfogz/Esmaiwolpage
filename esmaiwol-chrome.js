@@ -15,37 +15,43 @@
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 99990;
-  height: 52px;
+  height: 72px;
   pointer-events: none;
 }
 #esmaiwol-chrome * { box-sizing: border-box; }
 #esmaiwol-chrome .ec-bar {
   position: absolute;
   inset: 0;
-  background: url('bar-disk.png') center center / 100% 100% no-repeat;
+  background-color: #1a1a1e;
+  background-image: url('bar-disk.png');
+  background-position: center center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-bottom: 1px solid #3a3a42;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.55);
   pointer-events: none;
 }
 #esmaiwol-chrome .ec-inner {
   position: relative;
   z-index: 1;
-  height: 52px;
+  height: 72px;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 0 10px 0 12px;
+  padding: 0 12px 0 14px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   pointer-events: auto;
 }
 #esmaiwol-chrome .ec-nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
+  gap: 4px 12px;
   min-width: 0;
   flex: 1;
   font-family: "Courier New", Courier, monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
 }
 #esmaiwol-chrome .ec-nav a {
@@ -59,11 +65,14 @@
   color: #00ff83;
   background: rgba(0,0,0,0.35);
 }
+
+/* Gadget: full device image, pfp in metal sphere, text in blue screen */
 #esmaiwol-chrome .ec-device {
   position: relative;
   flex-shrink: 0;
-  width: min(280px, 46vw);
-  height: 44px;
+  width: min(340px, 58vw);
+  height: 64px;
+  margin-left: auto;
 }
 #esmaiwol-chrome .ec-device-bg {
   position: absolute;
@@ -71,47 +80,57 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: right center;
+  object-position: center right;
   pointer-events: none;
   display: block;
 }
+/* Clickable overlay covering whole gadget */
 #esmaiwol-chrome .ec-device-ui {
   position: absolute;
-  right: 6%;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 22%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
+  inset: 0;
+  display: block;
   text-decoration: none;
   color: #e8f4ff;
-  font-family: Tahoma, "Segoe UI", sans-serif;
-  font-size: 11px;
-  line-height: 1.15;
 }
-#esmaiwol-chrome .ec-device-ui:hover { filter: brightness(1.12); }
-#esmaiwol-chrome .ec-pfp {
-  width: 26px;
-  height: 26px;
+#esmaiwol-chrome .ec-device-ui:hover { filter: brightness(1.08); }
+
+/* Metal sphere zone (left disc of the gadget) */
+#esmaiwol-chrome .ec-pfp,
+#esmaiwol-chrome .ec-pfp.ph {
+  position: absolute;
+  left: 3.5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid #8ab4d8;
+  border: none;
   background: #0a1520;
-  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
 }
 #esmaiwol-chrome .ec-pfp.ph {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: bold;
   color: #8ab4d8;
+  font-family: Tahoma, "Segoe UI", sans-serif;
 }
+
+/* Blue screen zone (horizontal display) */
 #esmaiwol-chrome .ec-meta {
+  position: absolute;
+  left: 22%;
+  right: 10%;
+  top: 50%;
+  transform: translateY(-50%);
   min-width: 0;
   overflow: hidden;
+  font-family: Tahoma, "Segoe UI", sans-serif;
+  line-height: 1.2;
+  text-align: left;
 }
 #esmaiwol-chrome .ec-nick {
   display: block;
@@ -119,26 +138,42 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: bold;
-  color: #f0f8ff;
-  text-shadow: 0 0 4px #1a6aaa;
-  max-width: 120px;
+  font-size: 13px;
+  color: #f2f9ff;
+  text-shadow: 0 0 6px #2a8ad4, 0 1px 1px #000;
+  max-width: 100%;
 }
 #esmaiwol-chrome .ec-clock {
   display: block;
-  font-size: 10px;
-  color: #a8d4f0;
+  font-size: 11px;
+  color: #b8e4ff;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  text-shadow: 0 0 4px #1a6aaa;
+  margin-top: 1px;
 }
-#esmaiwol-chrome .ec-guest {
-  font-size: 10px;
-  color: #a8d4f0;
-  white-space: nowrap;
-}
-body.esmaiwol-chrome-on { padding-top: 52px !important; }
-@media (max-width: 520px) {
+
+body.esmaiwol-chrome-on { padding-top: 72px !important; }
+
+@media (max-width: 640px) {
+  #esmaiwol-chrome { height: 64px; }
+  #esmaiwol-chrome .ec-inner { height: 64px; }
+  body.esmaiwol-chrome-on { padding-top: 64px !important; }
   #esmaiwol-chrome .ec-nav { display: none; }
-  #esmaiwol-chrome .ec-device { width: min(220px, 70vw); margin-left: auto; }
+  #esmaiwol-chrome .ec-device {
+    width: min(280px, 92vw);
+    height: 56px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #esmaiwol-chrome .ec-pfp,
+  #esmaiwol-chrome .ec-pfp.ph {
+    width: 32px;
+    height: 32px;
+    left: 3.2%;
+  }
+  #esmaiwol-chrome .ec-nick { font-size: 12px; }
+  #esmaiwol-chrome .ec-clock { font-size: 10px; }
 }
 `;
 
@@ -171,7 +206,7 @@ body.esmaiwol-chrome-on { padding-top: 52px !important; }
     const inner = el("div", { className: "ec-inner" });
     const nav = el("nav", { className: "ec-nav", "aria-label": "Site" });
     [
-      ["index.html", "INDEX"],
+      ["index.html", "Inicio"],
       ["forum.html", "FORUM"],
       ["chat.html", "CHAT"],
       ["profile.html", "PROFILE"],
@@ -183,23 +218,29 @@ body.esmaiwol-chrome-on { padding-top: 52px !important; }
     inner.appendChild(nav);
 
     const device = el("div", { className: "ec-device" });
-    device.appendChild(el("img", {
+    const devImg = el("img", {
       className: "ec-device-bg",
       src: "esmaiwol-tabuser.png",
-      alt: ""
-    }));
+      alt: "user tab"
+    });
+    devImg.addEventListener("error", function () {
+      console.warn("[esmaiwol-chrome] Missing esmaiwol-tabuser.png — put it in the site root next to index.html");
+      this.style.outline = "1px dashed #f66";
+      this.style.background = "#223";
+    });
+    device.appendChild(devImg);
 
+    // Overlay: pfp sits on sphere, meta sits in screen
     const ui = el("a", {
       className: "ec-device-ui",
       href: "login.html",
       id: "ec-device-link",
       title: "Profile / Login"
     });
-    const pfp = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" });
+    ui.appendChild(el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" }));
     const meta = el("div", { className: "ec-meta" });
     meta.appendChild(el("span", { className: "ec-nick", id: "ec-nick", text: "Guest" }));
     meta.appendChild(el("span", { className: "ec-clock", id: "ec-clock", text: "--:--:--" }));
-    ui.appendChild(pfp);
     ui.appendChild(meta);
     device.appendChild(ui);
     inner.appendChild(device);
@@ -227,12 +268,12 @@ body.esmaiwol-chrome-on { padding-top: 52px !important; }
     if (link) link.href = "login.html";
     if (nick) nick.textContent = "Guest";
     if (pfp) {
-      pfp.className = "ec-pfp ph";
-      pfp.textContent = "?";
-      pfp.removeAttribute("src");
       if (pfp.tagName === "IMG") {
         const ph = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" });
         pfp.replaceWith(ph);
+      } else {
+        pfp.className = "ec-pfp ph";
+        pfp.textContent = "?";
       }
     }
   }
@@ -258,16 +299,13 @@ body.esmaiwol-chrome-on { padding-top: 52px !important; }
         pfp.className = "ec-pfp";
       }
     } else {
+      const letter = (username || "?").charAt(0).toUpperCase();
       if (pfp.tagName === "IMG") {
-        const ph = el("div", {
-          className: "ec-pfp ph",
-          id: "ec-pfp",
-          text: (username || "?").charAt(0).toUpperCase()
-        });
+        const ph = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: letter });
         pfp.replaceWith(ph);
       } else {
         pfp.className = "ec-pfp ph";
-        pfp.textContent = (username || "?").charAt(0).toUpperCase();
+        pfp.textContent = letter;
       }
     }
   }
