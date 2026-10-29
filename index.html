@@ -8,14 +8,15 @@
   <title>ESMAIWOL.ZN</title>
   <style>
     :root {
-      --bg: #050509;
-      --panel: #080914;
-      --blue: #1768ff;
-      --blue-bright: #285cff;
-      --green: #00ff83;
-      --text: #cbd5ff;
-      --muted: #91b7bb;
-      --border: #164cff;
+      --bg: #02060f;
+      --panel: rgba(6, 18, 36, 0.82);
+      --blue: #4ab8ff;
+      --blue-bright: #b8f0ff;
+      --green: #6ef0ff;
+      --text: #e8f7ff;
+      --muted: #7eb4d0;
+      --border: #3d9fd4;
+      --glow: rgba(80, 200, 255, 0.55);
     }
 
     * { box-sizing: border-box; }
@@ -24,31 +25,61 @@
 
     body {
       margin: 0;
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 50% 40% at 70% 20%, rgba(40, 160, 255, 0.22), transparent 60%),
+        radial-gradient(ellipse 40% 50% at 20% 80%, rgba(20, 80, 160, 0.2), transparent 55%),
+        radial-gradient(circle at 85% 75%, rgba(100, 220, 255, 0.08), transparent 35%),
+        linear-gradient(165deg, #030a16 0%, #061428 35%, #020812 70%, #01040c 100%);
+      background-attachment: fixed;
       color: var(--text);
-      font-family: "Courier New", Courier, monospace;
+      font-family: "Segoe UI", "Trebuchet MS", "Courier New", sans-serif;
       font-size: 16px;
       line-height: 1.55;
     }
+    /* faint HUD scan / grid veil */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.07;
+      background-image:
+        linear-gradient(rgba(120,200,255,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120,200,255,0.12) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    body > * { position: relative; z-index: 1; }
 
     a {
-      color: var(--blue);
+      color: var(--blue-bright);
       text-decoration: underline;
       text-decoration-thickness: 1px;
       text-underline-offset: 3px;
     }
 
     a:hover, a:focus {
-      color: var(--green);
-      background: #10172c;
+      color: #ffffff;
+      background: linear-gradient(90deg, rgba(40,140,255,0.35), rgba(100,240,255,0.12));
       outline: none;
+      text-shadow: 0 0 12px rgba(120, 220, 255, 0.85);
     }
 
     .site {
       width: min(1500px, calc(100% - 28px));
       margin: 12px auto;
-      border: 2px solid var(--border);
-      box-shadow: 0 0 0 1px #080d36, 0 0 18px #00134c55;
+      border: 1px solid rgba(100, 200, 255, 0.4);
+      border-radius: 4px;
+      background:
+        linear-gradient(145deg, rgba(30, 80, 140, 0.12), transparent 40%),
+        linear-gradient(180deg, rgba(8, 24, 48, 0.92), rgba(4, 12, 24, 0.95));
+      box-shadow:
+        0 0 0 1px rgba(180, 230, 255, 0.06) inset,
+        0 0 1px 0 rgba(120, 220, 255, 0.35),
+        0 0 40px rgba(20, 100, 200, 0.2),
+        0 16px 48px rgba(0, 10, 30, 0.65);
+      backdrop-filter: blur(10px);
     }
 
     .masthead {
@@ -70,9 +101,14 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, rgba(5,5,9,0.82) 0%, rgba(5,5,9,0.72) 40%, rgba(5,5,9,0.55) 100%);
+      background:
+        linear-gradient(110deg, rgba(2,10,24,0.88) 0%, rgba(6,30,60,0.55) 50%, rgba(20,100,180,0.25) 100%),
+        radial-gradient(ellipse at 80% 30%, rgba(80,200,255,0.15), transparent 50%);
       z-index: 0;
       pointer-events: none;
+    }
+    .masthead {
+      border-bottom-color: rgba(80, 200, 255, 0.35) !important;
     }
     .masthead > * {
       position: relative;
@@ -86,16 +122,20 @@
       gap: 3px;
       min-height: 96px;
       padding: 4px;
-      border: 1px solid var(--blue);
-      color: var(--blue);
+      border: 1px solid rgba(100, 210, 255, 0.45);
+      color: var(--blue-bright);
       background:
-        repeating-linear-gradient(0deg, transparent 0 5px, #10205a 5px 6px),
-        radial-gradient(ellipse at 72% 24%, #d6faff 0 5px, #1768ff 6px 10px, transparent 11px),
-        linear-gradient(135deg, #050509, #101044 65%, #050509);
+        repeating-linear-gradient(0deg, transparent 0 5px, rgba(80,180,255,0.06) 5px 6px),
+        radial-gradient(ellipse at 70% 30%, rgba(150,230,255,0.35) 0 8px, transparent 20px),
+        linear-gradient(150deg, rgba(10,40,80,0.95), rgba(4,16,36,0.98));
+      box-shadow:
+        inset 0 1px 0 rgba(200, 240, 255, 0.2),
+        0 0 24px rgba(40, 160, 255, 0.2);
       overflow: hidden;
       text-align: center;
       font-size: 12px;
       letter-spacing: 2px;
+      border-radius: 2px;
     }
 
     .pixel-art .moon {
@@ -127,11 +167,15 @@
 
     .brand h1 {
       margin: 0 0 4px;
-      color: var(--green);
+      color: #f4fcff;
       font-size: clamp(24px, 3.2vw, 42px);
       line-height: 1.15;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       overflow-wrap: anywhere;
+      text-shadow:
+        0 0 8px rgba(150, 230, 255, 0.9),
+        0 0 24px rgba(40, 160, 255, 0.55),
+        0 0 48px rgba(20, 100, 220, 0.3);
     }
 
     .brand p {
@@ -160,9 +204,12 @@
       flex-wrap: wrap;
       gap: 12px 26px;
       padding: 10px 16px;
-      border-bottom: 2px solid var(--border);
-      background: #050610;
+      border-bottom: 1px solid rgba(80, 200, 255, 0.3);
+      background: linear-gradient(180deg, rgba(20, 80, 140, 0.45), rgba(4, 16, 32, 0.95));
       font-weight: bold;
+      box-shadow:
+        inset 0 1px 0 rgba(180, 230, 255, 0.2),
+        0 0 24px rgba(40, 140, 255, 0.1);
     }
 
     .nav a::before { content: "[ "; color: var(--text); }
@@ -176,7 +223,10 @@
     main {
       min-width: 0;
       padding: 6px 16px 16px;
-      border-right: 2px solid var(--border);
+      border-right: 1px solid rgba(60, 150, 220, 0.25);
+      background:
+        linear-gradient(180deg, rgba(20, 60, 110, 0.12), transparent 140px),
+        linear-gradient(90deg, rgba(4, 16, 32, 0.3), transparent);
     }
 
     .post {
@@ -184,7 +234,11 @@
       grid-template-columns: 58px minmax(0, 1fr);
       gap: 16px;
       padding: 18px 0 20px;
-      border-bottom: 2px solid var(--blue);
+      border-bottom: 1px solid rgba(40, 140, 220, 0.28);
+      transition: background 0.2s ease;
+    }
+    .post:hover {
+      background: linear-gradient(90deg, rgba(30, 100, 180, 0.08), transparent 70%);
     }
 
     .post-icon {
@@ -213,9 +267,10 @@
 
     .post h2 {
       margin: 0 0 7px;
-      color: var(--green);
+      color: #a8f0ff;
       font-size: clamp(19px, 2vw, 25px);
       line-height: 1.25;
+      text-shadow: 0 0 14px rgba(60, 200, 255, 0.4);
     }
 
     .post p { margin: 5px 0; }
@@ -232,18 +287,28 @@
     }
 
     .widget {
-      border: 2px solid var(--border);
+      border: 1px solid rgba(80, 190, 255, 0.35);
       margin-bottom: 12px;
-      background: #05060c;
+      background:
+        linear-gradient(135deg, rgba(40, 120, 200, 0.12), transparent 50%),
+        linear-gradient(180deg, rgba(8, 28, 52, 0.9), rgba(4, 12, 28, 0.95));
+      border-radius: 3px;
+      box-shadow:
+        inset 0 1px 0 rgba(180, 230, 255, 0.12),
+        0 0 20px rgba(20, 100, 200, 0.12),
+        0 4px 18px rgba(0, 10, 30, 0.35);
+      overflow: hidden;
     }
 
     .widget h2 {
       margin: 0;
-      padding: 5px 12px;
-      border-bottom: 2px solid var(--border);
-      color: var(--green);
-      background: linear-gradient(90deg, #07123c, #080914);
-      font-size: 20px;
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(80, 200, 255, 0.28);
+      color: #f0fbff;
+      background: linear-gradient(90deg, rgba(30, 100, 180, 0.65), rgba(10, 40, 80, 0.85) 60%, rgba(20, 80, 140, 0.4));
+      font-size: 18px;
+      text-shadow: 0 0 12px rgba(100, 200, 255, 0.45);
+      letter-spacing: 1px;
     }
 
     .widget-body { padding: 10px 12px; }
@@ -344,9 +409,11 @@
 
     footer {
       padding: 10px 16px;
-      border-top: 2px solid var(--border);
+      border-top: 1px solid rgba(60, 180, 255, 0.28);
       color: var(--green);
       font-weight: bold;
+      background: linear-gradient(180deg, rgba(10, 40, 80, 0.5), rgba(2, 10, 24, 0.8));
+      text-shadow: 0 0 10px rgba(80, 200, 255, 0.3);
     }
 
     footer span { color: var(--muted); }
@@ -359,9 +426,13 @@
       margin: 12px auto 0;
       height: clamp(150px, 30vw, 320px);
       overflow: hidden;
-      border: 2px solid var(--border);
-      box-shadow: 0 0 0 1px #080d36, 0 0 18px #00134c88;
-      background: #050509;
+      border: 1px solid rgba(80, 200, 255, 0.4);
+      border-radius: 3px;
+      box-shadow:
+        0 0 0 1px rgba(180, 240, 255, 0.08) inset,
+        0 0 30px rgba(40, 140, 255, 0.2),
+        0 12px 40px rgba(0, 10, 30, 0.55);
+      background: linear-gradient(180deg, #061428, #02060f);
     }
     .hero-slides { position: absolute; inset: 0; }
     .hero-banner .hero-slide {
