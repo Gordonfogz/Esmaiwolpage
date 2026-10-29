@@ -429,6 +429,28 @@
       text-shadow: 0 0 12px rgba(100, 220, 255, 0.35);
       backdrop-filter: blur(8px);
     }
+    footer.site-footer-brands {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 28px 40px;
+      padding: 18px 16px;
+    }
+    footer.site-footer-brands .footer-brand {
+      display: block;
+      height: 48px;
+      width: auto;
+      max-width: min(220px, 42vw);
+      object-fit: contain;
+      opacity: 0.92;
+      filter: drop-shadow(0 0 8px rgba(80, 180, 255, 0.25));
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    footer.site-footer-brands .footer-brand:hover {
+      opacity: 1;
+      transform: scale(1.04);
+    }
 
     footer span { color: var(--muted); }
 
@@ -1062,9 +1084,9 @@
               </div>
             </section>
 
-    <footer id="sobre-mi">
-      Página personal <span>//</span> HTML + CSS
-      <span>| Última actualización:</span> 2026-10-09
+    <footer id="sobre-mi" class="site-footer-brands">
+      <img src="footer-kumagawa.png" alt="Kumagawaraxx" class="footer-brand">
+      <img src="footer-loquendo.png" alt="Loquendo" class="footer-brand">
     </footer>
   </div>
 
