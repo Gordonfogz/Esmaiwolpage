@@ -9,7 +9,12 @@
   if (window.__nightcoreIpodLoaded) return;
   window.__nightcoreIpodLoaded = true;
 
-  const STREAM = "https://stream.laut.fm/nightcoremusic";
+  const STREAMS = [
+    "https://stream.laut.fm/nightcoremusic",
+    "https://nightcoremusic.stream.laut.fm/nightcoremusic",
+    "https://stream.laut.fm/nightcore",
+    "https://nightcore.stream.laut.fm/nightcore"
+  ];
 
   const css = `
 #nightcore-ipod-mount { margin-bottom: 12px; }
@@ -165,9 +170,15 @@
 
     const audio = new Audio();
     audio.preload = "none";
-    audio.crossOrigin = "anonymous";
-    audio.src = STREAM;
+    // no crossOrigin — avoids CORS failures on pure playback
     audio.volume = 0.55;
+    let streamIndex = 0;
+    function setStream(i) {
+      streamIndex = i % STREAMS.length;
+      audio.src = STREAMS[streamIndex];
+      audio.load();
+    }
+    setStream(0);
 
     const ipod = mount.querySelector("#nc-ipod");
     const btn = mount.querySelector("#nc-play");
@@ -177,12 +188,14 @@
     async function play() {
       try {
         status.textContent = "Connecting…";
+        if (!audio.src) setStream(streamIndex);
         await audio.play();
         ipod.classList.add("is-playing");
         btn.textContent = "❚❚";
         status.textContent = "Now playing";
       } catch (e) {
-        status.textContent = "Tap play again";
+        console.warn("nightcore play", e);
+        status.textContent = "Blocked — click again";
         ipod.classList.remove("is-playing");
         btn.textContent = "▶";
       }
@@ -201,10 +214,26 @@
     vol.addEventListener("input", () => {
       audio.volume = parseFloat(vol.value);
     });
+    audio.addEventListener("playing", () => {
+      ipod.classList.add("is-playing");
+      btn.textContent = "❚❚";
+      status.textContent = "Now playing";
+    });
+    audio.addEventListener("waiting", () => {
+      status.textContent = "Buffering…";
+    });
     audio.addEventListener("error", () => {
-      status.textContent = "Stream error";
-      ipod.classList.remove("is-playing");
-      btn.textContent = "▶";
+      const next = streamIndex + 1;
+      if (next < STREAMS.length) {
+        status.textContent = "Trying backup…";
+        setStream(next);
+        play();
+      } else {
+        status.textContent = "Stream offline";
+        ipod.classList.remove("is-playing");
+        btn.textContent = "▶";
+        setStream(0);
+      }
     });
   }
 
