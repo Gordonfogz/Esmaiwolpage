@@ -430,106 +430,146 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     }
   }
 
-  // ---- Site search index (pages + keywords). Extend freely. ----
-  const SITE_INDEX = [
-    { title: "Inicio", url: "index.html", keywords: "inicio home index blog esmaiwol portada" },
-    { title: "Foro", url: "forum.html", keywords: "foro forum boards hilos threads posts cuenta login" },
-    { title: "Chat", url: "chat.html", keywords: "chat sala general cafe containment tiempo real" },
-    { title: "Perfil", url: "profile.html", keywords: "perfil profile avatar bio stamp foto usuario" },
-    { title: "Login / Registro", url: "login.html", keywords: "login registro register cuenta password email" },
-    { title: "Esmaiwol.chan", url: "chan.html", keywords: "chan imageboard anónimo tablón 4chan" },
-    { title: "Girls und Panzer", url: "girls-und-panzer.html", keywords: "girls und panzer gup anime tanks" },
-    { title: "Fashfoids", url: "fashfoids.html", keywords: "fashfoids board tablón" },
-    { title: "Racial Thoughts", url: "racial-thoughts.html", keywords: "racial thoughts pensamientos" },
-    { title: "About me", url: "about.html", keywords: "about sobre mí about me" },
-  ];
-
-  function normalize(s) {
-    return (s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+  // ---- Content search (forum threads / posts / chat) via Supabase ----
+  let _sbSearch = null;
+  async function getSearchClient() {
+    if (_sbSearch) return _sbSearch;
+    let createClient = window.supabase && window.supabase.createClient;
+    if (!createClient) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      createClient = window.supabase.createClient;
+    }
+    _sbSearch = createClient(SUPABASE_URL, SUPABASE_KEY);
+    return _sbSearch;
   }
 
-  function searchSite(query) {
-    const q = normalize(query).trim();
-    if (q.length < 2) return [];
-    const terms = q.split(/\s+/).filter(Boolean);
-    const hits = [];
+  function escapeReg(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 
-    // 1) Indexed pages
-    SITE_INDEX.forEach(item => {
-      const hay = normalize(item.title + " " + item.keywords + " " + item.url);
-      const score = terms.reduce((acc, t) => acc + (hay.includes(t) ? 2 : 0), 0);
-      if (score > 0) {
-        hits.push({
-          title: item.title,
-          url: item.url,
-          meta: "Página del sitio",
-          score: score + (normalize(item.title).includes(terms[0]) ? 3 : 0)
+  function snippet(text, query, maxLen) {
+    const raw = (text || "").replace(/\s+/g, " ").trim();
+    if (!raw) return "";
+    const q = (query || "").trim();
+    const lower = raw.toLowerCase();
+    const qi = q ? lower.indexOf(q.toLowerCase()) : -1;
+    let start = 0;
+    if (qi >= 0) start = Math.max(0, qi - 40);
+    let cut = raw.slice(start, start + (maxLen || 110));
+    if (start > 0) cut = "…" + cut;
+    if (start + (maxLen || 110) < raw.length) cut += "…";
+    return cut;
+  }
+
+  async function searchContent(query) {
+    const q = (query || "").trim();
+    if (q.length < 2) return [];
+    const hits = [];
+    const pattern = "%" + q.replace(/%/g, "").replace(/_/g, "") + "%";
+    try {
+      const sb = await getSearchClient();
+
+      // Threads
+      const th = await sb.from("forum_threads")
+        .select("id, board_id, title, body, created_at, profiles(username)")
+        .or("title.ilike." + pattern + ",body.ilike." + pattern)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      if (!th.error && th.data) {
+        th.data.forEach(t => {
+          const who = (t.profiles && t.profiles.username) || "user";
+          hits.push({
+            kind: "thread",
+            title: t.title || "(sin título)",
+            meta: "Hilo · /" + (t.board_id || "?") + "/ · " + who,
+            snippet: snippet(t.body, q),
+            url: "forum.html?thread=" + encodeURIComponent(t.id),
+            score: (t.title || "").toLowerCase().includes(q.toLowerCase()) ? 5 : 3
+          });
         });
       }
-    });
 
-    // 2) Current page visible text (headings + links)
-    try {
-      const nodes = document.querySelectorAll("h1, h2, h3, a, article, .post, .thread-title, .panel h2");
-      const seen = new Set();
-      nodes.forEach(node => {
-        const text = (node.textContent || "").replace(/\s+/g, " ").trim();
-        if (text.length < 3 || text.length > 120) return;
-        const hay = normalize(text);
-        if (!terms.every(t => hay.includes(t))) return;
-        let url = location.pathname.split("/").pop() || "index.html";
-        if (node.tagName === "A" && node.getAttribute("href")) {
-          const href = node.getAttribute("href");
-          if (href && !href.startsWith("javascript:") && href !== "#") url = href;
-        } else if (node.id) {
-          url = (location.pathname.split("/").pop() || "index.html") + "#" + node.id;
-        }
-        const key = text + "|" + url;
-        if (seen.has(key)) return;
-        seen.add(key);
-        hits.push({
-          title: text.slice(0, 80),
-          url: url,
-          meta: "En esta página",
-          score: 1
+      // Posts (replies)
+      const po = await sb.from("forum_posts")
+        .select("id, thread_id, body, created_at, profiles(username)")
+        .ilike("body", pattern)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      if (!po.error && po.data) {
+        po.data.forEach(p => {
+          const who = (p.profiles && p.profiles.username) || "user";
+          hits.push({
+            kind: "post",
+            title: "Respuesta de " + who,
+            meta: "Post en foro",
+            snippet: snippet(p.body, q),
+            url: "forum.html?thread=" + encodeURIComponent(p.thread_id),
+            score: 2
+          });
         });
-      });
-    } catch (_) {}
+      }
+
+      // Chat messages (optional)
+      const ch = await sb.from("chat_messages")
+        .select("id, room_id, username, body, created_at")
+        .ilike("body", pattern)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (!ch.error && ch.data) {
+        ch.data.forEach(m => {
+          hits.push({
+            kind: "chat",
+            title: (m.username || "user") + " en #" + (m.room_id || "chat"),
+            meta: "Chat",
+            snippet: snippet(m.body, q),
+            url: "chat.html",
+            score: 1
+          });
+        });
+      }
+    } catch (e) {
+      console.warn("searchContent", e);
+      return [{ kind: "error", title: "Error de búsqueda", meta: String(e.message || e), snippet: "", url: "#", score: 0 }];
+    }
 
     hits.sort((a, b) => b.score - a.score);
-    // dedupe by url+title
-    const out = [];
-    const keys = new Set();
-    for (const h of hits) {
-      const k = h.url + "|" + h.title;
-      if (keys.has(k)) continue;
-      keys.add(k);
-      out.push(h);
-      if (out.length >= 12) break;
-    }
-    return out;
+    return hits.slice(0, 15);
   }
 
   function renderSearchResults(hits) {
     const box = document.getElementById("ec-search-results");
     if (!box) return;
     if (!hits.length) {
-      box.innerHTML = '<div class="ec-empty">Sin resultados</div>';
+      box.innerHTML = '<div class="ec-empty">Nada en hilos, posts o chat</div>';
       box.classList.add("open");
       return;
     }
-    box.innerHTML = hits.map(h =>
-      '<a href="' + h.url.replace(/"/g, "&quot;") + '">' +
-        '<div class="ec-hit-title"></div>' +
-        '<div class="ec-hit-meta"></div>' +
-      '</a>'
-    ).join("");
-    // set text safely
-    const links = box.querySelectorAll("a");
-    hits.forEach((h, i) => {
-      if (!links[i]) return;
-      links[i].querySelector(".ec-hit-title").textContent = h.title;
-      links[i].querySelector(".ec-hit-meta").textContent = h.meta + " · " + h.url;
+    box.innerHTML = "";
+    hits.forEach(h => {
+      if (h.kind === "error") {
+        const d = document.createElement("div");
+        d.className = "ec-empty";
+        d.textContent = h.title + ": " + h.meta;
+        box.appendChild(d);
+        return;
+      }
+      const a = document.createElement("a");
+      a.href = h.url;
+      const t = document.createElement("div");
+      t.className = "ec-hit-title";
+      t.textContent = h.title;
+      const m = document.createElement("div");
+      m.className = "ec-hit-meta";
+      m.textContent = h.meta + (h.snippet ? " — " + h.snippet : "");
+      a.appendChild(t);
+      a.appendChild(m);
+      box.appendChild(a);
     });
     box.classList.add("open");
   }
@@ -539,17 +579,23 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     const box = document.getElementById("ec-search-results");
     if (!input || !box) return;
     let timer = null;
+    let seq = 0;
     input.addEventListener("input", () => {
       clearTimeout(timer);
-      timer = setTimeout(() => {
+      timer = setTimeout(async () => {
         const q = input.value.trim();
         if (q.length < 2) {
           box.classList.remove("open");
           box.innerHTML = "";
           return;
         }
-        renderSearchResults(searchSite(q));
-      }, 150);
+        const my = ++seq;
+        box.innerHTML = '<div class="ec-empty">Buscando…</div>';
+        box.classList.add("open");
+        const hits = await searchContent(q);
+        if (my !== seq) return;
+        renderSearchResults(hits);
+      }, 220);
     });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
@@ -570,7 +616,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     });
   }
 
-  function init() {
+    function init() {
     injectStyle();
     buildChrome();
     wireSearch();

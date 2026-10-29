@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050509">
-  <title>FORUMS BASE // ESMAIWOL.ZN</title>  
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
-  <script src="esmaiwol-chrome.js" defer></script>
+  <title>FORUMS BASE // ESMAIWOL.ZN</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: #050509;
@@ -1135,12 +1134,22 @@
       refreshGakBanner();
       await refreshSession();
       sb.auth.onAuthStateChange(() => { refreshSession(); });
-      show("view-boards");
-      await loadBoards();
+      const params = new URLSearchParams(location.search);
+      const threadId = params.get("thread");
+      const boardId = params.get("board");
+      if (threadId) {
+        await openThread(threadId);
+      } else if (boardId) {
+        await openBoard(boardId);
+      } else {
+        show("view-boards");
+        await loadBoards();
+      }
     })();
   </script>
   <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
     <img id="lightbox-img" alt="Full size">
   </div>
+<script src="esmaiwol-chrome.js" defer></script>
 </body>
 </html>
