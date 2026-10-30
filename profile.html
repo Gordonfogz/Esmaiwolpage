@@ -484,13 +484,20 @@
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
     const AVATAR_BUCKET = "avatars";
     const DEFAULT_AVATAR = "default-avatar.jpeg";
-    const PROFILE_COLS = "username, display_name, bio, avatar_url, stamp_url, created_at";
+    const PROFILE_COLS = "id, username, display_name, bio, avatar_url, stamp_url, banner_url, background_url, created_at";
     const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
+    });
     const $ = (id) => document.getElementById(id);
     let session = null;
     let isOwn = false;
-    let hasBannerCol = null;
+    let hasBannerCol = true;
 
     function tickClock() {
       const el = $("xperia-clock");
@@ -512,19 +519,23 @@
       $("pf-name").textContent = nick;
       $("pf-handle").textContent = p.username ? "@" + p.username : "@user";
       $("about-text").textContent = p.bio || "No bio yet.";
-      $("bio-about").value = p.bio || "";
-      $("share-url").textContent = "profile.html?u=" + (p.username || "username");
+      if ($("bio-about")) $("bio-about").value = p.bio || "";
+      $("share-url").textContent = "profile.html?u=" + encodeURIComponent(p.username || "username");
+
       const av = $("pf-avatar");
       av.src = p.avatar_url || DEFAULT_AVATAR;
       av.onerror = () => { av.src = DEFAULT_AVATAR; };
+
       const ban = $("pf-banner");
-      if (p.banner_url) {
-        ban.style.backgroundImage = "url('" + String(p.banner_url).replace(/'/g, "%27") + "')";
+      const wall = p.banner_url || p.background_url;
+      if (wall) {
+        ban.style.backgroundImage = "url('" + String(wall).replace(/'/g, "%27") + "')";
         ban.classList.add("has-wp");
       } else {
         ban.style.backgroundImage = "none";
         ban.classList.remove("has-wp");
       }
+
       $("stat-messages").textContent = p.messages_count != null ? p.messages_count : "0";
       $("stat-media").textContent = p.media_count != null ? p.media_count : "0";
       $("stat-react").textContent = p.reaction_score != null ? p.reaction_score : "0";
@@ -532,57 +543,81 @@
       $("stat-awards").textContent = p.awards_count != null ? p.awards_count : "0";
     }
 
-    async function fetchProfileById(id) {
-      let q = await sb.from("profiles").select(PROFILE_COLS + ", banner_url").eq("id", id).maybeSingle();
-      if (q.error && /banner_url|column/i.test(q.error.message || "")) {
+    function setOwnUI(on) {
+      isOwn = !!on;
+      $("btn-edit-about").classList.toggle("hidden", !on);
+      $("tab-edit-btn").classList.toggle("hidden", !on);
+      $("btn-edit-banner").classList.toggle("hidden", !on);
+    }
+
+    async function fetchById(id) {
+      let q = await sb.from("profiles").select(PROFILE_COLS).eq("id", id).maybeSingle();
+      if (q.error && /banner_url|background_url|column/i.test(q.error.message || "")) {
         hasBannerCol = false;
-        q = await sb.from("profiles").select(PROFILE_COLS).eq("id", id).maybeSingle();
-      } else if (!q.error) hasBannerCol = true;
+        q = await sb.from("profiles")
+          .select("id, username, display_name, bio, avatar_url, stamp_url, created_at")
+          .eq("id", id).maybeSingle();
+      }
       if (q.error) throw q.error;
       return q.data;
     }
-    async function fetchProfileByUser(username) {
-      let q = await sb.from("profiles").select(PROFILE_COLS + ", banner_url").eq("username", username).maybeSingle();
-      if (q.error && /banner_url|column/i.test(q.error.message || "")) {
+
+    async function fetchByUsername(username) {
+      // case-insensitive match
+      let q = await sb.from("profiles").select(PROFILE_COLS).ilike("username", username).maybeSingle();
+      if (q.error && /banner_url|background_url|column/i.test(q.error.message || "")) {
         hasBannerCol = false;
-        q = await sb.from("profiles").select(PROFILE_COLS).eq("username", username).maybeSingle();
-      } else if (!q.error) hasBannerCol = true;
+        q = await sb.from("profiles")
+          .select("id, username, display_name, bio, avatar_url, stamp_url, created_at")
+          .ilike("username", username).maybeSingle();
+      }
       if (q.error) throw q.error;
       return q.data;
     }
 
     async function loadOwn() {
-      isOwn = true;
-      $("btn-edit-about").classList.remove("hidden");
-      $("tab-edit-btn").classList.remove("hidden");
-      $("btn-edit-banner").classList.remove("hidden");
-      let data = await fetchProfileById(session.user.id);
+      if (!session) throw new Error("No session");
+      setOwnUI(true);
+      let data = await fetchById(session.user.id);
       if (!data) {
-        const base = (session.user.user_metadata?.username || session.user.email || "user")
-          .split("@")[0].replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24) || "user";
-        await sb.from("profiles").upsert({ id: session.user.id, username: base, display_name: base });
-        data = { username: base, display_name: base, bio: "" };
+        const base = (session.user.user_metadata?.username
+          || (session.user.email || "user").split("@")[0]
+          || "user").replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24);
+        const { error } = await sb.from("profiles").upsert({
+          id: session.user.id,
+          username: base,
+          display_name: base
+        });
+        if (error) throw error;
+        data = { id: session.user.id, username: base, display_name: base, bio: "" };
       }
-      $("username").value = data.username || "";
-      $("display-name").value = data.display_name || "";
-      $("bio").value = data.bio || "";
-      $("bio-about").value = data.bio || "";
+      if ($("username")) $("username").value = data.username || "";
+      if ($("display-name")) $("display-name").value = data.display_name || "";
+      if ($("bio")) $("bio").value = data.bio || "";
+      if ($("bio-about")) $("bio-about").value = data.bio || "";
       paint(data);
+      return data;
     }
 
     async function loadPublic(username) {
-      isOwn = false;
-      $("btn-edit-about").classList.add("hidden");
-      const data = await fetchProfileByUser(username);
+      const data = await fetchByUsername(username);
       if (!data) {
+        setOwnUI(false);
         paint({ username, display_name: "NOT FOUND", bio: "This profile does not exist." });
-        return;
+        return null;
+      }
+      // if this public profile is me, enable edit
+      if (session && data.id === session.user.id) {
+        setOwnUI(true);
+        if ($("username")) $("username").value = data.username || "";
+        if ($("display-name")) $("display-name").value = data.display_name || "";
+        if ($("bio")) $("bio").value = data.bio || "";
+        if ($("bio-about")) $("bio-about").value = data.bio || "";
+      } else {
+        setOwnUI(false);
       }
       paint(data);
-      if (session) {
-        const me = await fetchProfileById(session.user.id);
-        if (me && me.username && me.username.toLowerCase() === username.toLowerCase()) await loadOwn();
-      }
+      return data;
     }
 
     async function uploadImage(file, basename) {
@@ -611,7 +646,8 @@
 
     $("btn-edit-about").addEventListener("click", () => {
       $("tab-about").classList.add("about-mode-edit");
-      $("bio-about").value = $("about-text").textContent === "No bio yet." ? "" : $("about-text").textContent;
+      const t = $("about-text").textContent;
+      $("bio-about").value = (t === "No bio yet.") ? "" : t;
     });
     $("btn-cancel-about").addEventListener("click", () => {
       $("tab-about").classList.remove("about-mode-edit");
@@ -626,14 +662,14 @@
       try {
         const bio = $("bio-about").value.trim();
         const payload = { id: session.user.id, bio: bio || null };
-        const u = $("username").value.trim();
-        const d = $("display-name").value.trim();
+        const u = ($("username").value || "").trim();
+        const d = ($("display-name").value || "").trim();
         if (u) payload.username = u;
         if (d) payload.display_name = d;
         const { error } = await sb.from("profiles").upsert(payload);
         if (error) throw error;
         $("about-text").textContent = bio || "No bio yet.";
-        $("bio").value = bio;
+        if ($("bio")) $("bio").value = bio;
         $("tab-about").classList.remove("about-mode-edit");
         setStatus("status-about", "Saved.", "ok");
       } catch (err) {
@@ -666,16 +702,18 @@
           bio: bio || null
         };
         if (avatar_url) payload.avatar_url = avatar_url;
-        if (banner_url && hasBannerCol !== false) payload.banner_url = banner_url;
+        if (banner_url) {
+          payload.banner_url = banner_url;
+          payload.background_url = banner_url;
+        }
         let { error } = await sb.from("profiles").upsert(payload);
-        if (error && banner_url && /banner_url|column/i.test(error.message || "")) {
-          hasBannerCol = false;
+        if (error && /banner_url|background_url|column/i.test(error.message || "")) {
           delete payload.banner_url;
+          delete payload.background_url;
           ({ error } = await sb.from("profiles").upsert(payload));
-          if (!error) setStatus("status", "Saved (add banner_url column for wallpapers)", "ok");
         }
         if (error) throw error;
-        if (!$("status").textContent) setStatus("status", "Profile saved.", "ok");
+        setStatus("status", "Profile saved.", "ok");
         $("avatar-file").value = "";
         $("banner-file").value = "";
         await loadOwn();
@@ -707,19 +745,56 @@
     $("btn-dm").addEventListener("click", () => alert("DM soon."));
     $("btn-find").addEventListener("click", () => alert("Find menu."));
 
-    (async () => {
+    async function boot() {
       const params = new URLSearchParams(location.search);
       const publicUser = (params.get("u") || params.get("user") || "").trim();
-      const { data } = await sb.auth.getSession();
-      session = data.session;
+
+      $("about-text").textContent = "Loading profile…";
+
+      const { data, error } = await sb.auth.getSession();
+      if (error) console.warn("getSession", error);
+      session = data?.session || null;
+
       try {
-        if (publicUser) await loadPublic(publicUser);
-        else if (session) await loadOwn();
-        else paint({ display_name: "USER", username: "guest", bio: "Sign in to edit your profile.\nOr open profile.html?u=someone" });
+        if (session) {
+          // Always prefer own profile when logged in and no ?u= or ?u=me
+          if (!publicUser || publicUser.toLowerCase() === "me") {
+            await loadOwn();
+          } else {
+            await loadPublic(publicUser);
+          }
+        } else if (publicUser) {
+          await loadPublic(publicUser);
+        } else {
+          setOwnUI(false);
+          paint({
+            display_name: "USER",
+            username: "guest",
+            bio: "Not logged in.\\nOpen login.html, then come back.\\nOr view someone: profile.html?u=Clawver"
+          });
+        }
       } catch (e) {
-        $("about-text").textContent = e.message || "Failed to load";
+        console.error(e);
+        $("about-text").textContent = "Error: " + (e.message || e);
       }
-    })();
+    }
+
+    sb.auth.onAuthStateChange(async (event, sess) => {
+      session = sess;
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        const params = new URLSearchParams(location.search);
+        const publicUser = (params.get("u") || "").trim();
+        if (!publicUser || publicUser.toLowerCase() === "me") {
+          try { await loadOwn(); } catch (e) { console.warn(e); }
+        }
+      }
+      if (event === "SIGNED_OUT") {
+        setOwnUI(false);
+        paint({ display_name: "USER", username: "guest", bio: "Signed out. Login to edit your profile." });
+      }
+    });
+
+    boot();
   </script>
   <script src="esmaiwol-chrome.js" defer></script>
 </body>
