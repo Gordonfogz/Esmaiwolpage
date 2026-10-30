@@ -12,7 +12,6 @@
       --panel-gray: #c8c8c8;
       --panel-light: #dcdcdc;
       --ink: #222;
-      --muted: #555;
     }
     * { box-sizing: border-box; }
     body {
@@ -26,25 +25,24 @@
     }
     a { color: #1a5a9a; }
     .page {
-      width: min(980px, calc(100% - 16px));
-      margin: 16px auto 40px;
+      width: min(960px, calc(100% - 12px));
+      margin: 12px auto 36px;
     }
     .nav {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       font-size: 13px;
       font-weight: 600;
     }
     .nav a { margin-right: 12px; text-decoration: none; color: #0a3a60; }
-    .nav a:hover { text-decoration: underline; }
 
-    /* Phone shell — landscape Xperia Play */
+    /* Stage matches Xperia landscape PNG proportions */
     .phone-stage {
       position: relative;
-      width: 100%;
-      max-width: 920px;
+      width: min(860px, 100%);
       margin: 0 auto;
-      aspect-ratio: 16 / 10;
-      filter: drop-shadow(0 14px 28px rgba(0,20,40,0.4));
+      /* PNG is roughly 1.45:1 including controls */
+      aspect-ratio: 1.42 / 1;
+      filter: drop-shadow(0 12px 24px rgba(0,20,40,0.35));
     }
     .phone-frame {
       position: absolute;
@@ -52,221 +50,214 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: center;
+      object-position: center center;
       pointer-events: none;
-      z-index: 5;
+      z-index: 6;
+      user-select: none;
     }
-    /* Screen area inset inside the bezel (tuned to Xperia landscape PNG) */
+    /*
+      Screen hole calibrated to Xperia Play PNG:
+      glass area sits above the gamepad, inside black bezel.
+    */
     .phone-screen {
       position: absolute;
       z-index: 4;
-      left: 7.5%;
-      right: 7.5%;
-      top: 8%;
-      bottom: 22%;
+      left: 11.5%;
+      right: 11.5%;
+      top: 7.2%;
+      bottom: 31.5%;
       overflow: hidden;
-      border-radius: 4px;
-      background: #b0b0b0;
+      border-radius: 3px;
+      background: #c8c8c8;
       display: flex;
       flex-direction: column;
-      font-size: 12px;
+      font-size: 11px;
+      isolation: isolate;
     }
 
-    /* Banner / wallpaper zone */
     .pf-banner {
       position: relative;
-      flex: 0 0 42%;
-      min-height: 110px;
+      flex: 0 0 38%;
+      min-height: 90px;
       background-color: var(--blue-banner);
       background-size: cover;
       background-position: center;
       display: flex;
       align-items: flex-end;
-      padding: 10px 12px 8px;
-      gap: 12px;
+      padding: 8px 10px 6px;
+      gap: 10px;
     }
-    .pf-banner.has-wp {
-      background-color: #333;
-    }
+    .pf-banner.has-wp { background-color: #333; }
     .pf-actions {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 6px;
+      right: 6px;
       display: flex;
-      gap: 4px;
+      gap: 3px;
       z-index: 2;
     }
     .pf-actions button {
-      font: 600 10px/1 "Segoe UI", sans-serif;
-      padding: 4px 8px;
+      font: 600 9px/1 "Segoe UI", sans-serif;
+      padding: 3px 6px;
       border: 1px solid #999;
       background: linear-gradient(180deg, #f4f4f4, #d0d0d0);
       color: #222;
       cursor: pointer;
       border-radius: 2px;
     }
-    .pf-actions button:hover { filter: brightness(1.05); }
-
     .pf-avatar {
-      width: 72px;
-      height: 72px;
+      width: 58px;
+      height: 58px;
       flex-shrink: 0;
       border: 2px solid #fff;
       background: #e8eef4;
       object-fit: cover;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
     }
-    .pf-nameblock {
-      min-width: 0;
-      padding-bottom: 4px;
-    }
+    .pf-nameblock { min-width: 0; padding-bottom: 2px; }
     .pf-name {
       margin: 0;
-      font-size: clamp(16px, 2.4vw, 22px);
+      font-size: clamp(13px, 2vw, 18px);
       font-weight: 700;
       color: #fff;
       text-shadow: 0 1px 3px rgba(0,0,0,0.55);
-      letter-spacing: 0.04em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .pf-handle {
-      margin: 2px 0 0;
-      font-size: 11px;
-      color: rgba(255,255,255,0.85);
+      margin: 1px 0 0;
+      font-size: 10px;
+      color: rgba(255,255,255,0.9);
       text-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
 
-    /* Stats strip */
     .pf-stats {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       background: var(--panel-gray);
       border-top: 1px solid #aaa;
       border-bottom: 1px solid #aaa;
+      flex-shrink: 0;
     }
     .pf-stats > div {
       text-align: center;
-      padding: 6px 2px 5px;
+      padding: 4px 1px 3px;
       border-right: 1px solid #b0b0b0;
     }
     .pf-stats > div:last-child { border-right: 0; }
-    .pf-stats b {
-      display: block;
-      font-size: 14px;
-      color: #1a1a1a;
-      line-height: 1.2;
-    }
-    .pf-stats span {
-      font-size: 9px;
-      color: #444;
-      text-transform: none;
-    }
+    .pf-stats b { display: block; font-size: 12px; color: #1a1a1a; line-height: 1.15; }
+    .pf-stats span { font-size: 8px; color: #444; }
 
-    /* Action row */
     .pf-btns {
       display: flex;
-      gap: 6px;
-      padding: 8px 10px;
+      gap: 5px;
+      padding: 5px 8px;
       background: var(--panel-light);
       border-bottom: 1px solid #bbb;
+      flex-shrink: 0;
     }
     .pf-btns button {
-      font: 600 11px/1 "Segoe UI", sans-serif;
-      padding: 5px 12px;
+      font: 600 10px/1 "Segoe UI", sans-serif;
+      padding: 4px 9px;
       border: 1px solid #888;
       background: linear-gradient(180deg, #f6f6f6, #d4d4d4);
       border-radius: 2px;
       cursor: pointer;
       color: #222;
     }
-    .pf-btns button:hover { filter: brightness(1.04); }
 
-    /* Tabs */
     .pf-tabs {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       background: #c0c0c0;
       border-bottom: 1px solid #999;
+      flex-shrink: 0;
     }
     .pf-tabs button {
       border: 0;
       border-right: 1px solid #aaa;
       background: #d8d8d8;
-      padding: 6px 10px;
-      font: 600 10px/1 "Segoe UI", sans-serif;
+      padding: 5px 8px;
+      font: 600 9px/1 "Segoe UI", sans-serif;
       color: #333;
       cursor: pointer;
+      white-space: nowrap;
     }
-    .pf-tabs button.on {
-      background: #ececec;
-      color: #111;
-    }
-    .pf-tabs button:hover { background: #e4e4e4; }
+    .pf-tabs button.on { background: #ececec; color: #111; }
 
     .pf-body {
       flex: 1;
       background: #ececec;
-      padding: 10px 12px;
+      padding: 8px 10px;
       overflow: auto;
-      font-size: 12px;
+      font-size: 11px;
       color: #222;
       min-height: 0;
     }
-    .pf-body p { margin: 0 0 8px; white-space: pre-wrap; }
+    .pf-body p { margin: 0 0 6px; white-space: pre-wrap; }
 
-    /* Edit form inside About/Edit */
+    .about-view { display: block; }
+    .about-edit { display: none; }
+    .about-mode-edit .about-view { display: none; }
+    .about-mode-edit .about-edit { display: block; }
+
     .edit-form label {
       display: block;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       color: #444;
-      margin: 8px 0 3px;
+      margin: 6px 0 2px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
     }
     .edit-form input, .edit-form textarea {
       width: 100%;
-      padding: 6px 8px;
+      padding: 5px 6px;
       border: 1px solid #999;
       border-radius: 2px;
-      font: 12px "Segoe UI", sans-serif;
+      font: 11px "Segoe UI", sans-serif;
       background: #fff;
       color: #111;
     }
-    .edit-form textarea { min-height: 64px; resize: vertical; }
+    .edit-form textarea { min-height: 52px; resize: vertical; }
     .edit-form .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
-      margin-top: 10px;
+      margin-top: 8px;
     }
-    .btn-save {
+    .btn-save, .btn-edit-about {
       border: 1px solid #2a6a9a;
       background: linear-gradient(180deg, #6ab0e0, #3a80b0);
       color: #fff;
-      font: 700 12px "Segoe UI", sans-serif;
-      padding: 6px 14px;
+      font: 700 11px "Segoe UI", sans-serif;
+      padding: 5px 12px;
       border-radius: 2px;
       cursor: pointer;
     }
+    .btn-edit-about {
+      border-color: #666;
+      background: linear-gradient(180deg, #f0f0f0, #c8c8c8);
+      color: #222;
+      margin-top: 6px;
+    }
     .btn-save:disabled { opacity: 0.6; cursor: wait; }
-    .status { font-size: 11px; }
+    .status { font-size: 10px; }
     .status.ok { color: #0a7040; }
     .status.error { color: #a02030; }
     .hidden { display: none !important; }
-    .hint { font-size: 10px; color: #555; margin-top: 6px; }
-    .hint code { background: #ddd; padding: 1px 4px; border-radius: 2px; }
+    .hint { font-size: 9px; color: #555; margin-top: 4px; }
+    .hint code { background: #ddd; padding: 1px 3px; border-radius: 2px; }
 
-    @media (max-width: 640px) {
-      .phone-stage { aspect-ratio: 16 / 12; }
-      .phone-screen { left: 6%; right: 6%; top: 7%; bottom: 20%; font-size: 11px; }
-      .pf-avatar { width: 52px; height: 52px; }
-      .pf-stats span { font-size: 8px; }
-      .pf-stats b { font-size: 12px; }
+    @media (max-width: 600px) {
+      .phone-stage { aspect-ratio: 1.2 / 1; }
+      .phone-screen { left: 10%; right: 10%; top: 6.5%; bottom: 30%; }
+      .pf-avatar { width: 44px; height: 44px; }
+      .pf-stats span { font-size: 7px; }
+      .pf-stats b { font-size: 10px; }
     }
   </style>
 </head>
@@ -279,11 +270,11 @@
       <a href="login.html">Login</a>
     </div>
 
-    <div class="phone-stage" id="phone-stage">
+    <div class="phone-stage">
       <div class="phone-screen" id="phone-screen">
         <div class="pf-banner" id="pf-banner">
           <div class="pf-actions">
-            <button type="button" id="btn-report" title="Report">Report</button>
+            <button type="button" id="btn-report">Report</button>
             <button type="button" id="btn-edit-banner" class="hidden">Edit profile banner</button>
           </div>
           <img class="pf-avatar" id="pf-avatar" src="default-avatar.jpeg" alt="Avatar">
@@ -316,8 +307,22 @@
         </div>
 
         <div class="pf-body" id="tab-about">
-          <p id="about-text">No bio yet.</p>
-          <p class="hint">Public link: <code id="share-url">profile.html?u=username</code></p>
+          <div class="about-view">
+            <p id="about-text">No bio yet.</p>
+            <button type="button" class="btn-edit-about hidden" id="btn-edit-about">Edit About me</button>
+            <p class="hint">Public: <code id="share-url">profile.html?u=username</code></p>
+          </div>
+          <div class="about-edit">
+            <form class="edit-form" id="form-about">
+              <label for="bio-about">About me</label>
+              <textarea id="bio-about" maxlength="500" placeholder="Write your About me…"></textarea>
+              <div class="row">
+                <button type="submit" class="btn-save" id="btn-save-about">Save About</button>
+                <button type="button" class="btn-edit-about" id="btn-cancel-about">Cancel</button>
+                <span class="status" id="status-about"></span>
+              </div>
+            </form>
+          </div>
         </div>
         <div class="pf-body hidden" id="tab-activity"><p>No recent activity.</p></div>
         <div class="pf-body hidden" id="tab-posts"><p>No postings listed yet.</p></div>
@@ -328,7 +333,7 @@
             <label for="avatar-file">Profile picture (PFP)</label>
             <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
 
-            <label for="banner-file">Banner / wallpaper (optional)</label>
+            <label for="banner-file">Banner / wallpaper</label>
             <input id="banner-file" type="file" accept="image/jpeg,image/png,image/webp">
 
             <label for="username">Username</label>
@@ -344,11 +349,11 @@
               <button type="submit" class="btn-save" id="btn-save">Save profile</button>
               <span class="status" id="status"></span>
             </div>
-            <p class="hint">Saved in Supabase. Others open <code>profile.html?u=yourname</code>.</p>
+            <p class="hint">Saved in Supabase. Others: <code>profile.html?u=yourname</code></p>
           </form>
         </div>
       </div>
-      <img class="phone-frame" src="xperia-play-frame.png" alt="Sony Ericsson Xperia Play">
+      <img class="phone-frame" src="xperia-play-frame.png" alt="">
     </div>
   </div>
 
@@ -357,25 +362,28 @@
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
     const AVATAR_BUCKET = "avatars";
     const DEFAULT_AVATAR = "default-avatar.jpeg";
+    const PROFILE_COLS = "username, display_name, bio, avatar_url, stamp_url, created_at";
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
     const $ = (id) => document.getElementById(id);
     let session = null;
-    let currentProfile = null;
+    let isOwn = false;
+    let hasBannerCol = null;
 
-    function setStatus(msg, type) {
-      const el = $("status");
+    function setStatus(id, msg, type) {
+      const el = $(id);
       if (!el) return;
       el.textContent = msg || "";
       el.className = "status" + (type ? " " + type : "");
     }
 
     function paint(p) {
-      currentProfile = p || {};
+      p = p || {};
       const nick = p.display_name || p.username || "USER";
       $("pf-name").textContent = nick;
       $("pf-handle").textContent = p.username ? "@" + p.username : "@user";
       $("about-text").textContent = p.bio || "No bio yet.";
+      $("bio-about").value = p.bio || "";
       $("share-url").textContent = "profile.html?u=" + (p.username || "username");
 
       const av = $("pf-avatar");
@@ -384,14 +392,13 @@
 
       const ban = $("pf-banner");
       if (p.banner_url) {
-        ban.style.backgroundImage = "url('" + p.banner_url.replace(/'/g, "%27") + "')";
+        ban.style.backgroundImage = "url('" + String(p.banner_url).replace(/'/g, "%27") + "')";
         ban.classList.add("has-wp");
       } else {
         ban.style.backgroundImage = "none";
         ban.classList.remove("has-wp");
       }
 
-      // Stats placeholders (extend later from real counts)
       $("stat-messages").textContent = p.messages_count != null ? p.messages_count : "0";
       $("stat-media").textContent = p.media_count != null ? p.media_count : "0";
       $("stat-react").textContent = p.reaction_score != null ? p.reaction_score : "0";
@@ -399,39 +406,66 @@
       $("stat-awards").textContent = p.awards_count != null ? p.awards_count : "0";
     }
 
+    async function fetchProfileById(id) {
+      // Prefer with banner_url; fall back if column missing
+      let q = await sb.from("profiles").select(PROFILE_COLS + ", banner_url").eq("id", id).maybeSingle();
+      if (q.error && /banner_url|column/i.test(q.error.message || "")) {
+        hasBannerCol = false;
+        q = await sb.from("profiles").select(PROFILE_COLS).eq("id", id).maybeSingle();
+      } else if (!q.error) {
+        hasBannerCol = true;
+      }
+      if (q.error) throw q.error;
+      return q.data;
+    }
+
+    async function fetchProfileByUser(username) {
+      let q = await sb.from("profiles").select(PROFILE_COLS + ", banner_url").eq("username", username).maybeSingle();
+      if (q.error && /banner_url|column/i.test(q.error.message || "")) {
+        hasBannerCol = false;
+        q = await sb.from("profiles").select(PROFILE_COLS).eq("username", username).maybeSingle();
+      } else if (!q.error) {
+        hasBannerCol = true;
+      }
+      if (q.error) throw q.error;
+      return q.data;
+    }
+
     async function loadOwn() {
-      const { data, error } = await sb.from("profiles")
-        .select("username, display_name, bio, avatar_url, stamp_url, banner_url, created_at")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      if (error) throw error;
+      isOwn = true;
+      $("btn-edit-about").classList.remove("hidden");
+      $("tab-edit-btn").classList.remove("hidden");
+      $("btn-edit-banner").classList.remove("hidden");
+
+      let data = await fetchProfileById(session.user.id);
       if (!data) {
         const base = (session.user.user_metadata?.username || session.user.email || "user")
           .split("@")[0].replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24) || "user";
         await sb.from("profiles").upsert({ id: session.user.id, username: base, display_name: base });
-        $("username").value = base;
-        $("display-name").value = base;
-        $("bio").value = "";
-        paint({ username: base, display_name: base });
-        return;
+        data = { username: base, display_name: base, bio: "" };
       }
       $("username").value = data.username || "";
       $("display-name").value = data.display_name || "";
       $("bio").value = data.bio || "";
+      $("bio-about").value = data.bio || "";
       paint(data);
     }
 
     async function loadPublic(username) {
-      const { data, error } = await sb.from("profiles")
-        .select("username, display_name, bio, avatar_url, stamp_url, banner_url, created_at")
-        .eq("username", username)
-        .maybeSingle();
-      if (error) throw error;
+      isOwn = false;
+      $("btn-edit-about").classList.add("hidden");
+      const data = await fetchProfileByUser(username);
       if (!data) {
         paint({ username, display_name: "NOT FOUND", bio: "This profile does not exist." });
         return;
       }
       paint(data);
+      if (session) {
+        const me = await fetchProfileById(session.user.id);
+        if (me && me.username && me.username.toLowerCase() === username.toLowerCase()) {
+          await loadOwn();
+        }
+      }
     }
 
     async function uploadImage(file, basename) {
@@ -456,9 +490,42 @@
     $("banner-file").addEventListener("change", () => {
       const f = $("banner-file").files?.[0];
       if (!f) return;
-      const url = URL.createObjectURL(f);
-      $("pf-banner").style.backgroundImage = "url('" + url + "')";
+      $("pf-banner").style.backgroundImage = "url('" + URL.createObjectURL(f) + "')";
       $("pf-banner").classList.add("has-wp");
+    });
+
+    $("btn-edit-about").addEventListener("click", () => {
+      $("tab-about").classList.add("about-mode-edit");
+      $("bio-about").value = $("about-text").textContent === "No bio yet." ? "" : $("about-text").textContent;
+    });
+    $("btn-cancel-about").addEventListener("click", () => {
+      $("tab-about").classList.remove("about-mode-edit");
+    });
+
+    $("form-about").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!session || !isOwn) return;
+      const btn = $("btn-save-about");
+      btn.disabled = true;
+      setStatus("status-about", "Saving…");
+      try {
+        const bio = $("bio-about").value.trim();
+        const { error } = await sb.from("profiles").upsert({
+          id: session.user.id,
+          bio: bio || null,
+          username: $("username").value.trim() || undefined,
+          display_name: $("display-name").value.trim() || undefined
+        });
+        if (error) throw error;
+        $("about-text").textContent = bio || "No bio yet.";
+        $("bio").value = bio;
+        $("tab-about").classList.remove("about-mode-edit");
+        setStatus("status-about", "Saved.", "ok");
+      } catch (err) {
+        setStatus("status-about", err.message || "Failed", "error");
+      } finally {
+        btn.disabled = false;
+      }
     });
 
     $("form-profile").addEventListener("submit", async (e) => {
@@ -466,7 +533,7 @@
       if (!session) return;
       const btn = $("btn-save");
       btn.disabled = true;
-      setStatus("Saving…");
+      setStatus("status", "Saving…");
       try {
         const username = $("username").value.trim();
         const display_name = $("display-name").value.trim();
@@ -475,8 +542,8 @@
         let avatar_url, banner_url;
         const af = $("avatar-file").files?.[0];
         const bf = $("banner-file").files?.[0];
-        if (af) { setStatus("Uploading avatar…"); avatar_url = await uploadImage(af, "avatar"); }
-        if (bf) { setStatus("Uploading banner…"); banner_url = await uploadImage(bf, "banner"); }
+        if (af) { setStatus("status", "Uploading avatar…"); avatar_url = await uploadImage(af, "avatar"); }
+        if (bf) { setStatus("status", "Uploading banner…"); banner_url = await uploadImage(bf, "banner"); }
         const payload = {
           id: session.user.id,
           username,
@@ -484,24 +551,22 @@
           bio: bio || null
         };
         if (avatar_url) payload.avatar_url = avatar_url;
-        if (banner_url) payload.banner_url = banner_url;
-        const { error } = await sb.from("profiles").upsert(payload);
-        if (error) {
-          // banner_url column might not exist yet — retry without it
-          if (banner_url && /banner_url/i.test(error.message || "")) {
-            delete payload.banner_url;
-            const r2 = await sb.from("profiles").upsert(payload);
-            if (r2.error) throw r2.error;
-            setStatus("Saved (add banner_url column in Supabase for wallpapers)", "ok");
-          } else throw error;
-        } else {
-          setStatus("Profile saved.", "ok");
+        if (banner_url && hasBannerCol !== false) payload.banner_url = banner_url;
+
+        let { error } = await sb.from("profiles").upsert(payload);
+        if (error && banner_url && /banner_url|column/i.test(error.message || "")) {
+          hasBannerCol = false;
+          delete payload.banner_url;
+          ({ error } = await sb.from("profiles").upsert(payload));
+          if (!error) setStatus("status", "Saved (run SQL to add banner_url for wallpapers)", "ok");
         }
+        if (error) throw error;
+        if (!$("status").textContent) setStatus("status", "Profile saved.", "ok");
         $("avatar-file").value = "";
         $("banner-file").value = "";
         await loadOwn();
       } catch (err) {
-        setStatus(err.message || "Save failed", "error");
+        setStatus("status", err.message || "Save failed", "error");
       } finally {
         btn.disabled = false;
       }
@@ -516,20 +581,17 @@
           const el = $("tab-" + t);
           if (el) el.classList.toggle("hidden", t !== tab);
         });
+        if (tab !== "about") $("tab-about").classList.remove("about-mode-edit");
       });
     });
 
     $("btn-edit-banner").addEventListener("click", () => {
-      const editBtn = $("tab-edit-btn");
-      if (editBtn && !editBtn.classList.contains("hidden")) {
-        editBtn.click();
-        $("banner-file").click();
-      }
+      $("tab-edit-btn").click();
+      $("banner-file").click();
     });
-
-    $("btn-report").addEventListener("click", () => alert("Report received (placeholder)."));
-    $("btn-dm").addEventListener("click", () => alert("DM coming soon."));
-    $("btn-find").addEventListener("click", () => alert("Find menu placeholder."));
+    $("btn-report").addEventListener("click", () => alert("Report (placeholder)."));
+    $("btn-dm").addEventListener("click", () => alert("DM soon."));
+    $("btn-find").addEventListener("click", () => alert("Find menu."));
 
     (async () => {
       const params = new URLSearchParams(location.search);
@@ -537,24 +599,13 @@
       const { data } = await sb.auth.getSession();
       session = data.session;
 
-      if (session) {
-        $("tab-edit-btn").classList.remove("hidden");
-        $("btn-edit-banner").classList.remove("hidden");
-      }
-
       try {
         if (publicUser) {
           await loadPublic(publicUser);
-          if (session) {
-            const { data: me } = await sb.from("profiles").select("username").eq("id", session.user.id).maybeSingle();
-            if (me && me.username && me.username.toLowerCase() === publicUser.toLowerCase()) {
-              await loadOwn();
-            }
-          }
         } else if (session) {
           await loadOwn();
         } else {
-          paint({ display_name: "USER", username: "guest", bio: "Sign in to create your profile.\nOr open profile.html?u=someone" });
+          paint({ display_name: "USER", username: "guest", bio: "Sign in to edit your profile.\nOr open profile.html?u=someone" });
         }
       } catch (e) {
         $("about-text").textContent = e.message || "Failed to load";
