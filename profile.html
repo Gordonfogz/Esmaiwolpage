@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#6eb8e8">
+  <meta name="theme-color" content="#7ec4ec">
   <title>PROFILE // ESMAIWOL.ZN</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --sky: #9ed0f0;
-      --glass: rgba(255,255,255,0.55);
-      --glass-edge: rgba(255,255,255,0.75);
-      --ink: #1a3348;
-      --muted: #4a6a80;
-      --accent: #2a8ad4;
-      --lime: #5ad4a8;
+      --ink: #16324a;
+      --muted: #4d6f88;
+      --line: rgba(255,255,255,0.7);
+      --glass: rgba(255,255,255,0.42);
+      --panel: rgba(245,250,255,0.55);
+      --blue: #2b8fd4;
+      --blue-deep: #0d5f9e;
     }
     * { box-sizing: border-box; }
     body {
@@ -23,518 +23,605 @@
       font-family: "Segoe UI", "Trebuchet MS", Tahoma, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.55), transparent 55%),
-        linear-gradient(165deg, #b8dff5 0%, #7ec0e8 40%, #5aa8d8 100%);
+        radial-gradient(ellipse 90% 55% at 50% -15%, rgba(255,255,255,0.65), transparent 55%),
+        linear-gradient(168deg, #c7e8fa 0%, #8ec8ea 42%, #5eafd8 100%);
       background-attachment: fixed;
     }
-    a { color: var(--accent); }
-    a:hover { color: #0a5a9a; }
+    a { color: var(--blue-deep); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    .wrap {
-      width: min(920px, calc(100% - 24px));
-      margin: 24px auto 48px;
+    .page {
+      width: min(980px, calc(100% - 20px));
+      margin: 18px auto 40px;
     }
-    .nav {
-      margin-bottom: 14px;
+    .crumb {
+      margin: 0 0 12px;
       font-size: 13px;
       font-weight: 600;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.45);
     }
-    .nav a { margin-right: 12px; text-decoration: none; }
-    .nav a:hover { text-decoration: underline; }
+    .crumb a { margin-right: 10px; }
 
-    /* XenForo-ish banner card */
-    .profile-card {
-      border-radius: 12px;
+    /* ===== Profile shell (XenForo-like) ===== */
+    .profile {
+      border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.65);
+      border: 1px solid var(--line);
+      background: var(--panel);
       box-shadow:
-        0 0 0 1px rgba(40,120,180,0.15),
-        0 12px 36px rgba(20,60,100,0.22),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(200,230,250,0.55));
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+        0 0 0 1px rgba(30,100,160,0.08),
+        0 14px 40px rgba(15,50,90,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.85);
+      backdrop-filter: blur(14px) saturate(1.25);
+      -webkit-backdrop-filter: blur(14px) saturate(1.25);
     }
+
+    /* Banner */
     .banner {
       position: relative;
-      min-height: 160px;
+      height: clamp(150px, 22vw, 210px);
       background:
-        linear-gradient(100deg, rgba(30,80,140,0.35), transparent 55%),
-        url('aero-bg.jpg') center/cover no-repeat,
-        linear-gradient(120deg, #4a90c8, #8ec8f0);
-    }
-    .banner-veil {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgba(10,30,50,0.45), rgba(10,30,50,0.15));
-      pointer-events: none;
+        linear-gradient(100deg, rgba(8,30,55,0.55) 0%, rgba(8,30,55,0.2) 55%, rgba(20,70,120,0.15) 100%),
+        var(--banner-img, linear-gradient(120deg, #3d7eb0, #8ec8f0));
+      background-size: cover;
+      background-position: center;
     }
     .banner-actions {
       position: absolute;
-      top: 10px; right: 10px;
-      z-index: 2;
+      top: 12px; right: 12px;
       display: flex;
       gap: 6px;
+      z-index: 2;
     }
-    .banner-actions button, .banner-actions a.btn {
-      font: 600 12px/1 "Segoe UI", sans-serif;
-      padding: 6px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.5);
-      background: rgba(255,255,255,0.75);
+    .banner-actions .chip {
+      border: 1px solid rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.78);
       color: var(--ink);
+      font: 600 12px/1 "Segoe UI", sans-serif;
+      padding: 7px 11px;
+      border-radius: 5px;
       cursor: pointer;
-      text-decoration: none;
-    }
-    .identity {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(200px, 280px) 1fr;
-      gap: 18px;
-      padding: 16px 18px 20px;
-      align-items: start;
-    }
-    @media (max-width: 700px) {
-      .identity { grid-template-columns: 1fr; justify-items: center; }
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
 
-    /* Xperia Play frame */
-    .xperia {
+    /* Header row under/over banner */
+    .header {
       position: relative;
-      width: min(260px, 100%);
-      aspect-ratio: 9 / 16;
-      max-height: 420px;
-      margin: 0 auto;
-      filter: drop-shadow(0 10px 20px rgba(0,20,40,0.35));
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 18px 22px;
+      padding: 0 18px 14px;
+      margin-top: -72px;
     }
-    .xperia-shell {
+    @media (max-width: 720px) {
+      .header {
+        grid-template-columns: 1fr;
+        margin-top: -40px;
+        justify-items: center;
+        text-align: center;
+      }
+    }
+
+    /* Xperia device */
+    .device-col { position: relative; z-index: 3; }
+    .xperia {
+      width: 190px;
+      height: 340px;
+      position: relative;
+      margin: 0 auto;
+      filter: drop-shadow(0 12px 22px rgba(0,20,40,0.35));
+    }
+    .xperia-bg {
       position: absolute;
       inset: 0;
-      background: url('xperia-play-frame.png') center center / contain no-repeat;
-      pointer-events: none;
-      z-index: 3;
-    }
-    /* Approximate screen hole on the phone PNG */
-    .xperia-screen {
-      position: absolute;
-      left: 11%;
-      right: 11%;
-      top: 9%;
-      bottom: 28%;
+      background: url('xperia-play-frame.png') center / contain no-repeat;
       z-index: 2;
-      border-radius: 6px;
+      pointer-events: none;
+    }
+    /* Screen area tuned for landscape Xperia Play PNG (phone on top half) */
+    .xperia-lcd {
+      position: absolute;
+      z-index: 1;
+      /* these % match the black bezel screen of the PNG */
+      left: 12.5%;
+      width: 75%;
+      top: 7.5%;
+      height: 38%;
+      border-radius: 4px;
       overflow: hidden;
-      background: linear-gradient(180deg, #0c2440, #061018);
-      color: #e8f6ff;
+      background: #071522;
+      color: #eaf6ff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px 8px 8px;
+      justify-content: flex-start;
+      padding: 6px 6px 4px;
       text-align: center;
     }
-    .xperia-screen .av {
-      width: 72px;
-      height: 72px;
-      border-radius: 12px;
+    .xperia-lcd .av {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
       object-fit: cover;
-      border: 2px solid rgba(160,220,255,0.55);
-      background: #0a1520;
-      margin-bottom: 8px;
-      box-shadow: 0 0 12px rgba(80,180,255,0.35);
+      border: 1px solid rgba(140,210,255,0.55);
+      background: #0a1828;
+      flex-shrink: 0;
     }
-    .xperia-screen .av.ph {
+    .xperia-lcd .av.ph {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: #7ab0d0;
-    }
-    .xperia-screen .nick {
-      margin: 0;
-      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      font-size: 18px;
+      color: #7ab4d8;
+    }
+    .xperia-lcd .nm {
+      margin: 4px 0 0;
+      font-size: 11px;
+      font-weight: 700;
       color: #fff;
-      text-shadow: 0 0 10px rgba(100,200,255,0.5);
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      text-shadow: 0 0 8px rgba(80,180,255,0.45);
     }
-    .xperia-screen .handle {
-      margin: 2px 0 6px;
-      font-size: 11px;
-      color: #8ec8f0;
+    .xperia-lcd .hdl {
+      margin: 1px 0 0;
+      font-size: 9px;
+      color: #8ec4e8;
     }
-    .xperia-screen .bio {
-      margin: 0;
-      font-size: 10px;
-      line-height: 1.35;
-      color: #c8e4f8;
-      overflow: auto;
+    .xperia-lcd .bio {
+      margin: 3px 0 0;
+      font-size: 8px;
+      line-height: 1.25;
+      color: #b8d8f0;
+      overflow: hidden;
       flex: 1;
       width: 100%;
-      padding: 0 2px;
     }
-    .xperia-screen .stamp {
+    .xperia-lcd .stamp {
+      max-height: 22px;
       max-width: 90%;
-      max-height: 40px;
       object-fit: contain;
-      margin-top: 6px;
+      margin-top: 2px;
     }
 
-    .meta-col { min-width: 0; }
-    .meta-col h1 {
-      margin: 8px 0 4px;
-      font-size: clamp(22px, 3vw, 30px);
-      color: #0a3a60;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    .info-col {
+      position: relative;
+      z-index: 2;
+      padding-top: 78px;
+      min-width: 0;
     }
-    .meta-col .sub {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 13px;
+    @media (max-width: 720px) {
+      .info-col { padding-top: 8px; }
     }
-    .stats {
+    .info-col h1 {
+      margin: 0 0 2px;
+      font-size: clamp(26px, 4vw, 34px);
+      letter-spacing: 0.02em;
+      color: #083456;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+    }
+    .info-col .title-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 18px;
-      margin: 12px 0 16px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.4);
-      border: 1px solid rgba(255,255,255,0.55);
+      align-items: baseline;
+      gap: 8px 12px;
     }
-    .stats div { text-align: center; min-width: 64px; }
-    .stats b { display: block; font-size: 18px; color: #0a4a78; }
-    .stats span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .info-col .rank {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      background: rgba(255,255,255,0.45);
+      border: 1px solid rgba(255,255,255,0.65);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .info-col .meta {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #eef7ff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+    }
+    @media (max-width: 720px) {
+      .info-col .meta { color: var(--muted); text-shadow: none; }
+    }
 
+    /* Stats strip like XenForo */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0;
+      margin: 14px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.55);
+      border-bottom: 1px solid rgba(40,100,150,0.12);
+      background: rgba(255,255,255,0.28);
+    }
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    .stats > div {
+      padding: 12px 8px;
+      text-align: center;
+      border-right: 1px solid rgba(40,100,150,0.1);
+    }
+    .stats > div:last-child { border-right: 0; }
+    .stats b {
+      display: block;
+      font-size: 20px;
+      color: #0a4a7a;
+      line-height: 1.15;
+    }
+    .stats span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.25);
+      border-bottom: 1px solid rgba(40,100,150,0.1);
+    }
+    .actions .btn {
+      border: 1px solid rgba(40,100,150,0.22);
+      background: linear-gradient(180deg, #fff, #d7ebf8);
+      color: var(--ink);
+      font: 600 13px/1 "Segoe UI", sans-serif;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 #fff, 0 1px 3px rgba(0,40,80,0.08);
+    }
+    .actions .btn:hover { filter: brightness(1.03); }
+
+    /* Tabs */
     .tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
-      border-bottom: 1px solid rgba(40,100,150,0.2);
-      margin-top: 8px;
-      padding: 0 4px;
+      gap: 2px;
+      padding: 0 12px;
+      background: rgba(230,242,250,0.55);
+      border-bottom: 1px solid rgba(40,100,150,0.15);
     }
     .tabs button {
       border: 0;
       background: transparent;
-      padding: 8px 12px;
+      padding: 11px 14px;
       font: 600 13px "Segoe UI", sans-serif;
       color: var(--muted);
       cursor: pointer;
-      border-radius: 6px 6px 0 0;
+      border-radius: 8px 8px 0 0;
     }
     .tabs button.on {
-      background: rgba(255,255,255,0.65);
+      background: rgba(255,255,255,0.75);
       color: var(--ink);
-      box-shadow: 0 -1px 0 rgba(255,255,255,0.8);
+      box-shadow: 0 -1px 0 rgba(255,255,255,0.9);
     }
-    .tab-body {
-      padding: 14px 16px 18px;
-      background: rgba(255,255,255,0.35);
+    .panel {
+      padding: 16px 18px 22px;
+      background: rgba(255,255,255,0.38);
+      min-height: 160px;
+    }
+    .panel.hidden { display: none; }
+
+    .about-bio {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      font-size: 15px;
+    }
+    .share {
+      margin: 12px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .share code {
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.8);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 12px;
     }
 
-    .edit-panel label {
+    /* Edit form */
+    .edit label {
       display: block;
+      margin: 12px 0 4px;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      margin: 10px 0 4px;
-      text-transform: uppercase;
+      font-weight: 700;
       letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
-    .edit-panel input, .edit-panel textarea {
+    .edit input[type="text"],
+    .edit input[type="file"],
+    .edit textarea {
       width: 100%;
-      padding: 9px 10px;
-      border: 1px solid rgba(40,100,150,0.25);
-      border-radius: 6px;
-      background: rgba(255,255,255,0.75);
+      max-width: 520px;
+      padding: 9px 11px;
+      border: 1px solid rgba(40,100,150,0.22);
+      border-radius: 7px;
+      background: rgba(255,255,255,0.8);
       color: var(--ink);
       font: inherit;
       outline: none;
     }
-    .edit-panel input:focus, .edit-panel textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(42,138,212,0.2);
+    .edit textarea { min-height: 100px; resize: vertical; }
+    .edit input:focus, .edit textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(43,143,212,0.18);
     }
-    .edit-panel textarea { min-height: 90px; resize: vertical; }
-    .row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
-    .btn-save {
+    .save {
+      margin-top: 14px;
       border: 0;
-      border-radius: 6px;
-      padding: 10px 18px;
+      border-radius: 8px;
+      padding: 11px 20px;
       font: 700 14px "Segoe UI", sans-serif;
       color: #fff;
       cursor: pointer;
-      background: linear-gradient(180deg, #5ab0e8, #2a7cbc);
-      box-shadow: 0 2px 8px rgba(30,100,160,0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+      background: linear-gradient(180deg, #5eb4ea, #1f7ab8);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 10px rgba(20,90,150,0.3);
     }
-    .btn-save:disabled { opacity: 0.55; cursor: wait; }
-    .status { font-size: 13px; min-height: 1.2em; }
-    .status.ok { color: #0a7a50; }
+    .save:disabled { opacity: 0.55; cursor: wait; }
+    .status { margin-left: 12px; font-size: 13px; }
+    .status.ok { color: #0a7a48; }
     .status.error { color: #b02040; }
     .gate {
-      padding: 16px;
+      padding: 14px 16px;
       border-radius: 8px;
-      background: rgba(255,255,255,0.5);
-      border: 1px solid rgba(255,255,255,0.7);
-    }
-    .hidden { display: none !important; }
-    .share-hint {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    .share-hint code {
-      background: rgba(255,255,255,0.6);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 11px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.75);
+      max-width: 520px;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="nav">
-      <a href="index.html">← Index</a>
+  <div class="page">
+    <p class="crumb">
+      <a href="index.html">Index</a>
       <a href="forum.html">Forum</a>
       <a href="chat.html">Chat</a>
       <a href="login.html">Login</a>
-    </div>
+    </p>
 
-    <div class="profile-card">
+    <article class="profile">
       <div class="banner" id="banner">
-        <div class="banner-veil"></div>
         <div class="banner-actions">
-          <a class="btn" href="login.html" id="btn-login-top">Login</a>
+          <a class="chip" href="login.html" id="chip-auth">Login</a>
         </div>
       </div>
 
-      <div class="identity">
-        <div class="xperia" aria-label="Xperia Play profile frame">
-          <div class="xperia-screen" id="xperia-screen">
-            <div class="av ph" id="view-avatar">?</div>
-            <p class="nick" id="view-nick">Guest</p>
-            <p class="handle" id="view-handle">@—</p>
-            <p class="bio" id="view-bio">No bio yet.</p>
-            <img class="stamp hidden" id="view-stamp" alt="Stamp">
+      <div class="header">
+        <div class="device-col">
+          <div class="xperia" title="Xperia Play profile">
+            <div class="xperia-lcd" id="lcd">
+              <div class="av ph" id="lcd-av">?</div>
+              <p class="nm" id="lcd-nm">Guest</p>
+              <p class="hdl" id="lcd-hd">@guest</p>
+              <p class="bio" id="lcd-bio">No bio.</p>
+              <img class="stamp" id="lcd-stamp" alt="" hidden>
+            </div>
+            <div class="xperia-bg"></div>
           </div>
-          <div class="xperia-shell"></div>
         </div>
 
-        <div class="meta-col">
-          <h1 id="view-title">Member profile</h1>
-          <p class="sub" id="view-sub">Load a profile or sign in to edit yours.</p>
-          <div class="stats">
-            <div><b id="stat-joined">—</b><span>Joined</span></div>
-            <div><b id="stat-user">—</b><span>Username</span></div>
-            <div><b id="stat-mode">VIEW</b><span>Mode</span></div>
+        <div class="info-col">
+          <div class="title-row">
+            <h1 id="disp-name">Member</h1>
+            <span class="rank" id="disp-rank">Member</span>
           </div>
-          <p class="share-hint">Public link: <code id="share-url">profile.html?u=username</code></p>
+          <p class="meta" id="disp-meta">Open a profile or sign in to edit yours.</p>
         </div>
+      </div>
+
+      <div class="stats">
+        <div><b id="st-messages">0</b><span>Messages</span></div>
+        <div><b id="st-media">0</b><span>Media</span></div>
+        <div><b id="st-joined">—</b><span>Joined</span></div>
+        <div><b id="st-user">—</b><span>User</span></div>
+        <div><b id="st-mode">VIEW</b><span>Mode</span></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="btn-copy">Copy profile link</button>
+        <a class="btn" href="forum.html">Forum</a>
+        <a class="btn" href="chat.html">Chat</a>
       </div>
 
       <div class="tabs">
         <button type="button" class="on" data-tab="about">About</button>
-        <button type="button" data-tab="edit" id="tab-edit" class="hidden">Edit profile</button>
+        <button type="button" data-tab="edit" id="tab-edit-btn" hidden>Edit profile</button>
       </div>
-      <div class="tab-body" id="tab-about">
-        <p id="about-text" style="margin:0;white-space:pre-wrap"></p>
+
+      <div class="panel" id="panel-about">
+        <p class="about-bio" id="about-bio">No bio yet.</p>
+        <p class="share">Public URL: <code id="share-code">profile.html?u=username</code></p>
       </div>
-      <div class="tab-body hidden" id="tab-edit">
-        <div id="gate" class="gate hidden">
-          You must <a href="login.html">login</a> to edit your profile.
+
+      <div class="panel hidden" id="panel-edit">
+        <div class="gate" id="gate" hidden>
+          Debes <a href="login.html">iniciar sesión</a> para editar tu perfil.
         </div>
-        <form id="form-profile" class="edit-panel hidden">
-          <label for="avatar-file">Avatar (shown on Xperia screen)</label>
-          <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+        <form class="edit" id="form" hidden>
+          <label for="f-avatar">Avatar (pantalla del Xperia)</label>
+          <input id="f-avatar" type="file" accept="image/*">
 
-          <label for="stamp-file">Stamp / badge</label>
-          <input id="stamp-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+          <label for="f-stamp">Stamp / badge</label>
+          <input id="f-stamp" type="file" accept="image/*">
 
-          <label for="username">Username (public URL)</label>
-          <input id="username" maxlength="24" pattern="[A-Za-z0-9_]{3,24}" required>
+          <label for="f-user">Username (enlace público)</label>
+          <input id="f-user" type="text" maxlength="24" required pattern="[A-Za-z0-9_]{3,24}" placeholder="nombre_publico">
 
-          <label for="display-name">Display name</label>
-          <input id="display-name" maxlength="48">
+          <label for="f-disp">Display name</label>
+          <input id="f-disp" type="text" maxlength="48" placeholder="Nombre visible">
 
-          <label for="bio">Bio</label>
-          <textarea id="bio" maxlength="500" placeholder="A few lines about you…"></textarea>
+          <label for="f-bio">Bio</label>
+          <textarea id="f-bio" maxlength="500" placeholder="Tu biografía…"></textarea>
 
-          <div class="row-actions">
-            <button type="submit" class="btn-save" id="btn-save">Save profile</button>
+          <div>
+            <button class="save" type="submit" id="btn-save">Save profile</button>
             <span class="status" id="status"></span>
           </div>
-          <p class="share-hint">Changes are stored in Supabase (profiles + avatars). Other users open <code>profile.html?u=yourname</code>.</p>
+          <p class="share">Se guarda en Supabase. Otros entran con <code>profile.html?u=tunombre</code>.</p>
         </form>
       </div>
-    </div>
+    </article>
   </div>
 
   <script>
     const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
-    const AVATAR_BUCKET = "avatars";
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = "avatars";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const $ = (id) => document.getElementById(id);
     let session = null;
-    let viewingSelf = false;
 
-    function setStatus(msg, type) {
+    function setStatus(msg, ok) {
       const el = $("status");
       el.textContent = msg || "";
-      el.className = "status" + (type ? " " + type : "");
+      el.className = "status" + (ok === true ? " ok" : ok === false ? " error" : "");
     }
 
-    function paintView(p) {
-      const nick = p.display_name || p.username || "User";
-      const handle = p.username ? "@" + p.username : "@—";
-      $("view-nick").textContent = nick;
-      $("view-handle").textContent = handle;
-      $("view-title").textContent = nick;
-      $("view-sub").textContent = p.username
-        ? "Member @" + p.username + (p.created_at ? " · joined " + String(p.created_at).slice(0, 10) : "")
-        : "Member profile";
-      $("view-bio").textContent = p.bio || "No bio yet.";
-      $("about-text").textContent = p.bio || "No bio yet.";
-      $("stat-user").textContent = p.username || "—";
-      $("stat-joined").textContent = p.created_at ? String(p.created_at).slice(0, 10) : "—";
-      $("share-url").textContent = "profile.html?u=" + (p.username || "username");
-
-      const av = $("view-avatar");
-      if (p.avatar_url) {
-        const img = document.createElement("img");
-        img.className = "av";
-        img.id = "view-avatar";
-        img.alt = "";
-        img.src = p.avatar_url;
-        av.replaceWith(img);
+    function setAvatar(url, letter) {
+      const cur = $("lcd-av");
+      if (url) {
+        if (cur.tagName === "IMG") {
+          cur.src = url;
+        } else {
+          const img = document.createElement("img");
+          img.className = "av";
+          img.id = "lcd-av";
+          img.alt = "";
+          img.src = url;
+          cur.replaceWith(img);
+        }
       } else {
-        if (av.tagName === "IMG") {
+        if (cur.tagName === "IMG") {
           const ph = document.createElement("div");
           ph.className = "av ph";
-          ph.id = "view-avatar";
-          ph.textContent = (nick || "?").charAt(0).toUpperCase();
-          av.replaceWith(ph);
+          ph.id = "lcd-av";
+          ph.textContent = (letter || "?").charAt(0).toUpperCase();
+          cur.replaceWith(ph);
         } else {
-          av.className = "av ph";
-          av.textContent = (nick || "?").charAt(0).toUpperCase();
+          cur.textContent = (letter || "?").charAt(0).toUpperCase();
         }
-      }
-
-      const st = $("view-stamp");
-      if (p.stamp_url) {
-        st.src = p.stamp_url;
-        st.classList.remove("hidden");
-      } else {
-        st.removeAttribute("src");
-        st.classList.add("hidden");
       }
     }
 
-    async function loadOwnForEdit() {
+    function paint(p) {
+      const name = p.display_name || p.username || "Member";
+      const user = p.username || "—";
+      $("lcd-nm").textContent = name;
+      $("lcd-hd").textContent = user !== "—" ? "@" + user : "@—";
+      $("lcd-bio").textContent = (p.bio || "No bio.").slice(0, 120);
+      $("about-bio").textContent = p.bio || "No bio yet.";
+      $("disp-name").textContent = name;
+      $("disp-rank").textContent = p.username ? "Member" : "Unknown";
+      $("disp-meta").textContent =
+        (p.username ? "Viewing member profile " + p.username : "Profile") +
+        (p.created_at ? " · Joined " + String(p.created_at).slice(0, 10) : "");
+      $("st-joined").textContent = p.created_at ? String(p.created_at).slice(0, 10) : "—";
+      $("st-user").textContent = user;
+      $("share-code").textContent = "profile.html?u=" + (p.username || "username");
+      setAvatar(p.avatar_url || null, name);
+      const st = $("lcd-stamp");
+      if (p.stamp_url) {
+        st.hidden = false;
+        st.src = p.stamp_url;
+      } else {
+        st.hidden = true;
+        st.removeAttribute("src");
+      }
+    }
+
+    async function loadByUsername(u) {
+      const { data, error } = await sb.from("profiles")
+        .select("username, display_name, bio, avatar_url, stamp_url, created_at")
+        .ilike("username", u)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        paint({ username: u, display_name: "Not found", bio: "This profile does not exist." });
+        $("disp-meta").textContent = "User not found";
+        return null;
+      }
+      paint(data);
+      return data;
+    }
+
+    async function loadMine() {
       const { data, error } = await sb.from("profiles")
         .select("username, display_name, bio, avatar_url, stamp_url, created_at")
         .eq("id", session.user.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) {
-        const baseUser = (session.user.user_metadata?.username || session.user.email || "user").split("@")[0]
-          .replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24) || "user";
-        await sb.from("profiles").upsert({ id: session.user.id, username: baseUser, display_name: baseUser });
-        $("username").value = baseUser;
-        $("display-name").value = baseUser;
-        $("bio").value = "";
-        paintView({ username: baseUser, display_name: baseUser, bio: "" });
+        const base = (session.user.email || "user").split("@")[0].replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24) || "user";
+        await sb.from("profiles").upsert({ id: session.user.id, username: base, display_name: base });
+        $("f-user").value = base;
+        $("f-disp").value = base;
+        $("f-bio").value = "";
+        paint({ username: base, display_name: base, bio: "" });
         return;
       }
-      $("username").value = data.username || "";
-      $("display-name").value = data.display_name || "";
-      $("bio").value = data.bio || "";
-      paintView(data);
+      $("f-user").value = data.username || "";
+      $("f-disp").value = data.display_name || "";
+      $("f-bio").value = data.bio || "";
+      paint(data);
     }
 
-    async function loadPublic(username) {
-      const { data, error } = await sb.from("profiles")
-        .select("username, display_name, bio, avatar_url, stamp_url, created_at")
-        .eq("username", username)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) {
-        $("view-sub").textContent = "User not found: " + username;
-        paintView({ username: username, display_name: "Not found", bio: "This profile does not exist." });
-        return;
-      }
-      paintView(data);
-      $("stat-mode").textContent = "PUBLIC";
-    }
-
-    async function uploadUserImage(file, basename) {
+    async function upload(file, name) {
       if (!file) return null;
-      if (file.size > 2.5 * 1024 * 1024) throw new Error("Image too large (max ~2 MB)");
+      if (file.size > 2.5 * 1024 * 1024) throw new Error("Max ~2 MB");
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-      const path = session.user.id + "/" + basename + "." + ext;
-      const { error } = await sb.storage.from(AVATAR_BUCKET).upload(path, file, {
+      const path = session.user.id + "/" + name + "." + ext;
+      const { error } = await sb.storage.from(BUCKET).upload(path, file, {
         upsert: true,
         contentType: file.type || "image/jpeg",
         cacheControl: "3600"
       });
       if (error) throw error;
-      const { data } = sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
-      return data.publicUrl + "?t=" + Date.now();
+      return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl + "?t=" + Date.now();
     }
 
-    $("avatar-file").addEventListener("change", () => {
-      const file = $("avatar-file").files?.[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      const av = $("view-avatar");
-      if (av.tagName === "IMG") av.src = url;
-      else {
-        const img = document.createElement("img");
-        img.className = "av";
-        img.id = "view-avatar";
-        img.src = url;
-        img.alt = "";
-        av.replaceWith(img);
-      }
+    $("f-avatar").addEventListener("change", () => {
+      const f = $("f-avatar").files?.[0];
+      if (f) setAvatar(URL.createObjectURL(f), "U");
     });
-    $("stamp-file").addEventListener("change", () => {
-      const file = $("stamp-file").files?.[0];
-      if (!file) return;
-      $("view-stamp").src = URL.createObjectURL(file);
-      $("view-stamp").classList.remove("hidden");
+    $("f-stamp").addEventListener("change", () => {
+      const f = $("f-stamp").files?.[0];
+      if (!f) return;
+      const st = $("lcd-stamp");
+      st.hidden = false;
+      st.src = URL.createObjectURL(f);
     });
 
-    $("form-profile").addEventListener("submit", async (e) => {
+    $("form").addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!session) return;
-      const btn = $("btn-save");
-      btn.disabled = true;
+      $("btn-save").disabled = true;
       setStatus("Saving…");
       try {
-        const username = $("username").value.trim();
-        const display_name = $("display-name").value.trim();
-        const bio = $("bio").value.trim();
-        if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
-          throw new Error("Username: 3–24 chars, letters/numbers/_ only");
-        }
+        const username = $("f-user").value.trim();
+        const display_name = $("f-disp").value.trim();
+        const bio = $("f-bio").value.trim();
+        if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) throw new Error("Username: 3–24 letters/numbers/_");
         let avatar_url, stamp_url;
-        const file = $("avatar-file").files?.[0];
-        const stampFile = $("stamp-file").files?.[0];
-        if (file) {
+        if ($("f-avatar").files?.[0]) {
           setStatus("Uploading avatar…");
-          avatar_url = await uploadUserImage(file, "avatar");
+          avatar_url = await upload($("f-avatar").files[0], "avatar");
         }
-        if (stampFile) {
+        if ($("f-stamp").files?.[0]) {
           setStatus("Uploading stamp…");
-          stamp_url = await uploadUserImage(stampFile, "stamp");
+          stamp_url = await upload($("f-stamp").files[0], "stamp");
         }
         const payload = {
           id: session.user.id,
@@ -546,68 +633,73 @@
         if (stamp_url) payload.stamp_url = stamp_url;
         const { error } = await sb.from("profiles").upsert(payload);
         if (error) throw error;
-        setStatus("Profile saved.", "ok");
-        $("avatar-file").value = "";
-        $("stamp-file").value = "";
-        await loadOwnForEdit();
-        $("share-url").textContent = "profile.html?u=" + username;
+        setStatus("Saved.", true);
+        $("f-avatar").value = "";
+        $("f-stamp").value = "";
+        await loadMine();
       } catch (err) {
-        setStatus(err.message || "Save failed", "error");
+        setStatus(err.message || "Error", false);
       } finally {
-        btn.disabled = false;
+        $("btn-save").disabled = false;
       }
     });
 
-    document.querySelectorAll(".tabs button").forEach(btn => {
+    document.querySelectorAll(".tabs button").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("on"));
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("on"));
         btn.classList.add("on");
-        const tab = btn.getAttribute("data-tab");
-        $("tab-about").classList.toggle("hidden", tab !== "about");
-        $("tab-edit").classList.toggle("hidden", tab !== "edit");
+        const t = btn.getAttribute("data-tab");
+        $("panel-about").classList.toggle("hidden", t !== "about");
+        $("panel-edit").classList.toggle("hidden", t !== "edit");
       });
     });
 
-    (async () => {
-      const params = new URLSearchParams(location.search);
-      const publicUser = (params.get("u") || params.get("user") || "").trim();
+    $("btn-copy").addEventListener("click", async () => {
+      const t = $("share-code").textContent;
+      try {
+        await navigator.clipboard.writeText(location.origin + location.pathname.replace(/[^/]*$/, "") + t);
+        $("btn-copy").textContent = "Copied!";
+        setTimeout(() => ($("btn-copy").textContent = "Copy profile link"), 1200);
+      } catch {
+        prompt("Copy this link:", t);
+      }
+    });
 
+    (async () => {
+      const q = new URLSearchParams(location.search);
+      const u = (q.get("u") || q.get("user") || "").trim();
       const { data } = await sb.auth.getSession();
       session = data.session;
 
       if (session) {
-        $("btn-login-top").textContent = "My account";
-        $("tab-edit").classList.remove("hidden");
-        $("form-profile").classList.remove("hidden");
-        $("gate").classList.add("hidden");
+        $("chip-auth").textContent = "Account";
+        $("tab-edit-btn").hidden = false;
+        $("form").hidden = false;
+        $("gate").hidden = true;
       } else {
-        $("gate").classList.remove("hidden");
-        $("form-profile").classList.add("hidden");
+        $("gate").hidden = false;
+        $("form").hidden = true;
       }
 
       try {
-        if (publicUser) {
-          viewingSelf = !!(session && false);
-          $("stat-mode").textContent = "PUBLIC";
-          await loadPublic(publicUser);
-          // If logged in and viewing own username, allow edit
-          if (session) {
+        if (u) {
+          $("st-mode").textContent = "PUBLIC";
+          const data = await loadByUsername(u);
+          if (session && data) {
             const { data: me } = await sb.from("profiles").select("username").eq("id", session.user.id).maybeSingle();
-            if (me && me.username && me.username.toLowerCase() === publicUser.toLowerCase()) {
-              viewingSelf = true;
-              $("stat-mode").textContent = "YOU";
-              await loadOwnForEdit();
+            if (me?.username && me.username.toLowerCase() === u.toLowerCase()) {
+              $("st-mode").textContent = "YOU";
+              await loadMine();
             }
           }
         } else if (session) {
-          viewingSelf = true;
-          $("stat-mode").textContent = "YOU";
-          await loadOwnForEdit();
+          $("st-mode").textContent = "YOU";
+          await loadMine();
         } else {
-          $("view-sub").textContent = "Sign in to create your profile, or open profile.html?u=someone";
+          $("disp-meta").textContent = "Sign in to edit, or open profile.html?u=someone";
         }
       } catch (e) {
-        $("view-sub").textContent = e.message || "Failed to load profile";
+        $("disp-meta").textContent = e.message || "Load failed";
       }
     })();
   </script>
