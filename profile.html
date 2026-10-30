@@ -49,19 +49,6 @@
         inset 0 1px 0 rgba(255,255,255,0.12),
         inset 0 -2px 6px rgba(0,0,0,0.5);
     }
-    .xperia-body::before {
-      content: "Sony Ericsson";
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%) rotate(-90deg);
-      transform-origin: center center;
-      font: 600 9px/1 "Segoe UI", sans-serif;
-      letter-spacing: 0.12em;
-      color: #666;
-      white-space: nowrap;
-      pointer-events: none;
-    }
     .xperia-topbar {
       display: flex;
       justify-content: space-between;
@@ -484,7 +471,8 @@
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
     const AVATAR_BUCKET = "avatars";
     const DEFAULT_AVATAR = "default-avatar.jpeg";
-    const PROFILE_COLS = "id, username, display_name, bio, avatar_url, stamp_url, banner_url, background_url, created_at";
+    const PROFILE_COLS = "id, username, display_name, bio, avatar_url, banner_url, background_url, created_at";
+    const PROFILE_BASE_COLS = "id, username, display_name, bio, avatar_url, created_at";
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
@@ -520,7 +508,7 @@
       $("pf-handle").textContent = p.username ? "@" + p.username : "@user";
       $("about-text").textContent = p.bio || "No bio yet.";
       if ($("bio-about")) $("bio-about").value = p.bio || "";
-      $("share-url").textContent = "profile.html?u=" + encodeURIComponent(p.username || "username");
+      $("share-url").textContent = new URL("profile.html?u=" + encodeURIComponent(p.username || "username"), location.href).href;
 
       const av = $("pf-avatar");
       av.src = p.avatar_url || DEFAULT_AVATAR;
@@ -550,29 +538,29 @@
       $("btn-edit-banner").classList.toggle("hidden", !on);
     }
 
-    async function fetchById(id) {
-      let q = await sb.from("profiles").select(PROFILE_COLS).eq("id", id).maybeSingle();
+    // Supabase only returns columns that really exist. stamp_url is deliberately
+    // not queried: it is not part of this profiles table.
+    async function fetchProfile(queryBuilder) {
+      let q = await queryBuilder(PROFILE_COLS);
       if (q.error && /banner_url|background_url|column/i.test(q.error.message || "")) {
         hasBannerCol = false;
-        q = await sb.from("profiles")
-          .select("id, username, display_name, bio, avatar_url, stamp_url, created_at")
-          .eq("id", id).maybeSingle();
+        q = await queryBuilder(PROFILE_BASE_COLS);
       }
       if (q.error) throw q.error;
       return q.data;
     }
 
+    async function fetchById(id) {
+      return fetchProfile(cols =>
+        sb.from("profiles").select(cols).eq("id", id).maybeSingle()
+      );
+    }
+
     async function fetchByUsername(username) {
       // case-insensitive match
-      let q = await sb.from("profiles").select(PROFILE_COLS).ilike("username", username).maybeSingle();
-      if (q.error && /banner_url|background_url|column/i.test(q.error.message || "")) {
-        hasBannerCol = false;
-        q = await sb.from("profiles")
-          .select("id, username, display_name, bio, avatar_url, stamp_url, created_at")
-          .ilike("username", username).maybeSingle();
-      }
-      if (q.error) throw q.error;
-      return q.data;
+      return fetchProfile(cols =>
+        sb.from("profiles").select(cols).ilike("username", username).maybeSingle()
+      );
     }
 
     async function loadOwn() {
