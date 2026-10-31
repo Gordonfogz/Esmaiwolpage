@@ -279,6 +279,46 @@
       font-size: 14px;
       word-break: break-word;
     }
+    .fpost-avatar[data-profile-trigger], .fpost-nick[data-profile-trigger] {
+      cursor: pointer;
+    }
+    .fpost-avatar[data-profile-trigger]:hover { outline: 2px solid var(--green); }
+    .fpost-nick[data-profile-trigger]:hover { text-decoration: underline; }
+    .fpost { cursor: pointer; }
+    .fpost a, .fpost button, .fpost video, .fpost audio, .fpost img:not(.fpost-avatar) { cursor: auto; }
+    .profile-preview-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      padding: 18px;
+      background: rgba(0,0,0,.78);
+      align-items: center;
+      justify-content: center;
+    }
+    .profile-preview-overlay.on { display: flex; }
+    .profile-preview-card {
+      width: min(420px, 100%);
+      border: 2px solid #6a9acc;
+      border-top-color: #b8d4f5;
+      background: linear-gradient(180deg, #243a58, #0e1628 42px);
+      box-shadow: 0 12px 45px rgba(0,0,0,.65), inset 1px 1px 0 #a8c8ec;
+      padding: 14px;
+      color: var(--text);
+    }
+    .profile-preview-top { display:flex; align-items:center; gap:12px; }
+    .profile-preview-avatar {
+      width:76px; height:76px; flex:0 0 76px; object-fit:cover;
+      border:1px solid var(--blue); background:#03040a;
+    }
+    .profile-preview-name { color:#fff; font-size:18px; font-weight:bold; overflow-wrap:anywhere; }
+    .profile-preview-handle { color:var(--muted); font-size:12px; }
+    .profile-preview-bio {
+      margin:14px 0; padding:10px; min-height:48px;
+      border:1px solid #1c2b61; background:#080d19; white-space:pre-wrap; overflow-wrap:anywhere;
+    }
+    .profile-preview-actions { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .profile-preview-close { color:#fff; }
     .fpost-role {
       color: var(--muted);
       font-size: 11px;
@@ -872,7 +912,7 @@
       const box = $("threads-list");
       box.innerHTML = '<p class="muted">Loading threads…</p>';
       const { data, error } = await sb.from("forum_threads")
-        .select("id, title, body, created_at, user_id, profiles(username)")
+        .select("id, title, body, created_at, user_id, profiles(id, username, display_name, avatar_url)")
         .eq("board_id", boardId)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -885,13 +925,20 @@
         return;
       }
       box.innerHTML = data.map(t => {
-        const user = t.profiles?.username || "user";
+        const author = t.profiles || {};
+        const user = author.display_name || author.username || "user";
         return '<article class="thread">' +
-          '<p class="thread-title"><a href="#" data-thread="' + t.id + '">' + escapeHtml(t.title) + '</a></p>' +
-          '<div class="thread-meta">by ' + escapeHtml(user) + ' · ' + escapeHtml(fmtDate(t.created_at)) + '</div>' +
+          '<p class="thread-title"><a href="#" data-thread="' + escapeHtml(t.id) + '">' + escapeHtml(t.title) + '</a></p>' +
+          '<div class="thread-meta">by <a href="#" data-profile-id="' + escapeHtml(author.id || t.user_id || '') + '" data-profile-name="' + escapeHtml(author.username || '') + '" class="profile-list-trigger">' + escapeHtml(user) + '</a> · ' + escapeHtml(fmtDate(t.created_at)) + '</div>' +
           '<div class="thread-body">' + escapeHtml((t.body || "").slice(0, 280)) + ((t.body || "").length > 280 ? "…" : "") + '</div>' +
           '</article>';
       }).join("");
+      box.querySelectorAll("a[data-profile-id]").forEach(a => {
+        a.addEventListener("click", e => {
+          e.preventDefault();
+          showProfilePreview(a.dataset.profileId, a.dataset.profileName);
+        });
+      });
       box.querySelectorAll("a[data-thread]").forEach(a => {
         a.addEventListener("click", (e) => {
           e.preventDefault();
@@ -900,22 +947,65 @@
       });
     }
 
+    async function showProfilePreview(profileId, usernameFallback) {
+      const overlay = $("profile-preview");
+      const avatar = $("preview-avatar");
+      const name = $("preview-name");
+      const handle = $("preview-handle");
+      const bio = $("preview-bio");
+      const visit = $("preview-visit");
+      overlay.classList.add("on");
+      name.textContent = "Loading profile…";
+      handle.textContent = "";
+      bio.textContent = "Loading…";
+      avatar.src = "default-avatar.jpeg";
+      visit.href = "profile.html";
+
+      try {
+        let query = sb.from("profiles").select("id, username, display_name, bio, avatar_url, created_at");
+        if (profileId) query = query.eq("id", profileId);
+        else if (usernameFallback) query = query.ilike("username", usernameFallback);
+        else throw new Error("This post has no linked user profile.");
+        const { data: p, error } = await query.maybeSingle();
+        if (error) throw error;
+        if (!p) throw new Error("Profile not found or not publicly readable.");
+        const display = p.display_name || p.username || "USER";
+        name.textContent = display;
+        handle.textContent = p.username ? "@" + p.username : "";
+        bio.textContent = p.bio || "No bio yet.";
+        avatar.src = p.avatar_url || "default-avatar.jpeg";
+        avatar.onerror = () => { avatar.src = "default-avatar.jpeg"; };
+        visit.href = "profile.html?u=" + encodeURIComponent(p.username || "");
+        visit.classList.toggle("hidden", !p.username);
+      } catch (err) {
+        name.textContent = "Profile unavailable";
+        bio.textContent = err.message || "Could not load this profile.";
+        visit.classList.add("hidden");
+      }
+    }
+
+    function closeProfilePreview() {
+      $("profile-preview").classList.remove("on");
+    }
+
+    $("preview-close").addEventListener("click", closeProfilePreview);
+    $("profile-preview").addEventListener("click", closeProfilePreview);
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeProfilePreview();
+    });
+
     function renderFpost(opts) {
       const nick = opts.username || "user";
       const avatar = opts.avatar_url;
-      const stamp = opts.stamp_url;
       const joined = opts.joined_at ? fmtDate(opts.joined_at) : "";
       let side = '<div class="fpost-side">';
       if (avatar) {
-        side += '<img class="fpost-avatar" src="' + escapeHtml(avatar) + '" alt="">';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile">';
       } else {
-        side += '<div class="fpost-avatar ph">?</div>';
+        side += '<div class="fpost-avatar ph" data-profile-trigger="1">?</div>';
       }
-      side += '<div class="fpost-nick">' + escapeHtml(nick) + '</div>';
+      side += '<div class="fpost-nick" data-profile-trigger="1">' + escapeHtml(nick) + '</div>';
       side += '<div class="fpost-role">Member</div>';
-      if (stamp) {
-        side += '<img class="fpost-stamp" src="' + escapeHtml(stamp) + '" alt="">';
-      }
       side += '<div class="fpost-stats">';
       if (joined) side += 'Joined: ' + escapeHtml(joined) + '<br>';
       side += 'Posts: —';
@@ -928,7 +1018,7 @@
       main += '<div class="fpost-body">' + formatBody(opts.body || "") + '</div>';
       main += renderAttachments(opts.attachments || []);
       main += '</div>';
-      return '<article class="fpost">' + side + main + '</article>';
+      return '<article class="fpost" data-profile-id="' + escapeHtml(opts.profile_id || '') + '" data-profile-name="' + escapeHtml(opts.profile_username || '') + '" title="Click to preview this user profile">' + side + main + '</article>';
     }
 
     async function openThread(threadId) {
@@ -940,12 +1030,12 @@
       let t = null;
       {
         let res = await sb.from("forum_threads")
-          .select("id, board_id, title, body, attachments, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .select("id, board_id, title, body, attachments, created_at, user_id, profiles(id, username, display_name, bio, avatar_url, created_at)")
           .eq("id", threadId)
           .single();
         if (res.error) {
           res = await sb.from("forum_threads")
-            .select("id, board_id, title, body, attachments, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .select("id, board_id, title, body, attachments, created_at, user_id, profiles(id, username, display_name, bio, avatar_url, created_at)")
             .eq("id", threadId)
             .single();
         }
@@ -960,12 +1050,12 @@
       let replies = [];
       {
         let res = await sb.from("forum_posts")
-          .select("id, body, attachments, created_at, profiles(username, display_name, avatar_url, stamp_url, created_at)")
+          .select("id, body, attachments, created_at, user_id, profiles(id, username, display_name, bio, avatar_url, created_at)")
           .eq("thread_id", threadId)
           .order("created_at", { ascending: true });
         if (res.error) {
           res = await sb.from("forum_posts")
-            .select("id, body, attachments, created_at, profiles(username, display_name, avatar_url, created_at)")
+            .select("id, body, attachments, created_at, user_id, profiles(id, username, display_name, bio, avatar_url, created_at)")
             .eq("thread_id", threadId)
             .order("created_at", { ascending: true });
         }
@@ -982,9 +1072,10 @@
         title: t.title,
         body: t.body,
         created_at: t.created_at,
+        profile_id: tp.id || t.user_id,
+        profile_username: tp.username,
         username: tp.display_name || tp.username,
         avatar_url: tp.avatar_url,
-        stamp_url: tp.stamp_url,
         joined_at: tp.created_at,
         attachments: t.attachments || []
       });
@@ -996,9 +1087,10 @@
             num: i + 2,
             body: r.body,
             created_at: r.created_at,
+            profile_id: p.id || r.user_id,
+            profile_username: p.username,
             username: p.display_name || p.username,
             avatar_url: p.avatar_url,
-            stamp_url: p.stamp_url,
             joined_at: p.created_at,
             attachments: r.attachments || []
           });
@@ -1007,6 +1099,20 @@
         html += '<p class="muted" style="margin-top:4px">No replies yet.</p>';
       }
       box.innerHTML = html;
+      box.querySelectorAll(".fpost").forEach(post => {
+        post.addEventListener("click", e => {
+          const trigger = e.target.closest("[data-profile-trigger]");
+          if (trigger) {
+            e.preventDefault();
+            showProfilePreview(post.dataset.profileId, post.dataset.profileName);
+            return;
+          }
+          // Clicking the post itself previews its author. Links, media and controls
+          // keep their normal behavior (open attachment, lightbox, play, etc.).
+          if (e.target.closest("a, button, video, audio, input, textarea, select, .fpost-media")) return;
+          showProfilePreview(post.dataset.profileId, post.dataset.profileName);
+        });
+      });
     }
 
     $("back-boards").addEventListener("click", (e) => {
@@ -1149,6 +1255,22 @@
   </script>
   <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
     <img id="lightbox-img" alt="Full size">
+  </div>
+  <div class="profile-preview-overlay" id="profile-preview" role="dialog" aria-modal="true" aria-label="Profile preview">
+    <section class="profile-preview-card" onclick="event.stopPropagation()">
+      <div class="profile-preview-top">
+        <img class="profile-preview-avatar" id="preview-avatar" src="default-avatar.jpeg" alt="">
+        <div>
+          <div class="profile-preview-name" id="preview-name">Loading profile…</div>
+          <div class="profile-preview-handle" id="preview-handle"></div>
+        </div>
+      </div>
+      <div class="profile-preview-bio" id="preview-bio">Loading…</div>
+      <div class="profile-preview-actions">
+        <a class="button" id="preview-visit" href="profile.html">[ VISIT PROFILE ]</a>
+        <button type="button" class="profile-preview-close" id="preview-close">[ CLOSE ]</button>
+      </div>
+    </section>
   </div>
 <script src="esmaiwol-chrome.js" defer></script>
 </body>
