@@ -97,8 +97,6 @@
     .fash-ticker span{display:inline-block;padding-left:100%;animation:fash-marquee 24s linear infinite}
     @keyframes fash-marquee{to{transform:translateX(-100%)}}
     .fash-stamp{display:inline-block;border:1px solid #ffc8f0;background:#721b68;color:#fff;padding:3px 8px;margin:4px 4px 4px 0;font-size:11px;letter-spacing:1px}
-    .fash-gate{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 30%,#ff9be7 0,#a529cf 43%,#16051f 100%);transition:opacity .65s ease,visibility .65s ease}
-    .fash-gate.unlocked{opacity:0;visibility:hidden;pointer-events:none}
     /* Background music - discreet volume control */
     .fash-music {
       position: fixed;
@@ -144,15 +142,7 @@
       .fash-music input[type="range"] { width: 70px; }
     }
 
-    .fash-gate-card{width:min(480px,100%);padding:26px;text-align:center;border:2px solid #ffd5f5;background:#30082feF;box-shadow:0 0 40px #ff4fca99;animation:fash-pop .8s ease both}
-    .fash-gate-card h2{font-size:clamp(26px,7vw,42px);margin-bottom:6px}
-    .fash-gate-card p{color:#ffe1f7}
-    .fash-gate-card input{text-align:center;font-size:20px;letter-spacing:3px}
-    .fash-gate-card button{margin-top:12px;width:100%}
     @keyframes fash-pop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-    .fash-hidden-board{visibility:hidden;opacity:0;transform:translateY(10px);transition:opacity .8s ease,transform .8s ease}
-    .fash-hidden-board.ready{visibility:visible;opacity:1;transform:none}
-    @media(max-width:520px){.thread{padding:13px}.fash-gate-card{padding:18px}}
 
     /* FASHFOIDS: independent editorial layout */
     :root{--ff-ink:#21091f;--ff-plum:#48123f;--ff-pink:#ff74d5;--ff-hot:#ff39bd;--ff-lilac:#c9a0ff;--ff-cream:#fff0fb}
@@ -197,9 +187,6 @@
     .status{color:#dcb8d8}.status.error{color:#ff9bad}.post-ref{color:#e5baff}
     .post-ref:target,.thread:target,.reply:target,.ref-highlight{outline:2px solid #ffb6ec;outline-offset:3px;background-color:#421441}
     footer{color:#c58fbd;letter-spacing:.15em;padding:20px}
-    .fash-gate{background:radial-gradient(circle at 50% 25%,#ffb2e8 0,#a83acb 40%,#16051f 100%)}
-    .fash-gate-card{border:1px solid #ffe1f7;border-radius:4px 28px 4px 28px;background:linear-gradient(145deg,#42103eef,#1c0929f5);box-shadow:0 0 60px #ff4fca66}
-    .fash-gate-card h2{color:#fff0fb}.fash-gate-card p{color:#ffe1f7}
     @media(max-width:760px){.wrap{width:calc(100% - 20px);margin-top:10px}.layout{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}header{min-height:0}.thread:nth-child(n){width:100%;margin-left:0;margin-right:0}}
     @media(max-width:520px){.wrap{width:calc(100% - 12px)}header{padding:22px 17px;border-radius:3px 22px 3px 22px}.side{grid-template-columns:1fr}.panel{padding:15px}.thread{padding:16px}.hero-mark{right:8%;top:15px}.nav{gap:7px}.nav a{font-size:12px;padding:7px 8px}.board-warning{align-items:flex-start}.board-warning-gif{max-width:25%}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
@@ -207,19 +194,7 @@
   </style>
 </head>
 <body>
-  <div class="fash-gate" id="fash-gate" role="dialog" aria-modal="true" aria-labelledby="fash-gate-title">
-    <form class="fash-gate-card" id="fash-unlock-form">
-      <div class="fash-stamp">PRIVATE AREA // 18+</div>
-      <h2 id="fash-gate-title">♡ FASHFOIDS ♡</h2>
-      <p>A room apart. A different aesthetic. Enter with your access key.</p>
-      <label for="fash-password">ACCESS KEY</label>
-      <input id="fash-password" type="password" autocomplete="current-password" required maxlength="32" placeholder="••••••••">
-      <button type="submit">[ UNLOCK THE PINK ROOM ]</button>
-      <div id="fash-gate-status" class="status" role="status" aria-live="polite"></div>
-      <p class="muted">Keep your access key private.</p>
-    </form>
-  </div>
-  <div class="wrap fash-hidden-board" id="fash-board">
+  <div class="wrap" id="fash-board">
     <header>
       <div class="eyebrow">FASHFOIDS SOCIAL CLUB <span aria-hidden="true">✦</span> EST. 2026</div>
       <div class="hero-mark" aria-hidden="true">FF</div>
@@ -287,26 +262,23 @@
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-    // Fill in these two values with the project URL and the Publishable key.
-    // Never paste a Secret or service_role key here.
+    // Public project identifiers. Never put a service_role/secret key in this file.
     const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
-    // Public project URL/key are identifiers only. All FASHFOIDS data operations go through
-    // the Edge Function, which verifies a server-side shared password session before using service_role.
+    // Public visitors use the gateway without a shared password. Admin actions
+    // send the signed-in Supabase Auth access token and are verified server-side.
     const API_URL = SUPABASE_URL + '/functions/v1/fashfoids-gateway';
     const BUCKET = 'fashfoids-private';
-    const SESSION_KEY = 'fashfoids_secure_session';
-    let secureSession = null;
-    try { secureSession = sessionStorage.getItem(SESSION_KEY); } catch (_) {}
+    let supabase = null;
+    let isAdmin = false;
+
     async function secureRequest(action, payload = {}) {
-      if (!secureSession && action !== 'login') {
+      let accessToken = null;
+      if (supabase) {
         try {
-          const gate = document.getElementById('fash-gate');
-          const board = document.getElementById('fash-board');
-          if (gate) gate.classList.remove('unlocked');
-          if (board) board.classList.remove('ready');
+          const { data } = await supabase.auth.getSession();
+          accessToken = data?.session?.access_token || null;
         } catch (_) {}
-        throw new Error('Please unlock FASHFOIDS first.');
       }
       let response;
       try {
@@ -315,33 +287,20 @@
           headers: {
             'Content-Type': 'application/json',
             'apikey': SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY,
-            ...(secureSession ? { 'x-fashfoids-session': secureSession } : {})
+            'Authorization': 'Bearer ' + (accessToken || SUPABASE_PUBLISHABLE_KEY)
           },
           body: JSON.stringify({ action, ...payload })
         });
-      } catch (netErr) {
-        throw new Error('Gateway unreachable. Is fashfoids-gateway deployed?');
+      } catch (_) {
+        throw new Error('Gateway unreachable. Deploy the updated fashfoids-gateway function.');
       }
       const result = await response.json().catch(() => ({}));
       if (!response.ok || result.error) {
-        const msg = result.error || result.message || ('Gateway error (' + response.status + ')');
-        // Only kill the session on real auth failures. DB/storage errors must NOT lock the user out.
-        const authFail = response.status === 401 || /invalid or expired session|unauthorized|please unlock/i.test(String(msg));
-        if (authFail) {
-          secureSession = null;
-          try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
-          try {
-            const gate = document.getElementById('fash-gate');
-            const board = document.getElementById('fash-board');
-            if (gate) gate.classList.remove('unlocked');
-            if (board) board.classList.remove('ready');
-          } catch (_) {}
-        }
-        throw new Error(msg);
+        throw new Error(result.error || result.message || ('Gateway error (' + response.status + ')'));
       }
       return result;
     }
+
     class SecureQuery {
       constructor(table) { this.table=table; this.action='select'; this.payload={table,filters:[],order:null,limit:null}; }
       select(columns='*') { this.payload.columns=columns; return this; }
@@ -352,19 +311,15 @@
       update(values) { this.action='update'; this.payload.values=values; return this; }
       delete() { this.action='delete'; return this; }
       then(resolve, reject) {
-        return Promise.resolve(
-          secureRequest('db', { ...this.payload, mode: this.action })
-        ).then(
-          (data) => {
+        return Promise.resolve(secureRequest('db', { ...this.payload, mode: this.action }))
+          .then(data => {
             const out = { data: data.data ?? null, error: null };
             if (typeof resolve === 'function') resolve(out);
             return out;
-          },
-          (err) => {
+          }, err => {
             if (typeof reject === 'function') reject(err);
             else throw err;
-          }
-        );
+          });
       }
     }
     const secureDb = { from(table) { return new SecureQuery(table); } };
@@ -386,9 +341,6 @@
     const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
     const $ = (id) => document.getElementById(id);
     const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
-    let supabase = null;
-    let isAdmin = false;
-
     // ---------- Ownership token (persistent per browser) ----------
     const POSTER_TOKEN_KEY = 'esmaiwol_chan_poster_token';
     function getPosterToken() {
@@ -552,35 +504,9 @@
       return true;
     }
 
-    function addOwnerActions(container, table, id, token, content, title = null) {
-      if (token !== MY_TOKEN) return; // only show for own posts
-
-      const actions = document.createElement('div');
-      actions.className = 'post-actions';
-
-      const editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.className = 'report-button';
-      editBtn.style.color = '#9cff9c';
-      editBtn.style.borderColor = '#2a5a2a';
-      editBtn.textContent = '[ EDIT ]';
-      editBtn.addEventListener('click', async () => {
-        const ok = await editOwnPost(table, id, token, content, title);
-        if (ok) await loadThreads();
-      });
-
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'report-button';
-      delBtn.textContent = '[ DELETE ]';
-      delBtn.addEventListener('click', async () => {
-        const ok = await deleteOwnPost(table, id, token);
-        if (ok) await loadThreads();
-      });
-
-      actions.append(editBtn, delBtn);
-      container.append(actions);
-    }
+    // Public poster tokens are only labels, not secure identity. Editing/deleting
+    // is therefore reserved for authenticated administrators.
+    function addOwnerActions() { return; }
 
     function addReportButton(container, postType, postId) {
       const actions = document.createElement('div');
@@ -645,7 +571,7 @@
       $('threads-list').replaceChildren(safeText('div','empty','Loading threads…'));
       let threads = null;
       try {
-        // All FASHFOIDS thread reads must pass through the password-gated server gateway.
+        // Thread reads use the public FASHFOIDS gateway.
         const result = await secureDb
           .from('threads')
           .select('id, board, title, content, image_path, image_paths, created_at, poster_token')
@@ -680,7 +606,7 @@
         addReportButton(card, 'thread', thread.id);
         await appendPostImages(card, thread);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
-        // Replies also pass through the same server-side session check.
+        // Replies are loaded through the public FASHFOIDS gateway.
         const { data: replies, error: replyError } = await secureDb
           .from('posts')
           .select('id, thread_id, content, image_path, image_paths, created_at, poster_token')
@@ -768,65 +694,22 @@
       finally{button.disabled=false}
     });
 
-    // Password is checked only by the server. The shared secret is never embedded in this HTML.
-    $('fash-unlock-form').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const input = $('fash-password');
-      const button = $('fash-unlock-form').querySelector('button[type="submit"]');
-      if (button) button.disabled = true;
-      $('fash-gate-status').textContent = 'VERIFYING ACCESS…';
-      try {
-        const result = await secureRequest('login', { password: input.value });
-        secureSession = result.session;
-        try { sessionStorage.setItem(SESSION_KEY, secureSession); } catch (_) {}
-        input.value = '';
-        $('fash-gate-status').textContent = 'ACCESS GRANTED // welcome to the Pink Room';
-        $('fash-gate').classList.add('unlocked');
-        $('fash-board').classList.add('ready');
-        $('fash-gate-status').classList.remove('error');
-        status('connection-status', 'Session OK — loading threads…');
-        try { await loadThreads(); }
-        catch (loadErr) { status('connection-status', 'Unlocked, but load failed: ' + (loadErr.message || loadErr), true); }
-      } catch (e) {
-        $('fash-gate-status').textContent = 'ACCESS DENIED // ' + (e.message || 'verification failed');
-        $('fash-gate-status').classList.add('error');
-        input.select();
-      } finally { if (button) button.disabled = false; }
-    });
+    // FASHFOIDS is public: no password screen and no browser-held shared secret.
     if(!ready){
-      status('connection-status','The secure FASHFOIDS gateway needs to be deployed and configured.',true);
-      $('threads-list').replaceChildren(safeText('div','empty','Deploy the fashfoids-gateway Edge Function and configure its server secrets.'));
+      status('connection-status','Supabase URL or Publishable key is not configured.',true);
+      $('threads-list').replaceChildren(safeText('div','empty','Check the Supabase project URL and Publishable key in this page.'));
     }else{
       supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
       $('admin-login').addEventListener('click', () => adminLogin().catch(e => status('admin-status', e.message || 'Admin sign-in failed.', true)));
       supabase.auth.onAuthStateChange((_event, session) => {
         isAdmin = session?.user?.app_metadata?.role === 'admin';
         status('admin-status', isAdmin ? `Admin authenticated: ${session.user.email || 'administrator'}.` : (session?.user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!session?.user && !isAdmin);
-        if ($('fash-board').classList.contains('ready')) loadThreads().catch(e => status('connection-status', e.message, true));
+        loadThreads().catch(e => status('connection-status', e.message, true));
       });
-      refreshAdminState().catch(e=>status('connection-status',e.message,true));
-
-      // Restore session ONLY after the client exists (loadThreads no longer depends on it, but keep order clean).
-      if (secureSession) {
-        secureRequest('verify_session').then(() => {
-          $('fash-gate').classList.add('unlocked');
-          $('fash-board').classList.add('ready');
-          status('connection-status', 'Session restored — loading threads…');
-          return loadThreads();
-        }).catch((e) => {
-          secureSession = null;
-          try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
-          try {
-            const gate = document.getElementById('fash-gate');
-            const board = document.getElementById('fash-board');
-            if (gate) gate.classList.remove('unlocked');
-            if (board) board.classList.remove('ready');
-          } catch (_) {}
-          status('connection-status', 'Previous session expired. Unlock again.' + (e && e.message ? ' ('+e.message+')' : ''), true);
-        });
-      }
+      refreshAdminState().catch(e=>status('admin-status',e.message,true));
+      loadThreads().catch(e=>status('connection-status',e.message,true));
     }
-  
+
     // ---------- Background music player (10 tracks) ----------
     (function initFashMusic() {
       const tracks = [
