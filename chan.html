@@ -60,6 +60,8 @@
     .thread-title{font-weight:bold;color:var(--green);font-size:17px}
     .meta{font-size:11px;color:var(--muted)}.thread-content{white-space:pre-wrap;margin:8px 0 10px}
     .post-image{display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;object-position:left;margin:8px 0;border:1px solid #28335e;background:#000}
+    .post-video{display:block;width:min(100%,640px);max-height:440px;margin:8px 0;border:1px solid #28335e;background:#000}
+    .post-file{display:inline-block;margin:8px 8px 8px 0;padding:8px 10px;border:1px solid #293a79;background:#0a1025;overflow-wrap:anywhere}
     .replies{margin:12px 0 0 14px;padding-left:12px;border-left:2px solid #1c2b61}
     .reply{padding:8px 0;border-bottom:1px dotted #202a50}.reply:last-child{border-bottom:0}
     .reply-text{white-space:pre-wrap;margin-top:4px}
@@ -110,8 +112,9 @@
             <input id="thread-title" name="title" maxlength="120" required placeholder="Thread title">
             <label for="thread-content">Message</label>
             <textarea id="thread-content" name="content" maxlength="10000" required placeholder="Write your post..."></textarea>
-            <label for="thread-image">Images (optional: up to 7; JPG, PNG, GIF or WebP; max 5 MB each)</label>
-            <input id="thread-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+            <label for="thread-image">Attachments (up to 7 files: images, videos and documents; max 25 MB each)</label>
+            <input id="thread-image" name="attachments" type="file" accept="image/*,video/mp4,video/webm,video/quicktime,video/x-matroska,application/pdf,text/plain,.doc,.docx,.odt,.rtf,.zip,.7z" multiple>
+            <p class="muted">You can select several files at once. Posts are published anonymously; no account name is displayed.</p>
             <div class="form-actions"><button type="submit">[ POST THREAD ]</button><button type="button" id="refresh">[ REFRESH ]</button></div>
             <div id="thread-status" class="status" role="status"></div>
           </form>
@@ -134,7 +137,7 @@
         <section class="panel">
           <h2>// BLACK LIST </h2>
           <p class="muted">FEMBOYS NOT, TRANNIES NOT, THIS IS NOT YOUR SIDE</p>
-          <p class="muted">The image will be saved on bucket <code>chan-images</code>.</p><p class="anti-spam-note">zogbots or bots not</p>
+          <p class="muted">Files are saved in the Supabase Storage bucket <code>chan-images</code>.</p><p class="anti-spam-note">zogbots or bots not</p>
         </section>
       </aside>
     </div>
@@ -149,8 +152,15 @@
     const SUPABASE_URL = 'https://oxgymzpvbpapsgmilenw.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56';
     const BUCKET = 'chan-images';
-    const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-    const allowedExtensions = new Set(['jpg','jpeg','png','gif','webp']);
+    const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+    const MAX_ATTACHMENTS = 7;
+    // Keep using image_paths for compatibility with the existing Supabase tables.
+    // It now stores paths for images, videos and documents too.
+    const allowedExtensions = new Set([
+      'jpg','jpeg','png','gif','webp',
+      'mp4','webm','mov','mkv',
+      'pdf','txt','doc','docx','odt','rtf','zip','7z'
+    ]);
     const $ = (id) => document.getElementById(id);
     const ready = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PEGA_AQUI') && SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_');
     let supabase = null;
@@ -244,44 +254,93 @@
       }
       alert('Report sent. Thanks for helping keep the board clean.');
     }
-    function makeImage(path) {
-      if (!path) return Promise.resolve(null);
-      return supabase.storage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
-        if (error || !data?.signedUrl) return null;
-        const img = document.createElement('img');
-        img.className = 'post-image'; img.loading = 'lazy'; img.alt = 'Attached image'; img.src = data.signedUrl;
-        return img;
-      });
+    function attachmentKind(path) {
+      const ext = String(path || '').split('.').pop().toLowerCase();
+      if (['jpg','jpeg','png','gif','webp'].includes(ext)) return 'image';
+      if (['mp4','webm','mov','mkv'].includes(ext)) return 'video';
+      return 'file';
     }
-    async function uploadImages(fileList) {
+
+    async function makeAttachment(path) {
+      if (!path) return null;
+      const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
+      if (error || !data?.signedUrl) return null;
+
+      const kind = attachmentKind(path);
+      const url = data.signedUrl;
+      const name = path.split('/').pop() || 'attachment';
+
+      if (kind === 'image') {
+        const img = document.createElement('img');
+        img.className = 'post-image';
+        img.loading = 'lazy';
+        img.alt = 'Anonymous image attachment';
+        img.src = url;
+        return img;
+      }
+
+      if (kind === 'video') {
+        const video = document.createElement('video');
+        video.className = 'post-video';
+        video.controls = true;
+        video.preload = 'metadata';
+        video.playsInline = true;
+        video.src = url;
+        video.setAttribute('aria-label', 'Attached video');
+        return video;
+      }
+
+      const link = document.createElement('a');
+      link.className = 'post-file';
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.download = name;
+      link.textContent = `📎 ${name} — open/download`;
+      return link;
+    }
+
+    async function uploadAttachments(fileList) {
       const files = Array.from(fileList || []);
-      if (files.length > 7) throw new Error('A post can contain a maximum of 7 images.');
-      const paths = [];
+      if (files.length > MAX_ATTACHMENTS) {
+        throw new Error(`A post can contain a maximum of ${MAX_ATTACHMENTS} attachments.`);
+      }
+
       for (const file of files) {
         if (!file || !file.name) continue;
-        if (file.size > MAX_IMAGE_BYTES) throw new Error(`Image ${file.name} exceeds the 5 MB limit.`);
+        if (file.size > MAX_ATTACHMENT_BYTES) {
+          throw new Error(`${file.name} exceeds the 25 MB per-file limit.`);
+        }
         const ext = file.name.split('.').pop().toLowerCase();
-        if (!allowedExtensions.has(ext)) throw new Error('Format not allowed. Use JPG, PNG, GIF or WebP.');
-        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) throw new Error(`File ${file.name} does not appear to be a compatible image.`);
+        if (!allowedExtensions.has(ext)) {
+          throw new Error(`File type not allowed: ${file.name}. Allowed: images, MP4/WebM/MOV/MKV, PDF, TXT, DOC/DOCX, ODT, RTF, ZIP and 7Z.`);
+        }
       }
+
+      const paths = [];
       for (const file of files) {
         const ext = file.name.split('.').pop().toLowerCase();
         const path = `${new Date().toISOString().slice(0,10)}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false, contentType:file.type });
+        const contentType = file.type || 'application/octet-stream';
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false,
+          contentType
+        });
         if (error) throw error;
         paths.push(path);
       }
       return paths;
     }
 
-    function getPostImagePaths(post) {
-      if (Array.isArray(post.image_paths)) return post.image_paths.filter(Boolean).slice(0, 7);
+    function getPostAttachmentPaths(post) {
+      if (Array.isArray(post.image_paths)) return post.image_paths.filter(Boolean).slice(0, MAX_ATTACHMENTS);
       return post.image_path ? [post.image_path] : [];
     }
-    async function appendPostImages(container, post) {
-      for (const path of getPostImagePaths(post)) {
-        const image = await makeImage(path);
-        if (image) container.append(image);
+
+    async function appendPostAttachments(container, post) {
+      for (const path of getPostAttachmentPaths(post)) {
+        const attachment = await makeAttachment(path);
+        if (attachment) container.append(attachment);
       }
     }
 
@@ -445,7 +504,7 @@
         addOwnerActions(card, 'threads', thread.id, thread.poster_token, thread.content, thread.title);
         addAdminDeleteButton(card, 'threads', thread);
         addReportButton(card, 'thread', thread.id);
-        await appendPostImages(card, thread);
+        await appendPostAttachments(card, thread);
         const repliesBox = document.createElement('div'); repliesBox.className = 'replies';
         // Fetch every reply for this thread in pages rather than stopping at 100.
         const replies = [];
@@ -476,15 +535,15 @@
             addOwnerActions(item, 'posts', reply.id, reply.poster_token, reply.content);
             addAdminDeleteButton(item, 'posts', reply);
             addReportButton(item, 'reply', reply.id);
-            await appendPostImages(item, reply);
+            await appendPostAttachments(item, reply);
             repliesBox.append(item);
           }
         }
         const form = document.createElement('form'); form.className = 'reply-form';
         const label = safeText('label','','Reply to this thread');
         const textarea = document.createElement('textarea'); textarea.required = true; textarea.maxLength = 5000; textarea.placeholder = 'Your reply…';
-        const fileLabel = safeText('label','','Optional images (up to 7; max 5 MB each)');
-        const file = document.createElement('input'); file.type='file'; file.accept='image/jpeg,image/png,image/gif,image/webp'; file.multiple = true;
+        const fileLabel = safeText('label','','Optional attachments (up to 7; max 25 MB each)');
+        const file = document.createElement('input'); file.type='file'; file.accept='image/*,video/mp4,video/webm,video/quicktime,video/x-matroska,application/pdf,text/plain,.doc,.docx,.odt,.rtf,.zip,.7z'; file.multiple = true;
         const submit = document.createElement('button'); submit.type='submit'; submit.textContent='[ REPLY ]';
         const msg = safeText('div','status',''); msg.setAttribute('role','status');
         form.append(label,textarea,fileLabel,file,submit,msg);
@@ -493,7 +552,7 @@
           try {
             checkPostCooldown();
             const content = textarea.value.trim(); if (!content) throw new Error('Write a reply.');
-            const image_paths = await uploadImages(file.files);
+            const image_paths = await uploadAttachments(file.files);
             const { error } = await supabase.from('posts').insert({
               thread_id: thread.id,
               content,
@@ -526,7 +585,7 @@
         checkPostCooldown();
         const board=$('board').value, title=$('thread-title').value.trim(), content=$('thread-content').value.trim();
         if(!title || !content) throw new Error('Title and message are required.');
-        const image_paths=await uploadImages($('thread-image').files);
+        const image_paths=await uploadAttachments($('thread-image').files);
         const {error}=await supabase.from('threads').insert({
           board,
           title,
