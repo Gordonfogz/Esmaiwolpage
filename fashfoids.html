@@ -429,14 +429,23 @@
       }
       alert('Report sent. Thanks for helping keep the board clean.');
     }
-    function makeImage(path) {
-      if (!path) return Promise.resolve(null);
-      return secureStorage.from(BUCKET).createSignedUrl(path, 3600).then(({data,error}) => {
+    async function makeImage(path) {
+      if (!path) return null;
+      try {
+        const {data,error} = await secureStorage.from(BUCKET).createSignedUrl(path, 3600);
+        // A missing/deleted attachment must never prevent the thread list from rendering.
         if (error || !data?.signedUrl) return null;
         const img = document.createElement('img');
-        img.className = 'post-image'; img.loading = 'lazy'; img.alt = 'Attached image'; img.src = data.signedUrl;
+        img.className = 'post-image';
+        img.loading = 'lazy';
+        img.alt = 'Attached image';
+        img.src = data.signedUrl;
+        img.addEventListener('error', () => img.remove(), { once: true });
         return img;
-      });
+      } catch (error) {
+        console.warn('FASHFOIDS: could not load attachment:', path, error?.message || error);
+        return null;
+      }
     }
     async function uploadImages(fileList) {
       const files = Array.from(fileList || []);
