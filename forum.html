@@ -988,10 +988,15 @@
       $("profile-preview").classList.remove("on");
     }
 
-    $("preview-close").addEventListener("click", closeProfilePreview);
-    $("profile-preview").addEventListener("click", closeProfilePreview);
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") closeProfilePreview();
+    // The preview modal markup is placed after this script in the document.
+    // Bind its controls after the HTML has been parsed, otherwise null elements
+    // would throw and stop forum initialization (session/boards loading).
+    document.addEventListener("DOMContentLoaded", () => {
+      $("preview-close")?.addEventListener("click", closeProfilePreview);
+      $("profile-preview")?.addEventListener("click", closeProfilePreview);
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeProfilePreview();
+      });
     });
 
     function renderFpost(opts) {
