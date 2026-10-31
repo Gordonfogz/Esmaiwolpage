@@ -347,13 +347,28 @@
       .pf-stats span { font-size: 8px; }
       .pf-stats b { font-size: 12px; }
     }
+
+    .profile-entry { padding: 10px 2px; border-bottom: 1px solid #c7c7c7; }
+    .profile-entry:last-child { border-bottom: 0; }
+    .profile-entry-title { font-weight: bold; margin-bottom: 4px; color: #222; }
+    .profile-entry-meta { color: #666; font-size: 11px; margin-bottom: 5px; }
+    .profile-entry-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .profile-entry-media { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .profile-entry-media img { max-width:150px; max-height:120px; object-fit:cover; }
+    .profile-entry-media video { max-width:220px; max-height:150px; }
+    .profile-empty, .profile-error { padding:10px 0; color:#555; }
+    .profile-error { color:#a22; }
+    .profile-entry-title a, .profile-entry-actions a { color:inherit; text-decoration:underline; }
+    .profile-entry-actions { margin-top:7px; font-size:11px; }
+    .profile-summary { padding:7px; background:#ddd; border:1px solid #aaa; }
+    .profile-media-counts { display:flex; flex-wrap:wrap; gap:12px; padding:8px; margin-bottom:8px; background:#ddd; border:1px solid #aaa; font-size:11px; }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="nav">
       <a href="index.html">← Index</a>
-      <a href="forum.html">Forum</a>
+      <a href="forums.html">Forum</a>
       <a href="chat.html">Chat</a>
       <a href="login.html">Login</a>
     </div>
@@ -381,7 +396,6 @@
             <div><b id="stat-messages">0</b><span>Messages</span></div>
             <div><b id="stat-media">0</b><span>Media</span></div>
             <div><b id="stat-react">0</b><span>Reaction score</span></div>
-            <div><b id="stat-tags">0</b><span>Agora GangTags</span></div>
             <div><b id="stat-awards">0</b><span>Awards</span></div>
           </div>
 
@@ -418,8 +432,8 @@
             </div>
           </div>
           <div class="pf-body hidden" id="tab-activity"><p>No recent activity.</p></div>
-          <div class="pf-body hidden" id="tab-posts"><p>No postings listed yet.</p></div>
-          <div class="pf-body hidden" id="tab-media"><p>No media yet.</p></div>
+          <div class="pf-body hidden" id="tab-posts"><p>Loading postings…</p></div>
+          <div class="pf-body hidden" id="tab-media"><p>Loading media…</p></div>
           <div class="pf-body hidden" id="tab-awards"><p>No awards yet.</p></div>
           <div class="pf-body hidden" id="tab-edit">
             <form class="edit-form" id="form-profile">
@@ -527,7 +541,6 @@
       $("stat-messages").textContent = p.messages_count != null ? p.messages_count : "0";
       $("stat-media").textContent = p.media_count != null ? p.media_count : "0";
       $("stat-react").textContent = p.reaction_score != null ? p.reaction_score : "0";
-      $("stat-tags").textContent = p.gang_tags != null ? p.gang_tags : "0";
       $("stat-awards").textContent = p.awards_count != null ? p.awards_count : "0";
     }
 
@@ -584,6 +597,7 @@
       if ($("bio")) $("bio").value = data.bio || "";
       if ($("bio-about")) $("bio-about").value = data.bio || "";
       paint(data);
+      await loadProfileActivity(data.id);
       return data;
     }
 
@@ -605,7 +619,136 @@
         setOwnUI(false);
       }
       paint(data);
+      await loadProfileActivity(data.id);
       return data;
+    }
+
+    // The forum is the source of truth: topics + replies + their JSON attachments.
+    // GitHub Pages serves this page; Supabase stores and returns the live records.
+    async function fetchAllRows(table, columns, userId) {
+      const all = [];
+      const pageSize = 500;
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await sb.from(table)
+          .select(columns)
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        const rows = data || [];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+      }
+      return all;
+    }
+
+    function safeAttachmentList(value) {
+      if (!Array.isArray(value)) return [];
+      return value.filter(a => a && typeof a === "object" && typeof a.url === "string" && a.url.trim());
+    }
+
+    function escapeProfileHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+      }[ch]));
+    }
+
+    function mediaKind(file) {
+      const type = String(file.type || "").toLowerCase();
+      const name = String(file.name || file.url || "").toLowerCase();
+      if (type.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|avif|svg)(\?|$)/.test(name)) return "Images";
+      if (type.startsWith("video/") || /\.(mp4|webm|mov|m4v|ogv|avi|mkv)(\?|$)/.test(name)) return "Videos";
+      if (type.startsWith("audio/") || /\.(mp3|wav|ogg|flac|m4a|opus)(\?|$)/.test(name)) return "Audio";
+      return "Files";
+    }
+
+    function renderProfileAttachment(a) {
+      const url = escapeProfileHtml(a.url);
+      const name = escapeProfileHtml(a.name || "file");
+      const type = String(a.type || "").toLowerCase();
+      if (type.startsWith("image/")) return '<a href="' + url + '" target="_blank" rel="noopener"><img src="' + url + '" alt="' + name + '" loading="lazy"></a>';
+      if (type.startsWith("video/")) return '<video controls preload="metadata" src="' + url + '"></video>';
+      if (type.startsWith("audio/")) return '<audio controls preload="metadata" src="' + url + '"></audio>';
+      return '<a href="' + url + '" target="_blank" rel="noopener">📎 ' + name + '</a>';
+    }
+
+    function renderProfileEntry(item) {
+      const date = item.created_at ? new Date(item.created_at).toLocaleString() : "Date unavailable";
+      const attachments = safeAttachmentList(item.attachments);
+      const title = item.kind === "Topic" ? (item.title || "Untitled topic") : "Reply in thread #" + item.thread_id;
+      const targetThread = item.kind === "Topic" ? item.id : item.thread_id;
+      const threadUrl = "forums.html?thread=" + encodeURIComponent(String(targetThread || ""));
+      const body = escapeProfileHtml(item.body || "");
+      return '<article class="profile-entry">' +
+        '<div class="profile-entry-title"><a href="' + threadUrl + '">' + escapeProfileHtml(title) + '</a></div>' +
+        '<div class="profile-entry-meta">' + item.kind + ' · ' + escapeProfileHtml(date) + '</div>' +
+        '<div class="profile-entry-body">' + body + '</div>' +
+        (attachments.length ? '<div class="profile-entry-media">' + attachments.map(renderProfileAttachment).join("") + '</div>' : '') +
+        '<div class="profile-entry-actions"><a href="' + threadUrl + '">View in forum →</a></div>' +
+        '</article>';
+    }
+
+    async function loadProfileActivity(userId) {
+      const postsBox = $("tab-posts");
+      const mediaBox = $("tab-media");
+      const activityBox = $("tab-activity");
+      postsBox.innerHTML = '<p>Loading all postings…</p>';
+      mediaBox.innerHTML = '<p>Loading media…</p>';
+      activityBox.innerHTML = '<p>Loading activity…</p>';
+      // A failed query must not silently turn into a fake zero.
+      try {
+        const [threads, replies] = await Promise.all([
+          fetchAllRows("forum_threads", "id, title, body, attachments, created_at, board_id", userId),
+          fetchAllRows("forum_posts", "id, thread_id, body, attachments, created_at", userId)
+        ]);
+        const entries = [
+          ...threads.map(row => ({ ...row, kind: "Topic" })),
+          ...replies.map(row => ({ ...row, kind: "Reply" }))
+        ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        const media = entries.flatMap(entry => safeAttachmentList(entry.attachments).map(file => ({ ...file, parent: entry })));
+        const counts = media.reduce((acc, file) => {
+          const kind = mediaKind(file);
+          acc[kind] = (acc[kind] || 0) + 1;
+          return acc;
+        }, {});
+
+        $("stat-messages").textContent = String(entries.length);
+        $("stat-media").textContent = String(media.length);
+        postsBox.innerHTML = entries.length
+          ? entries.map(renderProfileEntry).join("")
+          : '<p class="profile-empty">This user has not posted yet.</p>';
+        activityBox.innerHTML = entries.length
+          ? '<p class="profile-summary">' + entries.length + ' messages · ' + media.length + ' media files</p>' + entries.slice(0, 10).map(renderProfileEntry).join("")
+          : '<p class="profile-empty">No activity yet.</p>';
+
+        const mediaSummary = '<div class="profile-media-counts">' +
+          '<span>Images: <b>' + (counts.Images || 0) + '</b></span>' +
+          '<span>Videos: <b>' + (counts.Videos || 0) + '</b></span>' +
+          '<span>Audio: <b>' + (counts.Audio || 0) + '</b></span>' +
+          '<span>Files: <b>' + (counts.Files || 0) + '</b></span>' +
+          '</div>';
+        mediaBox.innerHTML = media.length
+          ? mediaSummary + media.map(file => {
+              const parent = file.parent;
+              const date = parent.created_at ? new Date(parent.created_at).toLocaleString() : "";
+              const threadId = parent.kind === "Topic" ? parent.id : parent.thread_id;
+              const threadUrl = "forums.html?thread=" + encodeURIComponent(String(threadId || ""));
+              return '<article class="profile-entry"><div class="profile-entry-title">' + escapeProfileHtml(file.name || "Media") + '</div>' +
+                '<div class="profile-entry-meta">' + parent.kind + ' · ' + escapeProfileHtml(date) + '</div>' +
+                '<div class="profile-entry-media">' + renderProfileAttachment(file) + '</div>' +
+                '<div class="profile-entry-actions"><a href="' + threadUrl + '">Open original post →</a></div></article>';
+            }).join("")
+          : mediaSummary + '<p class="profile-empty">This user has not uploaded media yet.</p>';
+      } catch (err) {
+        console.error("Profile activity load failed", err);
+        const message = escapeProfileHtml(err.message || err);
+        const errorHtml = '<p class="profile-error">Could not load data from Supabase: ' + message + '</p>';
+        postsBox.innerHTML = errorHtml;
+        mediaBox.innerHTML = errorHtml;
+        activityBox.innerHTML = errorHtml;
+        $("stat-messages").textContent = "—";
+        $("stat-media").textContent = "—";
+      }
     }
 
     async function uploadImage(file, basename) {
