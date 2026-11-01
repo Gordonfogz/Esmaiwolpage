@@ -376,6 +376,24 @@
     .post-actions { margin-top: 12px; display: none; }
     .admin-mode .post-actions { display: block; }
 
+
+    /* Community comments and quote replies */
+    .post-community { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .community-heading { color: var(--accent); font-size: 12px; margin-bottom: 10px; letter-spacing: 1px; }
+    .comment { border: 1px solid var(--border); background: rgba(3,10,20,.72); padding: 10px 12px; margin: 9px 0; }
+    .comment-meta { display:flex; align-items:center; flex-wrap:wrap; gap:8px; color:var(--accent-dim); font-size:11px; margin-bottom:7px; }
+    .comment-author { color:var(--green); text-decoration:none; }
+    .comment-avatar { width:25px; height:25px; border:1px solid var(--border); object-fit:cover; }
+    .comment-body { white-space:pre-wrap; overflow-wrap:anywhere; color:var(--text); }
+    .comment-quote { border-left:3px solid var(--accent-dim); padding:7px 10px; margin:7px 0 9px; background:rgba(0,100,180,.08); color:var(--accent-dim); font-size:12px; white-space:pre-wrap; }
+    .comment-form { margin-top:10px; }
+    .comment-form textarea { min-height:75px; }
+    .comment-login { color:var(--accent-dim); font-size:12px; padding:8px 0; }
+    .comment-tools { display:flex; gap:8px; flex-wrap:wrap; margin-top:7px; }
+    .quote-cancel { border-color:var(--red); color:var(--red); }
+    .post-quote-btn { margin-top:10px; }
+    .comment-count { color:var(--green); font-size:11px; }
+
     .empty-state {
       text-align: center;
       padding: 40px 20px;
@@ -765,6 +783,9 @@
 
     let isAdmin = false;
     let pendingFiles = [];
+    let forumSession = null;
+    let forumProfile = null;
+    let activeQuotes = {};
 
     // ============================================
     // UTILS
@@ -844,6 +865,164 @@
       e.preventDefault();
       document.getElementById("admin-panel").scrollIntoView({ behavior: "smooth" });
     });
+
+    // ============================================
+    // FORUM ACCOUNT SESSION — same Supabase Auth as forum.html
+    // ============================================
+    async function refreshForumSession() {
+      const { data, error } = await sb.auth.getSession();
+      if (error) console.warn("Could not read forum session:", error.message);
+      forumSession = data?.session || null;
+      forumProfile = null;
+      if (forumSession?.user?.id) {
+        const { data: p, error: profileError } = await sb.from("profiles")
+          .select("id, username, display_name, avatar_url")
+          .eq("id", forumSession.user.id)
+          .maybeSingle();
+        if (profileError) console.warn("Profile lookup failed:", profileError.message);
+        forumProfile = p || null;
+      }
+      renderPosts();
+    }
+
+    sb.auth.onAuthStateChange(() => {
+      // Defer Supabase queries until the auth callback has completed.
+      setTimeout(() => refreshForumSession(), 0);
+    });
+
+    function forumDisplayName(profileRow) {
+      return profileRow?.display_name || profileRow?.username || "Forum member";
+    }
+
+    function quotePost(postId) {
+      const post = document.querySelector('.post[data-id="' + CSS.escape(String(postId)) + '"]');
+      if (!post) return;
+      const title = post.querySelector(".post-title")?.textContent || "GUP article";
+      const body = post.querySelector(".post-body")?.textContent || "";
+      activeQuotes[String(postId)] = {
+        quote_comment_id: null,
+        quote_author: "GIRLS UND PANZER ARCHIVE",
+        quote_text: title + "\\n" + body.slice(0, 500)
+      };
+      const area = document.getElementById("comment-input-" + postId);
+      if (area) {
+        area.focus();
+        area.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      renderQuotePreview(postId);
+    }
+
+    function quoteComment(postId, commentId, author, content) {
+      activeQuotes[String(postId)] = {
+        quote_comment_id: commentId,
+        quote_author: author || "Forum member",
+        quote_text: String(content || "").slice(0, 500)
+      };
+      const area = document.getElementById("comment-input-" + postId);
+      if (area) {
+        area.focus();
+        area.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      renderQuotePreview(postId);
+    }
+
+    function renderQuotePreview(postId) {
+      const target = document.getElementById("quote-preview-" + postId);
+      const q = activeQuotes[String(postId)];
+      if (!target) return;
+      target.innerHTML = q
+        ? '<div class="comment-quote"><strong>QUOTING ' + escapeHtml(q.quote_author) + '</strong>\\n' + escapeHtml(q.quote_text) +
+          '</div><button type="button" class="btn quote-cancel" onclick="clearQuote(\'' + escapeHtml(String(postId)) + '\')">CANCEL QUOTE</button>'
+        : "";
+    }
+
+    function clearQuote(postId) {
+      delete activeQuotes[String(postId)];
+      renderQuotePreview(postId);
+    }
+
+    async function submitGupComment(postId) {
+      if (!forumSession?.user?.id) {
+        showToast("Log in with your forum account to comment", true);
+        return;
+      }
+      const area = document.getElementById("comment-input-" + postId);
+      const button = document.getElementById("comment-submit-" + postId);
+      const status = document.getElementById("comment-status-" + postId);
+      const content = area?.value.trim();
+      if (!content) { showToast("Write a comment first", true); return; }
+      button.disabled = true;
+      status.textContent = "Posting comment...";
+      const quote = activeQuotes[String(postId)] || {};
+      try {
+        const { error } = await sb.from("gup_comments").insert({
+          post_id: String(postId),
+          user_id: forumSession.user.id,
+          content,
+          quote_comment_id: quote.quote_comment_id || null,
+          quote_author: quote.quote_author || null,
+          quote_text: quote.quote_text || null
+        });
+        if (error) throw error;
+        area.value = "";
+        clearQuote(postId);
+        showToast("Comment published");
+        await renderPosts();
+      } catch (err) {
+        console.error("Comment publish failed:", err);
+        status.textContent = "Could not publish: " + (err.message || "Unknown error");
+        showToast("Comment failed: " + (err.message || "Unknown error"), true);
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    async function loadCommentsForPost(postId) {
+      const { data, error } = await sb.from("gup_comments")
+        .select("id, post_id, user_id, content, quote_comment_id, quote_author, quote_text, created_at, profiles(id, username, display_name, avatar_url)")
+        .eq("post_id", String(postId))
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    }
+
+    function renderComments(postId, comments) {
+      const commentsHtml = comments.length ? comments.map(c => {
+        const author = c.profiles || {};
+        const username = author.username || "";
+        const display = forumDisplayName(author);
+        const profileHref = username
+          ? 'profile.html?u=' + encodeURIComponent(username)
+          : 'profile.html';
+        const avatar = author.avatar_url
+          ? '<img class="comment-avatar" src="' + escapeHtml(author.avatar_url) + '" alt="">'
+          : '<span class="comment-avatar" style="display:inline-flex;align-items:center;justify-content:center">?</span>';
+        const quoteHtml = c.quote_text
+          ? '<div class="comment-quote"><strong>QUOTING ' + escapeHtml(c.quote_author || "Forum member") + '</strong>\\n' + escapeHtml(c.quote_text) + '</div>'
+          : "";
+        return '<article class="comment" id="gup-comment-' + escapeHtml(c.id) + '">' +
+          '<div class="comment-meta">' + avatar + '<a class="comment-author" href="' + profileHref + '">' + escapeHtml(display) + '</a>' +
+          '<span>' + formatDate(c.created_at) + '</span></div>' +
+          quoteHtml + '<div class="comment-body">' + escapeHtml(c.content) + '</div>' +
+          '<div class="comment-tools"><button type="button" class="btn" data-action="quote-comment" data-post-id="' +
+          escapeHtml(String(postId)) + '" data-comment-id="' + escapeHtml(String(c.id)) +
+          '" data-author="' + escapeHtml(display) + '" data-content="' + escapeHtml(c.content || "") +
+          '">QUOTE / REPLY</button></div></article>';
+      }).join("") : '<p class="comment-login">No comments yet. Start the discussion.</p>';
+
+      const composer = forumSession?.user?.id
+        ? '<div class="comment-form"><div id="quote-preview-' + escapeHtml(postId) + '"></div>' +
+          '<textarea id="comment-input-' + escapeHtml(postId) + '" maxlength="10000" placeholder="Write your comment..."></textarea>' +
+          '<div class="comment-tools"><button type="button" class="btn" id="comment-submit-' + escapeHtml(postId) +
+          '" data-action="submit-comment" data-post-id="' + escapeHtml(String(postId)) + '">POST COMMENT</button></div>' +
+          '<div class="status" id="comment-status-' + escapeHtml(postId) + '"></div></div>'
+        : '<div class="comment-login">To comment or quote, <a href="login.html">sign in with your forum account</a>.</div>';
+
+      return '<section class="post-community"><div class="community-heading">COMMUNITY DISCUSSION · <span class="comment-count">' +
+        comments.length + ' COMMENTS</span></div>' + commentsHtml +
+        '<button type="button" class="btn post-quote-btn" data-action="quote-post" data-post-id="' + escapeHtml(String(postId)) + '">QUOTE ARTICLE</button>' +
+        composer + '</section>';
+    }
 
     // ============================================
     // FILE UPLOAD (local preview)
@@ -1027,61 +1206,64 @@
           .from("gup_posts")
           .select("*")
           .order("created_at", { ascending: false });
-
         if (error) throw error;
 
         if (!posts || posts.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              No articles published yet.<br>
-              Use the publication terminal to add content.
-            </div>`;
+          container.innerHTML = '<div class="empty-state">No articles published yet.<br>Use the publication terminal to add content.</div>';
           return;
         }
 
-        container.innerHTML = posts.map(p => {
+        const rendered = await Promise.all(posts.map(async p => {
           let mediaHtml = "";
-          const atts = p.attachments || [];
+          const atts = Array.isArray(p.attachments) ? p.attachments : [];
           if (atts.length > 0) {
             mediaHtml = '<div class="post-media">' + atts.map(att => {
-              if (att.type && att.type.startsWith("image/")) {
-                return '<img src="' + att.url + '" alt="' + escapeHtml(att.name) + '" onclick="openLightbox(this.src)" title="' + escapeHtml(att.name) + '">';
-              }
-              if (att.type && att.type.startsWith("video/")) {
-                return '<video controls style="max-width:100%;max-height:280px;border:1px solid var(--border);"><source src="' + att.url + '" type="' + att.type + '"></video>';
-              }
-              if (att.type && att.type.startsWith("audio/")) {
-                return '<audio controls style="width:100%;"><source src="' + att.url + '" type="' + att.type + '"></audio>';
-              }
-              return '<a class="doc-link" href="' + att.url + '" target="_blank" download="' + escapeHtml(att.name) + '">📎 ' + escapeHtml(att.name) + ' (' + formatBytes(att.size || 0) + ')</a>';
+              const url = escapeHtml(att.url || "");
+              const name = escapeHtml(att.name || "attachment");
+              const type = att.type || "";
+              if (type.startsWith("image/")) return '<img src="' + url + '" alt="' + name + '" onclick="openLightbox(this.src)" title="' + name + '">';
+              if (type.startsWith("video/")) return '<video controls style="max-width:100%;max-height:280px;border:1px solid var(--border);"><source src="' + url + '" type="' + escapeHtml(type) + '"></video>';
+              if (type.startsWith("audio/")) return '<audio controls style="width:100%;"><source src="' + url + '" type="' + escapeHtml(type) + '"></audio>';
+              return '<a class="doc-link" href="' + url + '" target="_blank" rel="noopener" download="' + name + '">📎 ' + name + ' (' + formatBytes(att.size || 0) + ')</a>';
             }).join("") + '</div>';
           }
 
-          return `
-            <article class="post" data-id="${p.id}">
-              <div class="post-header">
-                <h3 class="post-title">${escapeHtml(p.title)}</h3>
-                <time class="post-date">${formatDate(p.created_at)}</time>
-              </div>
-              <div class="post-body">${escapeHtml(p.content)}</div>
-              ${mediaHtml}
-              <div class="post-actions">
-                <button class="btn btn-danger" onclick="deletePost('${p.id}')">DELETE</button>
-              </div>
-            </article>`;
-        }).join("");
+          let commentsHtml = "";
+          try {
+            const comments = await loadCommentsForPost(p.id);
+            commentsHtml = renderComments(p.id, comments);
+          } catch (commentError) {
+            console.error("Could not load comments for post", p.id, commentError);
+            commentsHtml = '<section class="post-community"><div class="community-heading">COMMUNITY DISCUSSION</div><p class="comment-login">Comments unavailable: ' + escapeHtml(commentError.message || "Check gup_comments policies") + '</p></section>';
+          }
+
+          return '<article class="post" data-id="' + escapeHtml(String(p.id)) + '">' +
+            '<div class="post-header"><h3 class="post-title">' + escapeHtml(p.title) + '</h3>' +
+            '<time class="post-date">' + formatDate(p.created_at) + '</time></div>' +
+            '<div class="post-body">' + escapeHtml(p.content) + '</div>' + mediaHtml +
+            commentsHtml +
+            '<div class="post-actions"><button class="btn btn-danger" onclick="deletePost(\'' + escapeHtml(String(p.id)) + '\')">DELETE</button></div>' +
+            '</article>';
+        }));
+        container.innerHTML = rendered.join("");
+        container.querySelectorAll("[data-action]").forEach(control => {
+          control.addEventListener("click", () => {
+            const action = control.dataset.action;
+            const postId = control.dataset.postId;
+            if (action === "quote-comment") quoteComment(postId, control.dataset.commentId, control.dataset.author, control.dataset.content);
+            if (action === "quote-post") quotePost(postId);
+            if (action === "submit-comment") submitGupComment(postId);
+          });
+        });
       } catch (err) {
         console.error(err);
-        container.innerHTML = `
-          <div class="empty-state">
-            Could not load articles.<br>
-            <span style="font-size:12px;color:var(--red);">${escapeHtml(err.message || "Check table & policies")}</span>
-          </div>`;
+        container.innerHTML = '<div class="empty-state">Could not load articles.<br><span style="font-size:12px;color:var(--red);">' +
+          escapeHtml(err.message || "Check table & policies") + '</span></div>';
       }
     }
 
-    // Init
-    renderPosts();
+    // Init: reuse the authenticated account from forum.html
+    refreshForumSession();
   
     // ============================================
     // BANNER CAROUSEL (gupimages/1.jpg … 7.jpg, gupimages/8.png)
