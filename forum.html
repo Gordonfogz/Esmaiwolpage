@@ -511,6 +511,13 @@
       background: transparent;
     }
 
+    .reaction-bar { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:10px; padding-top:7px; border-top:1px solid rgba(120,150,180,.22); }
+    .reaction-btn { display:inline-flex; align-items:center; gap:5px; min-width:36px; padding:3px 8px; border:1px solid #38506b; border-radius:3px; background:linear-gradient(180deg,#202e40,#111a28); color:#d9e8f7; cursor:pointer; font:12px "Segoe UI",sans-serif; }
+    .reaction-btn .reaction-emoji { font-size:16px; line-height:1; }
+    .reaction-btn .reaction-count { font-size:11px; color:#a9c6df; }
+    .reaction-btn.active { border-color:#d18b42; background:linear-gradient(180deg,#49331d,#241b13); box-shadow:0 0 0 1px rgba(209,139,66,.18); }
+    .reaction-btn:disabled { opacity:.55; cursor:wait; }
+    .reaction-hint { color:#8298ad; font-size:10px; }
     footer {
       padding: 10px 16px;
       border-top: 2px solid #1a334f;
@@ -1022,8 +1029,75 @@
       if (opts.title) main += '<div class="fpost-title">' + escapeHtml(opts.title) + '</div>';
       main += '<div class="fpost-body">' + formatBody(opts.body || "") + '</div>';
       main += renderAttachments(opts.attachments || []);
+      main += '<div class="reaction-bar" data-reaction-type="' + escapeHtml(opts.reaction_type || '') + '" data-reaction-id="' + escapeHtml(opts.reaction_id || '') + '" data-author-id="' + escapeHtml(opts.profile_id || '') + '">' + REACTION_EMOTES.map(em => '<button type="button" class="reaction-btn" data-react="' + escapeHtml(em.key) + '" aria-label="React with ' + escapeHtml(em.label) + '" title="' + escapeHtml(em.label) + '"><span class="reaction-emoji">' + em.emoji + '</span><span class="reaction-count">0</span></button>').join('') + '<span class="reaction-hint">React</span></div>';
       main += '</div>';
       return '<article class="fpost" data-profile-id="' + escapeHtml(opts.profile_id || '') + '" data-profile-name="' + escapeHtml(opts.profile_username || '') + '" title="Click to preview this user profile">' + side + main + '</article>';
+    }
+
+    // Reaction catalogue: add future emotes here. The database accepts any short emoji string.
+    const REACTION_EMOTES = [
+      { key: "cigarette", emoji: "🚬", label: "Cigarette" }
+    ];
+
+    async function loadThreadReactions(root) {
+      const bars = [...root.querySelectorAll(".reaction-bar[data-reaction-id]")];
+      if (!bars.length) return;
+      const ids = bars.map(b => b.dataset.reactionId);
+      const types = [...new Set(bars.map(b => b.dataset.reactionType))];
+      // Fetch the reactions for the current thread/replies in one query per type.
+      const results = await Promise.all(types.map(type => sb.from("forum_reactions")
+        .select("post_type, post_id, emoji, reactor_id")
+        .eq("post_type", type).in("post_id", ids)));
+      const rows = results.flatMap(r => {
+        if (r.error) { console.warn("Could not load reactions", r.error); return []; }
+        return r.data || [];
+      });
+      bars.forEach(bar => {
+        REACTION_EMOTES.forEach(em => {
+          const row = rows.filter(r => r.post_type === bar.dataset.reactionType && r.post_id === bar.dataset.reactionId && r.emoji === em.emoji);
+          const mine = !!session && row.some(r => r.reactor_id === session.user.id);
+          const btn = bar.querySelector('[data-react="' + em.key + '"]');
+          if (!btn) return;
+          btn.classList.toggle("active", mine);
+          btn.querySelector(".reaction-count").textContent = String(row.length);
+          btn.title = em.label + ': ' + row.length;
+        });
+      });
+    }
+
+    async function toggleReaction(btn) {
+      if (!session) { alert("Log in to react."); return; }
+      const bar = btn.closest(".reaction-bar");
+      const postType = bar?.dataset.reactionType;
+      const postId = bar?.dataset.reactionId;
+      const authorId = bar?.dataset.authorId;
+      const emote = REACTION_EMOTES.find(item => item.key === btn.dataset.react);
+      if (!postType || !postId || !authorId || !emote) return;
+      btn.disabled = true;
+      try {
+        const { data: existing, error: readError } = await sb.from("forum_reactions")
+          .select("id, emoji").eq("post_type", postType).eq("post_id", postId)
+          .eq("reactor_id", session.user.id).maybeSingle();
+        if (readError) throw readError;
+        if (existing && existing.emoji === emote.emoji) {
+          const { error } = await sb.from("forum_reactions").delete().eq("id", existing.id);
+          if (error) throw error;
+        } else if (existing) {
+          const { error } = await sb.from("forum_reactions").update({ emoji: emote.emoji }).eq("id", existing.id);
+          if (error) throw error;
+        } else {
+          const { error } = await sb.from("forum_reactions").insert({
+            post_type: postType, post_id: postId, post_author_id: authorId,
+            reactor_id: session.user.id, emoji: emote.emoji
+          });
+          if (error) throw error;
+        }
+        const root = $("thread-view");
+        await loadThreadReactions(root);
+      } catch (err) {
+        console.error("Reaction failed", err);
+        alert("Could not save reaction: " + (err.message || err));
+      } finally { btn.disabled = false; }
     }
 
     async function openThread(threadId) {
@@ -1082,7 +1156,9 @@
         username: tp.display_name || tp.username,
         avatar_url: tp.avatar_url,
         joined_at: tp.created_at,
-        attachments: t.attachments || []
+        attachments: t.attachments || [],
+        reaction_type: "thread",
+        reaction_id: t.id
       });
 
       if (replies.length) {
@@ -1097,13 +1173,22 @@
             username: p.display_name || p.username,
             avatar_url: p.avatar_url,
             joined_at: p.created_at,
-            attachments: r.attachments || []
+            attachments: r.attachments || [],
+            reaction_type: "reply",
+            reaction_id: r.id
           });
         }).join("");
       } else {
         html += '<p class="muted" style="margin-top:4px">No replies yet.</p>';
       }
       box.innerHTML = html;
+      await loadThreadReactions(box);
+      box.querySelectorAll(".reaction-btn[data-react]").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await toggleReaction(btn);
+        });
+      });
       box.querySelectorAll(".fpost").forEach(post => {
         post.addEventListener("click", e => {
           const trigger = e.target.closest("[data-profile-trigger]");
