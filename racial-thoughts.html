@@ -46,7 +46,7 @@
 <script>
 // Set this to the deployed Supabase Edge Function URL after following SETUP.md.
 const GATEWAY_URL = "https://oxgymzpvbpapsgmilenw.supabase.co/functions/v1/racial-thoughts-gateway";
-const SUPABASE_ANON_KEY = "Doritosxxx141414";
+const SUPABASE_ANON_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
 let ownerToken = null;
 const $ = id => document.getElementById(id);
 function setStatus(id, message, error=false){$(id).textContent=message;$(id).classList.toggle('error',error)}
@@ -55,7 +55,10 @@ async function api(action, payload={}){
   if(!gatewayReady()) throw new Error('Setup required: add your Supabase project URL and anon key in racial-thoughts.html. See SETUP.md.');
   const response=await fetch(GATEWAY_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY},body:JSON.stringify({action, ...payload})});
   let data={};try{data=await response.json()}catch{}
-  if(!response.ok||data.error) throw new Error(data.error||`Request failed (${response.status})`);
+  if(!response.ok||data.error) {
+    const detail = data.error || data.message || `HTTP ${response.status}`;
+    throw new Error(`Gateway ${response.status}: ${detail}`);
+  }
   return data;
 }
 function safeText(tag,text,className){const el=document.createElement(tag);el.textContent=text||'';if(className)el.className=className;return el}
