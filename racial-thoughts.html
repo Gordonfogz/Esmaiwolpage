@@ -15,7 +15,7 @@
     nav{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 16px;border-bottom:2px solid var(--border);background:#050610;font-weight:bold}nav a::before{content:"[ ";color:var(--text)}nav a::after{content:" ]";color:var(--text)}main{padding:18px}
     .banner{display:block;width:100%;max-height:280px;object-fit:cover;border:1px solid var(--blue);margin-bottom:18px}.panel{border:2px solid var(--border);background:#05060c;margin:0 0 16px}.panel h2{margin:0;padding:6px 12px;border-bottom:2px solid var(--border);color:var(--green);background:linear-gradient(90deg,#07123c,#080914);font-size:20px}.panel-body{padding:12px 14px}.panel-body p:first-child{margin-top:0}.panel-body p:last-child{margin-bottom:0}.tag{color:var(--green)}
     .back,.button{display:inline-block;padding:8px 12px;border:1px solid var(--blue);font-weight:bold;text-decoration:none;background:#050610;color:var(--text);font:inherit;cursor:pointer}.button:hover,.back:hover{border-color:var(--green);color:var(--green)}
-    .post{border:1px solid #173b9e;margin:0 0 14px;background:#070914}.post-head{padding:10px 12px;border-bottom:1px dashed #164cff;background:#070b1b}.post-head h3{margin:0;color:var(--green);font-size:20px;overflow-wrap:anywhere}.post-meta{font-size:12px;color:var(--muted);margin-top:3px}.post-content{padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}.empty{color:var(--muted);font-style:italic}
+    .post{border:1px solid #173b9e;margin:0 0 14px;background:#070914}.post-head{padding:10px 12px;border-bottom:1px dashed #164cff;background:#070b1b;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.post-head h3{margin:0;color:var(--green);font-size:20px;overflow-wrap:anywhere}.delete-post{flex:none;background:#21080d;color:#ff9a9a;border:1px solid #a33;padding:5px 9px;font:inherit;cursor:pointer}.delete-post:hover{background:#450b15;color:#fff}.post-meta{font-size:12px;color:var(--muted);margin-top:3px}.post-content{padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}.empty{color:var(--muted);font-style:italic}
     .auth-grid{display:grid;grid-template-columns:1fr auto;gap:8px}input,textarea,.rich-editor{width:100%;background:#03040a;border:1px solid #1768ff;color:var(--text);padding:10px;font:inherit;border-radius:0}textarea{min-height:220px;resize:vertical}
     .toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border:1px solid #1768ff;border-bottom:0;background:#080d20}
     .toolbar button{background:#050610;border:1px solid #1768ff;color:var(--text);padding:6px 9px;font:inherit;cursor:pointer}
@@ -101,7 +101,9 @@ function renderPosts(posts){
     const card=safeText('article','','post'),head=safeText('div','','post-head');
     head.append(safeText('h3',post.title));
     const date=post.created_at?new Date(post.created_at).toLocaleDateString('en-GB',{year:'numeric',month:'long',day:'numeric'}):'Date unavailable';
-    head.append(safeText('div',date,'post-meta'));card.append(head);
+    const meta=safeText('div',date,'post-meta');head.append(meta);
+    if(ownerToken){const del=safeText('button','DELETE POST','delete-post');del.type='button';del.addEventListener('click',()=>deletePost(post.id,post.title));head.append(del)}
+    card.append(head);
     if(post.summary)card.append(safeText('p',post.summary,'post-content'));
     const body=safeText('div','','post-body-html');appendSafeRichText(body,post.body);card.append(body);
     const files=Array.isArray(post.attachments)?post.attachments:[];
@@ -120,6 +122,12 @@ function renderPosts(posts){
   }
 }
 async function loadPosts(){try{const data=await api('list');renderPosts(data.posts||[]);setStatus('read-status','Archive loaded.')}catch(e){$('posts').replaceChildren(safeText('p',gatewayReady()?`Could not load articles: ${e.message}`:'The archive backend has not been connected yet. Follow SETUP.md to enable published articles.','empty'));setStatus('read-status','',true)}}
+async function deletePost(id,title){
+  if(!ownerToken)return;
+  if(!confirm(`Delete this article permanently?\n\n${title||'Untitled article'}\n\nIts attached files will also be removed.`))return;
+  try{setStatus('auth-status','Deleting article…');await api('delete',{token:ownerToken,id});setStatus('auth-status','Article and attachments deleted.');await loadPosts()}
+  catch(error){setStatus('auth-status',error.message||'Could not delete article.',true)}
+}
 let selectedFiles=[];
 const fileInput=$('media-files');
 function renderSelectedFiles(){
@@ -162,7 +170,7 @@ async function uploadAttachment(file){
   if(!response.ok||data.error)throw new Error(data.error||`Upload failed (${response.status})`);
   return data.attachment;
 }
-$('login-form').addEventListener('submit',async e=>{e.preventDefault();setStatus('auth-status','Checking password…');try{const data=await api('login',{password:$('password').value});ownerToken=data.token;$('editor').classList.add('visible');$('login-form').hidden=true;$('password').value='';setStatus('auth-status','Owner access granted. The editor is unlocked.')}catch(err){ownerToken=null;setStatus('auth-status',err.message||'Access denied.',true)}});
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();setStatus('auth-status','Checking password…');try{const data=await api('login',{password:$('password').value});ownerToken=data.token;$('editor').classList.add('visible');$('login-form').hidden=true;$('password').value='';setStatus('auth-status','Owner access granted. The editor is unlocked.');await loadPosts()}catch(err){ownerToken=null;setStatus('auth-status',err.message||'Access denied.',true)}});
 $('post-form').addEventListener('submit',async e=>{
   e.preventDefault();
   if(!ownerToken){setStatus('auth-status','Unlock the editor first.',true);return}
@@ -178,7 +186,7 @@ $('post-form').addEventListener('submit',async e=>{
   }catch(err){setStatus('auth-status',err.message||'Could not publish article.',true)}
   finally{button.disabled=false;button.textContent='Publish article'}
 });
-$('logout').addEventListener('click',()=>{ownerToken=null;$('editor').classList.remove('visible');$('login-form').hidden=false;setStatus('auth-status','Editor locked.');});
+$('logout').addEventListener('click',()=>{ownerToken=null;$('editor').classList.remove('visible');$('login-form').hidden=false;setStatus('auth-status','Editor locked.');loadPosts()});
 loadPosts();
 </script>
 </body></html>
