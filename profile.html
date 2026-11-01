@@ -714,6 +714,13 @@
 
         $("stat-messages").textContent = String(entries.length);
         $("stat-media").textContent = String(media.length);
+        const reactionCount = await sb.from("forum_reactions").select("id", { count: "exact", head: true }).eq("post_author_id", userId);
+        if (reactionCount.error) {
+          console.warn("Reaction score unavailable", reactionCount.error);
+          $("stat-react").textContent = "—";
+        } else {
+          $("stat-react").textContent = String(reactionCount.count || 0);
+        }
         postsBox.innerHTML = entries.length
           ? entries.map(renderProfileEntry).join("")
           : '<p class="profile-empty">This user has not posted yet.</p>';
