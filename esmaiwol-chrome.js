@@ -281,6 +281,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       ["profile.html", "PROFILE"],
       ["login.html", "LOGIN"],
       ["chan.html", "CHAN"],
+      ["games.html", "games"],
     ].forEach(([href, label]) => {
       nav.appendChild(el("a", { href, text: label }));
     });
