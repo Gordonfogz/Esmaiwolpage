@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131c">
+  <title>GAMES // ESMAIWOL.ZN</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090d16;
+      --panel: #111c2c;
+      --line: #42658a;
+      --blue: #c8e0ff;
+      --green: #00ff83;
+      --muted: #8aa5c2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px 18px 50px;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(29,78,126,.35), transparent 55%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px),
+        var(--bg);
+      color: var(--blue);
+      font-family: "Courier New", Courier, monospace;
+    }
+    .page { width: min(1100px, 100%); margin: 0 auto; }
+    .header {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #172943, #0b1422 70%);
+      padding: 20px;
+      box-shadow: 0 0 22px rgba(0,0,0,.55), inset 0 0 18px rgba(63,132,190,.08);
+      margin-bottom: 18px;
+    }
+    .eyebrow { color: var(--green); font-size: 11px; letter-spacing: 3px; }
+    h1 { margin: 8px 0; font-size: clamp(26px, 5vw, 42px); text-shadow: 0 0 12px #2879b8; }
+    .sub { color: var(--muted); font-size: 13px; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; }
+    .library, .player-panel {
+      border: 1px solid var(--line);
+      background: rgba(13, 23, 38, .94);
+      box-shadow: 0 8px 25px rgba(0,0,0,.35);
+    }
+    .library { padding: 14px; }
+    .section-title {
+      color: var(--green);
+      font-size: 12px;
+      letter-spacing: 2px;
+      border-bottom: 1px dashed #365574;
+      padding-bottom: 9px;
+      margin-bottom: 12px;
+    }
+    .game-link {
+      display: block;
+      padding: 11px 10px;
+      border: 1px solid #315071;
+      background: #14243a;
+      color: #eff7ff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .game-link:hover { border-color: var(--green); color: var(--green); }
+    .game-link small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .soon { margin-top: 14px; color: #70849a; font-size: 11px; line-height: 1.6; }
+    .player-panel { padding: 14px; min-width: 0; }
+    .game-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h2 { margin: 0 0 12px; font-size: 19px; color: #fff; }
+    .tag { color: var(--green); font-size: 10px; border: 1px solid #24764f; padding: 4px 7px; }
+    .screen {
+      width: 100%;
+      min-height: 360px;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      border: 2px solid #536b84;
+      box-shadow: inset 0 0 25px #000, 0 0 15px rgba(0,0,0,.6);
+    }
+    .screen iframe { display: block; width: 100%; height: 100%; min-height: 360px; border: 0; background: #000; }
+    .help { color: var(--muted); font-size: 11px; line-height: 1.7; margin: 12px 0 0; }
+    .help a { color: var(--green); }
+    .footer { margin-top: 18px; text-align: center; color: #607994; font-size: 10px; letter-spacing: 1px; }
+    @media (max-width: 720px) {
+      body { padding: 18px 10px 35px; }
+      .layout { grid-template-columns: 1fr; }
+      .screen, .screen iframe { min-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="eyebrow">ESMAIWOL.ZN // ARCADE ARCHIVE</div>
+      <h1>GAMES</h1>
+      <div class="sub">Una pequeña colección de juegos clásicos ejecutados desde sus reproductores originales.</div>
+    </header>
+
+    <div class="layout">
+      <aside class="library">
+        <div class="section-title">GAME LIBRARY</div>
+        <a class="game-link" href="#rayman">🎮 Rayman <small>PlayStation · 1995</small></a>
+        <p class="soon">Más juegos se añadirán aquí próximamente.</p>
+      </aside>
+
+      <section class="player-panel" id="rayman">
+        <div class="game-heading">
+          <h2>Rayman (PS1)</h2>
+          <span class="tag">AVAILABLE TO PLAY</span>
+        </div>
+        <div class="screen">
+          <iframe
+            src="https://archive.org/embed/psx_rayman"
+            title="Rayman para PlayStation — Internet Archive"
+            allow="autoplay; fullscreen; gamepad"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        <p class="help">
+          El juego se carga desde Internet Archive. Si el reproductor no aparece o no inicia,
+          <a href="https://archive.org/details/psx_rayman" target="_blank" rel="noopener noreferrer">ábrelo directamente en Archive.org</a>.
+          La carga puede tardar un poco.
+        </p>
+      </section>
+    </div>
+    <div class="footer">ESMAIWOL.ZN — INSERT COIN, PRESS START</div>
+  </main>
+
+  <script src="esmaiwol-chrome.js" defer></script>
+</body>
+</html>
