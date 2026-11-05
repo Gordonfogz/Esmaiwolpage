@@ -521,6 +521,13 @@
     .reaction-btn.active { border-color:#d18b42; background:linear-gradient(180deg,#49331d,#241b13); box-shadow:0 0 0 1px rgba(209,139,66,.18); }
     .reaction-btn:disabled { opacity:.55; cursor:wait; }
     .reaction-hint { color:#8298ad; font-size:10px; }
+    .moderation-overlay { display:none; position:fixed; inset:0; z-index:20000; padding:18px; background:rgba(0,0,0,.88); align-items:center; justify-content:center; }
+    .moderation-overlay.on { display:flex; }
+    .moderation-card { width:min(560px,100%); max-height:90vh; overflow:auto; padding:18px; border:2px solid #ff6d86; background:linear-gradient(180deg,#3a1722,#100b12 48px); color:#f5dce2; box-shadow:0 14px 50px rgba(0,0,0,.8); }
+    .moderation-card h2 { margin:0 0 12px; color:#ff8ca0; font-size:19px; }
+    .moderation-card p { white-space:pre-wrap; }
+    .moderation-video-placeholder { margin:14px 0; padding:22px 12px; border:1px dashed #a64b60; background:#160b10; color:#c99aa5; text-align:center; font-size:12px; }
+    .moderation-card video { display:block; width:100%; max-height:300px; margin:12px 0; background:#000; }
     footer {
       padding: 10px 16px;
       border-top: 2px solid #1a334f;
@@ -685,6 +692,52 @@
       if (!el) return;
       el.textContent = msg || "";
       el.className = "status" + (type ? " " + type : "");
+    }
+
+    function showModerationNotice(verdict) {
+      const overlay = $("moderation-overlay");
+      const strike = Number(verdict?.strike || 0);
+      const permanent = verdict?.permanent === true;
+      const hours = Number(verdict?.duration_hours || 0);
+      const expires = verdict?.expires_at ? new Date(verdict.expires_at).toLocaleString() : "";
+      const terms = Array.isArray(verdict?.matched_terms) ? verdict.matched_terms.join(", ") : "";
+      $("moderation-message").textContent = terms
+        ? "Se detectó contenido incluido en la lista de moderación: " + terms
+        : "Tu publicación ha sido bloqueada por el sistema de moderación.";
+      let sanction = "Sanción aplicada: ";
+      if (permanent || strike >= 3) sanction += "suspensión permanente.";
+      else if (hours === 168 || strike === 2) sanction += "7 días.";
+      else if (hours === 48 || strike === 1) sanction += "48 horas.";
+      else sanction += "tu cuenta está temporalmente bloqueada.";
+      if (expires) sanction += "\nFinaliza: " + expires;
+      $("moderation-sanction").textContent = sanction;
+      overlay.classList.add("on");
+    }
+
+    function closeModerationNotice() {
+      $("moderation-overlay")?.classList.remove("on");
+    }
+
+    async function publishThroughModeration(payload) {
+      const { data, error } = await sb.functions.invoke("moderation-gateway", { body: payload });
+      if (error) {
+        let detail = null;
+        try { if (error.context && typeof error.context.json === "function") detail = await error.context.json(); } catch (_) {}
+        if (detail?.moderation) {
+          showModerationNotice(detail.moderation);
+          const blocked = new Error(detail.error || "Moderation blocked this publication.");
+          blocked.moderationBlocked = true;
+          throw blocked;
+        }
+        throw new Error(detail?.error || error.message || "Could not contact moderation server.");
+      }
+      if (data?.moderation) {
+        showModerationNotice(data.moderation);
+        const blocked = new Error(data.error || "Moderation blocked this publication.");
+        blocked.moderationBlocked = true;
+        throw blocked;
+      }
+      return data;
     }
 
     function escapeHtml(str) {
@@ -1261,14 +1314,16 @@
           setStatus("thread-status", "Uploading files…");
           attachments = await uploadAttachments(files);
         }
-        const { data, error } = await sb.from("forum_threads").insert({
+        const result = await publishThroughModeration({
+          action: "create_thread",
           board_id: currentBoard,
-          user_id: session.user.id,
           title,
           body,
-          attachments
-        }).select("id").single();
-        if (error) throw error;
+          attachments,
+          event_key: crypto.randomUUID()
+        });
+        const data = result?.data;
+        if (!data?.id) throw new Error("The server did not return the new thread ID.");
         $("form-new-thread").reset();
         $("thread-attach-preview").innerHTML = "";
         setStatus("thread-status", "Thread posted.", "ok");
@@ -1296,15 +1351,15 @@
           setStatus("reply-status", "Uploading files…");
           attachments = await uploadAttachments(files);
         }
-        const { error } = await sb.from("forum_posts").insert({
+        await publishThroughModeration({
+          action: "create_reply",
           thread_id: currentThreadId,
-          user_id: session.user.id,
           body,
           attachments,
           quote_post_id: pendingQuote?.postId || null,
-          quote_author_id: pendingQuote?.authorId || null
+          quote_author_id: pendingQuote?.authorId || null,
+          event_key: crypto.randomUUID()
         });
-        if (error) throw error;
         $("form-reply").reset();
         pendingQuote = null;
         $("reply-attach-preview").innerHTML = "";
@@ -1343,6 +1398,10 @@
       el.innerHTML = '<img src="' + escapeHtml(src) + '" alt="">';
     }
 
+    $("moderation-close")?.addEventListener("click", closeModerationNotice);
+    $("moderation-overlay")?.addEventListener("click", closeModerationNotice);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeModerationNotice(); });
+
     // Init
     (async () => {
       wireComposeBars();
@@ -1365,6 +1424,16 @@
   </script>
   <div class="lightbox" id="lightbox" onclick="this.classList.remove('on')">
     <img id="lightbox-img" alt="Full size">
+  </div>
+  <div class="moderation-overlay" id="moderation-overlay" role="dialog" aria-modal="true" aria-labelledby="moderation-title">
+    <section class="moderation-card" onclick="event.stopPropagation()">
+      <h2 id="moderation-title">PUBLICACIÓN BLOQUEADA</h2>
+      <p id="moderation-message">Tu publicación contiene un término no permitido.</p>
+      <p id="moderation-sanction"></p>
+      <div class="moderation-video-placeholder" id="moderation-video-placeholder">El vídeo de moderación que enviarás se añadirá aquí.</div>
+      <video id="moderation-video" controls playsinline hidden></video>
+      <button type="button" id="moderation-close">[ ENTENDIDO ]</button>
+    </section>
   </div>
   <div class="profile-preview-overlay" id="profile-preview" role="dialog" aria-modal="true" aria-label="Profile preview">
     <section class="profile-preview-card" onclick="event.stopPropagation()">
