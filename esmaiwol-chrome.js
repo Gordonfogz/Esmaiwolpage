@@ -65,6 +65,59 @@
   color: #00ff83;
   background: rgba(0,0,0,0.35);
 }
+#esmaiwol-chrome .ec-games {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+#esmaiwol-chrome .ec-games-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #c8e0ff;
+  text-decoration: none;
+  text-shadow: 0 1px 2px #000;
+  padding: 2px 4px;
+  border-radius: 2px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: bold;
+}
+#esmaiwol-chrome .ec-games-toggle:hover,
+#esmaiwol-chrome .ec-games.open .ec-games-toggle {
+  color: #00ff83;
+  background: rgba(0,0,0,0.35);
+}
+#esmaiwol-chrome .ec-games-toggle::after { content: " ▾"; font-size: 10px; }
+#esmaiwol-chrome .ec-games-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 190px;
+  padding: 5px;
+  background: #0c1524;
+  border: 1px solid #3a5f8a;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.65);
+  z-index: 100000;
+}
+#esmaiwol-chrome .ec-games.open .ec-games-menu { display: block; }
+#esmaiwol-chrome .ec-games-menu a {
+  display: block;
+  padding: 9px 10px;
+  color: #c8e0ff;
+  white-space: nowrap;
+  border-bottom: 1px solid #1a2a40;
+}
+#esmaiwol-chrome .ec-games-menu a:hover { color: #00ff83; background: #152038; }
+#esmaiwol-chrome .ec-games-menu small {
+  display: block;
+  margin-top: 3px;
+  color: #7a9ab8;
+  font-size: 10px;
+  font-weight: normal;
+}
+
 #esmaiwol-chrome .ec-search {
   position: relative;
   flex-shrink: 0;
@@ -142,8 +195,28 @@
   color: #7a9ab8;
 }
 @media (max-width: 640px) {
-  #esmaiwol-chrome .ec-search { width: min(140px, 36vw); }
+  #esmaiwol-chrome .ec-search { width: min(110px, 29vw); }
+  #esmaiwol-chrome .ec-device { width: min(210px, 56vw); }
+  #esmaiwol-chrome .ec-bell { width:30px; height:30px; }
 }
+
+#esmaiwol-chrome .ec-notifications { position:relative; flex-shrink:0; }
+#esmaiwol-chrome .ec-bell { position:relative; width:34px; height:34px; border:1px solid rgba(130,175,215,.45); border-radius:4px; background:rgba(5,13,24,.82); color:#c8e0ff; cursor:pointer; font-size:18px; line-height:1; }
+#esmaiwol-chrome .ec-bell:hover, #esmaiwol-chrome .ec-notifications.open .ec-bell { color:#00ff83; border-color:#00c978; box-shadow:0 0 8px rgba(0,255,131,.25); }
+#esmaiwol-chrome .ec-notif-count { position:absolute; top:-7px; right:-7px; min-width:17px; height:17px; padding:0 4px; border-radius:10px; background:#d83b52; color:white; font:bold 10px/17px Tahoma,sans-serif; text-align:center; border:1px solid #101722; }
+#esmaiwol-chrome .ec-notif-count:empty { display:none; }
+#esmaiwol-chrome .ec-notif-menu { display:none; position:absolute; top:calc(100% + 9px); right:0; width:min(350px,88vw); max-height:390px; overflow:auto; padding:7px; background:#0b1422; border:1px solid #42658b; box-shadow:0 8px 22px rgba(0,0,0,.72); z-index:100002; color:#dcecff; font:12px Tahoma,sans-serif; }
+#esmaiwol-chrome .ec-notifications.open .ec-notif-menu { display:block; }
+#esmaiwol-chrome .ec-notif-head { display:flex; justify-content:space-between; align-items:center; padding:5px 4px 9px; border-bottom:1px solid #263c55; color:#fff; font-weight:bold; }
+#esmaiwol-chrome .ec-notif-head button { border:0; background:none; color:#83c8ff; cursor:pointer; font:11px Tahoma,sans-serif; }
+#esmaiwol-chrome .ec-notif-item { display:block; padding:9px 7px; color:#dcecff; text-decoration:none; border-bottom:1px solid #1a2a40; line-height:1.4; }
+#esmaiwol-chrome .ec-notif-item:hover { background:#15263b; color:#00ff9a; }
+#esmaiwol-chrome .ec-notif-item.unread { background:rgba(32,92,130,.22); border-left:2px solid #39a9ff; }
+#esmaiwol-chrome .ec-notif-time { display:block; margin-top:3px; color:#7896b4; font-size:10px; }
+#esmaiwol-chrome .ec-notif-item.admin { border-left:2px solid #00d98b; background:rgba(0,115,76,.16); }
+#esmaiwol-chrome .ec-notif-admin-tag { display:inline-block; margin-right:6px; padding:1px 4px; border:1px solid #00a86b; color:#67ffc0; font:bold 9px Tahoma,sans-serif; letter-spacing:.5px; }
+#esmaiwol-chrome .ec-notif-empty { padding:18px 8px; text-align:center; color:#8298ad; }
+
 #esmaiwol-chrome .ec-device {
   position: relative;
   flex-shrink: 0;
@@ -281,10 +354,49 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       ["profile.html", "PROFILE"],
       ["login.html", "LOGIN"],
       ["chan.html", "CHAN"],
-      ["games.html", "games"],
     ].forEach(([href, label]) => {
       nav.appendChild(el("a", { href, text: label }));
     });
+
+    // Games dropdown sits immediately beside CHAN.
+    const games = el("div", { className: "ec-games" });
+    const gamesToggle = el("button", {
+      className: "ec-games-toggle",
+      type: "button",
+      text: "GAMES",
+      "aria-expanded": "false",
+      "aria-haspopup": "true"
+    });
+    const gamesMenu = el("div", {
+      className: "ec-games-menu",
+      role: "menu",
+      "aria-label": "Juegos disponibles"
+    });
+    const raymanLink = el("a", { href: "games.html", role: "menuitem" });
+    raymanLink.appendChild(document.createTextNode("🎮 Rayman (PS1)"));
+    raymanLink.appendChild(el("small", { text: "Jugar desde ESMAIWOL.ZN" }));
+    gamesMenu.appendChild(raymanLink);
+
+    gamesToggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = games.classList.toggle("open");
+      gamesToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    gamesMenu.addEventListener("click", (event) => event.stopPropagation());
+    document.addEventListener("click", () => {
+      games.classList.remove("open");
+      gamesToggle.setAttribute("aria-expanded", "false");
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        games.classList.remove("open");
+        gamesToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    games.appendChild(gamesToggle);
+    games.appendChild(gamesMenu);
+    nav.appendChild(games);
     inner.appendChild(nav);
 
     const searchWrap = el("div", { className: "ec-search" });
@@ -304,6 +416,17 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     searchWrap.appendChild(searchInput);
     searchWrap.appendChild(searchResults);
     inner.appendChild(searchWrap);
+
+    const notifications = el("div", { className: "ec-notifications", id: "ec-notifications" });
+    const bell = el("button", { className: "ec-bell", id: "ec-bell", type: "button", text: "🔔", title: "Notifications", "aria-label": "Notifications", "aria-expanded": "false" });
+    const count = el("span", { className: "ec-notif-count", id: "ec-notif-count", text: "" });
+    bell.appendChild(count);
+    const menu = el("div", { className: "ec-notif-menu", id: "ec-notif-menu" });
+    menu.appendChild(el("div", { className: "ec-notif-head" }, [el("span", { text: "NOTIFICATIONS", id: "ec-notif-title" }), el("button", { type: "button", id: "ec-notif-readall", text: "Mark all read" })]));
+    menu.appendChild(el("div", { id: "ec-notif-list", className: "ec-notif-empty", text: "Log in to see your notifications." }));
+    notifications.appendChild(bell);
+    notifications.appendChild(menu);
+    inner.appendChild(notifications);
 
     const device = el("div", { className: "ec-device" });
     const ui = el("a", {
@@ -385,6 +508,102 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     }
   }
 
+  let _notifSession = null;
+  let _notifTimer = null;
+  let _notifBusy = false;
+  function notifEscape(value) { return String(value == null ? "" : value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function notifText(n) {
+    const actor = n.actor_name || "Someone";
+    if (n.type === "user_registered") return "NEW USER REGISTERED — " + actor + " joined ESMAIWOL.ZN.";
+    if (n.type === "reply") return actor + " replied to your thread.";
+    if (n.type === "quote") return actor + " quoted your post.";
+    if (n.type === "reaction") return actor + " reacted " + (n.emoji || "") + " to your post.";
+    return actor + " interacted with your post.";
+  }
+  function notifHref(n) {
+    if (n.type === "user_registered") {
+      const username = n.actor && n.actor.username;
+      return username ? "profile.html?u=" + encodeURIComponent(username) : "profile.html";
+    }
+    const id = n.thread_id || (n.post_id || "");
+    return "forum.html?thread=" + encodeURIComponent(String(id));
+  }
+  async function loadNotifications() {
+    if (!_notifSession || _notifBusy) return;
+    _notifBusy = true;
+    try {
+      const sb = await getSearchClient();
+      const { data, error } = await sb.from("site_notifications")
+        .select("id, recipient_id, actor_id, type, thread_id, post_id, emoji, created_at, registered_at, read_at, actor:profiles!site_notifications_actor_id_fkey(username, display_name)")
+        .eq("recipient_id", _notifSession.user.id)
+        .order("created_at", { ascending: false }).limit(30);
+      if (error) throw error;
+      const rows = data || [];
+      const unread = rows.filter(n => !n.read_at).length;
+      const badge = document.getElementById("ec-notif-count");
+      const list = document.getElementById("ec-notif-list");
+      if (badge) badge.textContent = unread > 99 ? "99+" : (unread ? String(unread) : "");
+      if (!list) return;
+      if (!rows.length) { list.className = "ec-notif-empty"; list.textContent = "No notifications yet."; return; }
+      list.className = "";
+      list.innerHTML = rows.map(n => {
+        const actor = n.actor || {};
+        const item = { ...n, actor_name: actor.display_name || actor.username || "Someone" };
+        const isAdminNotice = n.type === "user_registered";
+        const timestamp = isAdminNotice ? n.registered_at : n.created_at;
+        const when = timestamp ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "medium" }).format(new Date(timestamp)) : "";
+        const tag = isAdminNotice ? '<span class="ec-notif-admin-tag">ADMIN · NEW USER</span>' : '';
+        return '<a class="ec-notif-item ' + (!n.read_at ? 'unread ' : '') + (isAdminNotice ? 'admin' : '') + '" href="' + notifEscape(notifHref(item)) + '" data-notif-id="' + notifEscape(n.id) + '">' + tag + notifEscape(notifText(item)) + '<span class="ec-notif-time">' + (isAdminNotice ? 'Registered: ' : '') + notifEscape(when) + '</span></a>';
+      }).join("");
+    } catch (e) { console.warn("ESMAIWOL notifications", e); }
+    finally { _notifBusy = false; }
+  }
+  async function markNotificationRead(id) {
+    if (!_notifSession) return;
+    try { const sb = await getSearchClient(); await sb.from("site_notifications").update({ read_at: new Date().toISOString() }).eq("id", id).eq("recipient_id", _notifSession.user.id); } catch(e) { console.warn(e); }
+  }
+  function initNotifications(session) {
+    _notifSession = session || null;
+    const root = document.getElementById("ec-notifications");
+    const bell = document.getElementById("ec-bell");
+    const list = document.getElementById("ec-notif-list");
+    const readAll = document.getElementById("ec-notif-readall");
+    if (!root || !bell) return;
+    if (_notifTimer) { clearInterval(_notifTimer); _notifTimer = null; }
+    bell.disabled = !_notifSession;
+    if (!_notifSession) {
+      document.getElementById("ec-notif-count").textContent = "";
+      if (list) { list.className = "ec-notif-empty"; list.textContent = "Log in to see your notifications."; }
+      root.classList.remove("open"); bell.setAttribute("aria-expanded", "false"); return;
+    }
+    (async () => {
+      try {
+        const sb = await getSearchClient();
+        const { data } = await sb.from("site_admins").select("user_id").eq("user_id", session.user.id).maybeSingle();
+        const title = document.getElementById("ec-notif-title");
+        if (title) title.textContent = data ? "ADMIN NOTIFICATIONS" : "NOTIFICATIONS";
+        root.classList.toggle("is-admin", !!data);
+      } catch (err) { console.warn("ESMAIWOL admin check", err); }
+    })();
+    loadNotifications();
+    _notifTimer = setInterval(loadNotifications, 25000);
+    bell.onclick = (event) => { event.stopPropagation(); const open = root.classList.toggle("open"); bell.setAttribute("aria-expanded", String(open)); if (open) loadNotifications(); };
+    root.querySelector(".ec-notif-menu").onclick = (event) => event.stopPropagation();
+    if (!root.dataset.outsideBound) {
+      document.addEventListener("click", () => { root.classList.remove("open"); bell.setAttribute("aria-expanded", "false"); });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") { root.classList.remove("open"); bell.setAttribute("aria-expanded", "false"); } });
+      root.dataset.outsideBound = "1";
+    }
+    if (list && !list.dataset.bound) {
+      list.addEventListener("click", async e => { const a = e.target.closest("a[data-notif-id]"); if (a) { e.preventDefault(); await markNotificationRead(a.dataset.notifId); location.href = a.href; } });
+      list.dataset.bound = "1";
+    }
+    if (readAll && !readAll.dataset.bound) {
+      readAll.addEventListener("click", async e => { e.stopPropagation(); try { const sb = await getSearchClient(); await sb.from("site_notifications").update({read_at:new Date().toISOString()}).eq("recipient_id", _notifSession.user.id).is("read_at", null); await loadNotifications(); } catch(err) { console.warn(err); } });
+      readAll.dataset.bound = "1";
+    }
+  }
+
   async function loadUser() {
     try {
       let createClient = window.supabase && window.supabase.createClient;
@@ -403,8 +622,10 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       const session = data.session;
       if (!session) {
         setGuest();
+        initNotifications(null);
         return;
       }
+      initNotifications(session);
       const { data: p } = await sb.from("profiles")
         .select("username, display_name, avatar_url")
         .eq("id", session.user.id)
@@ -414,8 +635,9 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       setUser(name, p && p.avatar_url);
       sb.auth.onAuthStateChange(async () => {
         const { data: d2 } = await sb.auth.getSession();
-        if (!d2.session) setGuest();
+        if (!d2.session) { setGuest(); initNotifications(null); }
         else {
+          initNotifications(d2.session);
           const { data: p2 } = await sb.from("profiles")
             .select("username, display_name, avatar_url")
             .eq("id", d2.session.user.id)
@@ -428,6 +650,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     } catch (e) {
       console.warn("esmaiwol-chrome auth", e);
       setGuest();
+      initNotifications(null);
     }
   }
 
