@@ -515,6 +515,48 @@
       el.className = "status" + (type ? " " + type : "");
     }
 
+    function showModerationNotice(moderation) {
+      const strike = Number(moderation?.strike || 1);
+      const permanent = moderation?.permanent === true || strike >= 3;
+      const duration = strike === 1 ? "48 horas" : strike === 2 ? "7 días" : "permanente";
+      const terms = Array.isArray(moderation?.matched_terms) ? moderation.matched_terms.join(", ") : "";
+      let modal = document.getElementById("moderation-notice");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "moderation-notice";
+        modal.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif;";
+        modal.innerHTML = `<section role="alertdialog" aria-modal="true" style="max-width:520px;width:100%;background:#171b20;color:#f2f4f7;border:2px solid #b43d3d;box-shadow:0 12px 50px #000;padding:24px;text-align:left"><h2 style="margin:0 0 12px;color:#ff7777">PUBLICACIÓN BLOQUEADA</h2><p id="moderation-notice-message"></p><p id="moderation-notice-terms" style="color:#ffb7b7;font-size:13px;overflow-wrap:anywhere"></p><p style="font-size:13px;color:#c4cbd3">La publicación no se ha guardado. Si crees que se trata de un error, contacta con la administración.</p><div id="moderation-video-slot" style="display:none"></div><button id="moderation-notice-close" type="button" style="margin-top:12px;padding:10px 18px;background:#a52d35;color:white;border:0;cursor:pointer">Entendido</button></section>`;
+        document.body.appendChild(modal);
+        modal.querySelector("#moderation-notice-close").addEventListener("click", () => modal.remove());
+      }
+      modal.querySelector("#moderation-notice-message").textContent = permanent
+        ? "Has recibido tu tercera infracción. Tu cuenta ha sido suspendida permanentemente."
+        : `Has recibido la infracción número ${strike}. Sanción aplicada: ${duration}.`;
+      modal.querySelector("#moderation-notice-terms").textContent = terms ? `Coincidencias: ${terms}` : "";
+    }
+
+    async function saveProfileViaGateway(payload) {
+      const request = {
+        action: "save_profile",
+        username: payload.username,
+        display_name: payload.display_name,
+        bio: payload.bio,
+        avatar_url: payload.avatar_url,
+        banner_url: payload.banner_url,
+        background_url: payload.background_url
+      };
+      const { data, error } = await sb.functions.invoke("moderation-gateway", { body: request });
+      if (error) {
+        let detail = null;
+        try { detail = await error.context?.json?.(); } catch (_) {}
+        if (detail?.moderation) showModerationNotice(detail.moderation);
+        throw new Error(detail?.error || error.message || "Could not save profile.");
+      }
+      if (data?.moderation) showModerationNotice(data.moderation);
+      if (data?.error) throw new Error(data.error);
+      return data?.data;
+    }
+
     function paint(p) {
       p = p || {};
       const nick = p.display_name || p.username || "USER";
@@ -584,13 +626,9 @@
         const base = (session.user.user_metadata?.username
           || (session.user.email || "user").split("@")[0]
           || "user").replace(/[^A-Za-z0-9_]/g, "_").slice(0, 24);
-        const { error } = await sb.from("profiles").upsert({
-          id: session.user.id,
-          username: base,
-          display_name: base
-        });
-        if (error) throw error;
-        data = { id: session.user.id, username: base, display_name: base, bio: "" };
+        const safeBase = base.length >= 3 ? base : (base + "_user").slice(0, 24);
+        await saveProfileViaGateway({ username: safeBase, display_name: safeBase, bio: "" });
+        data = { id: session.user.id, username: safeBase, display_name: safeBase, bio: "" };
       }
       if ($("username")) $("username").value = data.username || "";
       if ($("display-name")) $("display-name").value = data.display_name || "";
@@ -804,8 +842,11 @@
         const d = ($("display-name").value || "").trim();
         if (u) payload.username = u;
         if (d) payload.display_name = d;
-        const { error } = await sb.from("profiles").upsert(payload);
-        if (error) throw error;
+        await saveProfileViaGateway({
+          username: payload.username || u || session.user.user_metadata?.username || "user",
+          display_name: payload.display_name || d || payload.username || u || "user",
+          bio
+        });
         $("about-text").textContent = bio || "No bio yet.";
         if ($("bio")) $("bio").value = bio;
         $("tab-about").classList.remove("about-mode-edit");
@@ -844,13 +885,7 @@
           payload.banner_url = banner_url;
           payload.background_url = banner_url;
         }
-        let { error } = await sb.from("profiles").upsert(payload);
-        if (error && /banner_url|background_url|column/i.test(error.message || "")) {
-          delete payload.banner_url;
-          delete payload.background_url;
-          ({ error } = await sb.from("profiles").upsert(payload));
-        }
-        if (error) throw error;
+        await saveProfileViaGateway(payload);
         setStatus("status", "Profile saved.", "ok");
         $("avatar-file").value = "";
         $("banner-file").value = "";
