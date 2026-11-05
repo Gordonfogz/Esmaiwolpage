@@ -201,8 +201,9 @@
 }
 
 #esmaiwol-chrome .ec-notifications { position:relative; flex-shrink:0; }
-#esmaiwol-chrome .ec-bell { position:relative; width:34px; height:34px; border:1px solid rgba(130,175,215,.45); border-radius:4px; background:rgba(5,13,24,.82); color:#c8e0ff; cursor:pointer; font-size:18px; line-height:1; }
-#esmaiwol-chrome .ec-bell:hover, #esmaiwol-chrome .ec-notifications.open .ec-bell { color:#00ff83; border-color:#00c978; box-shadow:0 0 8px rgba(0,255,131,.25); }
+#esmaiwol-chrome .ec-bell { position:relative; display:flex; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid rgba(190,195,202,.28); border-radius:4px; background:rgba(8,10,14,.58); color:#c5c8ce; cursor:pointer; line-height:1; box-shadow:none; }
+#esmaiwol-chrome .ec-bell svg { display:block; width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+#esmaiwol-chrome .ec-bell:hover, #esmaiwol-chrome .ec-notifications.open .ec-bell { color:#fff; border-color:rgba(220,224,230,.58); background:rgba(35,38,44,.78); box-shadow:none; }
 #esmaiwol-chrome .ec-notif-count { position:absolute; top:-7px; right:-7px; min-width:17px; height:17px; padding:0 4px; border-radius:10px; background:#d83b52; color:white; font:bold 10px/17px Tahoma,sans-serif; text-align:center; border:1px solid #101722; }
 #esmaiwol-chrome .ec-notif-count:empty { display:none; }
 #esmaiwol-chrome .ec-notif-menu { display:none; position:absolute; top:calc(100% + 9px); right:0; width:min(350px,88vw); max-height:390px; overflow:auto; padding:7px; background:#0b1422; border:1px solid #42658b; box-shadow:0 8px 22px rgba(0,0,0,.72); z-index:100002; color:#dcecff; font:12px Tahoma,sans-serif; }
@@ -418,7 +419,8 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     inner.appendChild(searchWrap);
 
     const notifications = el("div", { className: "ec-notifications", id: "ec-notifications" });
-    const bell = el("button", { className: "ec-bell", id: "ec-bell", type: "button", text: "🔔", title: "Notifications", "aria-label": "Notifications", "aria-expanded": "false" });
+    const bell = el("button", { className: "ec-bell", id: "ec-bell", type: "button", title: "Notifications", "aria-label": "Notifications", "aria-expanded": "false" });
+    bell.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>';
     const count = el("span", { className: "ec-notif-count", id: "ec-notif-count", text: "" });
     bell.appendChild(count);
     const menu = el("div", { className: "ec-notif-menu", id: "ec-notif-menu" });
