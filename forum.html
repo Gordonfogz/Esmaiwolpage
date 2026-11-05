@@ -694,6 +694,24 @@
       el.className = "status" + (type ? " " + type : "");
     }
 
+    // Moderation clips: add more public Supabase Storage URLs to this array later.
+    // The picker avoids playing the same clip twice in a row when there are 2+ clips.
+    const MODERATION_VIDEOS = [
+      "https://oxgymzpvbpapsgmilenw.supabase.co/storage/v1/object/public/moderation-videos/ban%20video.mp4"
+      // , "https://YOUR_PROJECT.supabase.co/storage/v1/object/public/moderation-videos/another-video.mp4"
+    ];
+    let lastModerationVideo = "";
+
+    function pickModerationVideo() {
+      if (!MODERATION_VIDEOS.length) return "";
+      const choices = MODERATION_VIDEOS.length > 1
+        ? MODERATION_VIDEOS.filter(url => url !== lastModerationVideo)
+        : MODERATION_VIDEOS;
+      const selected = choices[Math.floor(Math.random() * choices.length)];
+      lastModerationVideo = selected;
+      return selected;
+    }
+
     function showModerationNotice(verdict) {
       const overlay = $("moderation-overlay");
       const strike = Number(verdict?.strike || 0);
@@ -711,11 +729,38 @@
       else sanction += "tu cuenta está temporalmente bloqueada.";
       if (expires) sanction += "\nFinaliza: " + expires;
       $("moderation-sanction").textContent = sanction;
+
+      const video = $("moderation-video");
+      const placeholder = $("moderation-video-placeholder");
+      const clip = pickModerationVideo();
+      if (clip && video) {
+        video.pause();
+        video.hidden = false;
+        video.muted = true; // muted autoplay is allowed by most browsers
+        video.src = clip;
+        video.load();
+        if (placeholder) placeholder.hidden = true;
+      } else {
+        if (video) { video.pause(); video.removeAttribute("src"); video.hidden = true; }
+        if (placeholder) { placeholder.hidden = false; placeholder.textContent = "No hay vídeos de moderación configurados."; }
+      }
       overlay.classList.add("on");
+      if (clip && video) {
+        const playAttempt = video.play();
+        if (playAttempt && typeof playAttempt.catch === "function") {
+          playAttempt.catch(() => {
+            // Controls remain visible so the user can start playback manually.
+            video.controls = true;
+          });
+        }
+      }
     }
 
     function closeModerationNotice() {
-      $("moderation-overlay")?.classList.remove("on");
+      const overlay = $("moderation-overlay");
+      const video = $("moderation-video");
+      if (video) { video.pause(); video.currentTime = 0; }
+      overlay?.classList.remove("on");
     }
 
     async function publishThroughModeration(payload) {
@@ -1430,8 +1475,8 @@
       <h2 id="moderation-title">PUBLICACIÓN BLOQUEADA</h2>
       <p id="moderation-message">Tu publicación contiene un término no permitido.</p>
       <p id="moderation-sanction"></p>
-      <div class="moderation-video-placeholder" id="moderation-video-placeholder">El vídeo de moderación que enviarás se añadirá aquí.</div>
-      <video id="moderation-video" controls playsinline hidden></video>
+      <div class="moderation-video-placeholder" id="moderation-video-placeholder" hidden>Vídeo de moderación no disponible.</div>
+      <video id="moderation-video" controls playsinline preload="none" hidden></video>
       <button type="button" id="moderation-close">[ ENTENDIDO ]</button>
     </section>
   </div>
