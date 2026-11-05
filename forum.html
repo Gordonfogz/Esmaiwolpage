@@ -720,14 +720,14 @@
       const expires = verdict?.expires_at ? new Date(verdict.expires_at).toLocaleString() : "";
       const terms = Array.isArray(verdict?.matched_terms) ? verdict.matched_terms.join(", ") : "";
       $("moderation-message").textContent = terms
-        ? "Se detectó contenido incluido en la lista de moderación: " + terms
-        : "Tu publicación ha sido bloqueada por el sistema de moderación.";
-      let sanction = "Sanción aplicada: ";
-      if (permanent || strike >= 3) sanction += "suspensión permanente.";
-      else if (hours === 168 || strike === 2) sanction += "7 días.";
-      else if (hours === 48 || strike === 1) sanction += "48 horas.";
-      else sanction += "tu cuenta está temporalmente bloqueada.";
-      if (expires) sanction += "\nFinaliza: " + expires;
+        ? "Content matching the moderation list was detected: " + terms
+        : "Your post has been blocked by the moderation system.";
+      let sanction = "Sanction applied: ";
+      if (permanent || strike >= 3) sanction += "permanent suspension.";
+      else if (hours === 168 || strike === 2) sanction += "7 days.";
+      else if (hours === 48 || strike === 1) sanction += "48 hours.";
+      else sanction += "your account is temporarily suspended.";
+      if (expires) sanction += "\nEnds: " + expires;
       $("moderation-sanction").textContent = sanction;
 
       const video = $("moderation-video");
@@ -742,7 +742,7 @@
         if (placeholder) placeholder.hidden = true;
       } else {
         if (video) { video.pause(); video.removeAttribute("src"); video.hidden = true; }
-        if (placeholder) { placeholder.hidden = false; placeholder.textContent = "No hay vídeos de moderación configurados."; }
+        if (placeholder) { placeholder.hidden = false; placeholder.textContent = "No moderation videos are configured."; }
       }
       overlay.classList.add("on");
       if (clip && video) {
@@ -1472,12 +1472,12 @@
   </div>
   <div class="moderation-overlay" id="moderation-overlay" role="dialog" aria-modal="true" aria-labelledby="moderation-title">
     <section class="moderation-card" onclick="event.stopPropagation()">
-      <h2 id="moderation-title">PUBLICACIÓN BLOQUEADA</h2>
-      <p id="moderation-message">Tu publicación contiene un término no permitido.</p>
+      <h2 id="moderation-title">POST BLOCKED</h2>
+      <p id="moderation-message">Your post contains a prohibited term.</p>
       <p id="moderation-sanction"></p>
-      <div class="moderation-video-placeholder" id="moderation-video-placeholder" hidden>Vídeo de moderación no disponible.</div>
+      <div class="moderation-video-placeholder" id="moderation-video-placeholder" hidden>Moderation video unavailable.</div>
       <video id="moderation-video" controls playsinline preload="none" hidden></video>
-      <button type="button" id="moderation-close">[ ENTENDIDO ]</button>
+      <button type="button" id="moderation-close">[ GOT IT ]</button>
     </section>
   </div>
   <div class="profile-preview-overlay" id="profile-preview" role="dialog" aria-modal="true" aria-label="Profile preview">
