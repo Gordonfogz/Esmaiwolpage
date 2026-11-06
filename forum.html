@@ -763,6 +763,110 @@
       overlay?.classList.remove("on");
     }
 
+
+    // ============================================================
+    // ANTI-FLOOD / ANTI-SPAM (client layer)
+    // Cooldown + duplicate body check. Real protection must also
+    // live in moderation-gateway (server). These values are tunable.
+    // ============================================================
+    const FLOOD = {
+      threadCooldownMs: 60 * 1000,   // 60s between new threads
+      replyCooldownMs: 20 * 1000,    // 20s between replies
+      windowMs: 10 * 60 * 1000,     // 10 min window
+      maxThreadsInWindow: 5,        // max 5 threads / 10 min
+      maxRepliesInWindow: 20,       // max 20 replies / 10 min
+      minBodyChars: 2,
+      duplicateWindowMs: 3 * 60 * 1000
+    };
+
+    function floodStorageKey(userId) {
+      return "esmaiwol_flood_" + (userId || "anon");
+    }
+
+    function readFloodState(userId) {
+      try {
+        const raw = localStorage.getItem(floodStorageKey(userId));
+        if (!raw) return { events: [], lastBody: "", lastBodyAt: 0 };
+        const data = JSON.parse(raw);
+        return {
+          events: Array.isArray(data.events) ? data.events : [],
+          lastBody: typeof data.lastBody === "string" ? data.lastBody : "",
+          lastBodyAt: Number(data.lastBodyAt || 0)
+        };
+      } catch (_) {
+        return { events: [], lastBody: "", lastBodyAt: 0 };
+      }
+    }
+
+    function writeFloodState(userId, state) {
+      try {
+        localStorage.setItem(floodStorageKey(userId), JSON.stringify(state));
+      } catch (_) {}
+    }
+
+    function pruneFloodEvents(events, now) {
+      return (events || []).filter(ev => now - Number(ev.at || 0) < FLOOD.windowMs);
+    }
+
+    function assertNotFlooding(action, body) {
+      if (!session?.user?.id) throw new Error("Log in to post.");
+      const userId = session.user.id;
+      const now = Date.now();
+      const state = readFloodState(userId);
+      state.events = pruneFloodEvents(state.events, now);
+
+      const normalized = String(body || "").trim().replace(/\s+/g, " ").toLowerCase();
+      if (normalized.length < FLOOD.minBodyChars) {
+        throw new Error("Message is too short.");
+      }
+
+      // Duplicate body in a short window
+      if (
+        normalized &&
+        normalized === state.lastBody &&
+        now - state.lastBodyAt < FLOOD.duplicateWindowMs
+      ) {
+        const wait = Math.ceil((FLOOD.duplicateWindowMs - (now - state.lastBodyAt)) / 1000);
+        throw new Error("Duplicate message detected. Wait " + wait + "s before posting the same text again.");
+      }
+
+      const isThread = action === "create_thread";
+      const cooldown = isThread ? FLOOD.threadCooldownMs : FLOOD.replyCooldownMs;
+      const sameType = state.events.filter(ev => ev.action === action);
+      if (sameType.length) {
+        const last = sameType[sameType.length - 1];
+        const elapsed = now - Number(last.at || 0);
+        if (elapsed < cooldown) {
+          const wait = Math.ceil((cooldown - elapsed) / 1000);
+          throw new Error(
+            (isThread ? "Slow down. Wait " : "Flood protection: wait ") +
+            wait + "s before posting again."
+          );
+        }
+      }
+
+      const maxInWindow = isThread ? FLOOD.maxThreadsInWindow : FLOOD.maxRepliesInWindow;
+      if (sameType.length >= maxInWindow) {
+        throw new Error(
+          "Rate limit reached (" + maxInWindow + " " +
+          (isThread ? "threads" : "replies") +
+          " per 10 minutes). Try again later."
+        );
+      }
+    }
+
+    function recordFloodEvent(action, body) {
+      if (!session?.user?.id) return;
+      const userId = session.user.id;
+      const now = Date.now();
+      const state = readFloodState(userId);
+      state.events = pruneFloodEvents(state.events, now);
+      state.events.push({ action, at: now });
+      state.lastBody = String(body || "").trim().replace(/\s+/g, " ").toLowerCase();
+      state.lastBodyAt = now;
+      writeFloodState(userId, state);
+    }
+
     async function publishThroughModeration(payload) {
       const { data, error } = await sb.functions.invoke("moderation-gateway", { body: payload });
       if (error) {
@@ -1114,9 +1218,9 @@
       const joined = opts.joined_at ? fmtDate(opts.joined_at) : "";
       let side = '<div class="fpost-side">';
       if (avatar) {
-        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile" onerror="this.onerror=null;this.src=\'default-avatar.jpeg\'">';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile">';
       } else {
-        side += '<img class="fpost-avatar" data-profile-trigger="1" src="default-avatar.jpeg" alt="View profile">';
+        side += '<div class="fpost-avatar ph" data-profile-trigger="1">?</div>';
       }
       side += '<div class="fpost-nick" data-profile-trigger="1">' + escapeHtml(nick) + '</div>';
       side += '<div class="fpost-role">Member</div>';
@@ -1353,6 +1457,7 @@
         const body = $("thread-body").value.trim();
         if (!title || !body) throw new Error("Title and message required");
         if (!currentBoard) throw new Error("No board selected");
+        assertNotFlooding("create_thread", body);
         const files = $("thread-files").files;
         let attachments = [];
         if (files && files.length) {
@@ -1369,6 +1474,7 @@
         });
         const data = result?.data;
         if (!data?.id) throw new Error("The server did not return the new thread ID.");
+        recordFloodEvent("create_thread", body);
         $("form-new-thread").reset();
         $("thread-attach-preview").innerHTML = "";
         setStatus("thread-status", "Thread posted.", "ok");
@@ -1390,6 +1496,7 @@
         const body = $("reply-body").value.trim();
         if (!body) throw new Error("Write a reply");
         if (!currentThreadId) throw new Error("No thread");
+        assertNotFlooding("create_reply", body);
         const files = $("reply-files").files;
         let attachments = [];
         if (files && files.length) {
@@ -1405,6 +1512,7 @@
           quote_author_id: pendingQuote?.authorId || null,
           event_key: crypto.randomUUID()
         });
+        recordFloodEvent("create_reply", body);
         $("form-reply").reset();
         pendingQuote = null;
         $("reply-attach-preview").innerHTML = "";
