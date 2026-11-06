@@ -291,6 +291,49 @@
       font-weight: bold;
     }
 
+    /* Webring-style banners inside Enlaces */
+    #enlaces .widget-body {
+      padding: 8px;
+    }
+    #enlaces .webring-banners {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+    }
+    #enlaces .webring-banners li {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+    }
+    #enlaces .webring-banners a {
+      display: block;
+      width: 100%;
+      text-decoration: none;
+      background: transparent;
+    }
+    #enlaces .webring-banners a:hover {
+      background: transparent;
+      filter: brightness(1.08);
+    }
+    #enlaces .webring-banners img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 54px;
+      object-fit: contain;
+      object-position: center;
+      border: 1px solid rgba(140, 220, 255, 0.25);
+      background: #000;
+      image-rendering: auto;
+    }
+
+
     /* ===== Latest forum post window on index ===== */
     .latest-forum-window {
       margin: 10px 0 16px;
@@ -1241,7 +1284,7 @@
           <h2>Enlaces</h2>
           <div class="widget-body">
             <ul class="side-list">
-              <li><a href="https://www.fuckyoutube.lol/homepage" target="_blank" rel="noopener noreferrer">fuckyoutube.lol</a></li>
+              <li><a href="https://youtuube.neocities.org/" target="_blank" rel="noopener noreferrer">youtuube.neocities.org</a></li>
             </ul>
           </div>
         </section>
