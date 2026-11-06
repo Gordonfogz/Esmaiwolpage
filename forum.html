@@ -266,12 +266,11 @@
       margin: 0 auto 8px;
     }
     .fpost-avatar.ph {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      font-size: 28px;
+      display: block;
       margin: 0 auto 8px;
+      background: #d7e8f4 url("default-avatar.jpeg") center/cover no-repeat;
+      color: transparent;
+      font-size: 0;
     }
     .fpost-nick {
       color: var(--green);
@@ -1218,9 +1217,9 @@
       const joined = opts.joined_at ? fmtDate(opts.joined_at) : "";
       let side = '<div class="fpost-side">';
       if (avatar) {
-        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile">';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile" onerror="this.onerror=null;this.src=\'default-avatar.jpeg\'">';
       } else {
-        side += '<div class="fpost-avatar ph" data-profile-trigger="1">?</div>';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="default-avatar.jpeg" alt="View profile" onerror="this.style.background=\'#d7e8f4\'">';
       }
       side += '<div class="fpost-nick" data-profile-trigger="1">' + escapeHtml(nick) + '</div>';
       side += '<div class="fpost-role">Member</div>';
