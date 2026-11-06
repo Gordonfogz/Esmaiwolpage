@@ -291,6 +291,128 @@
       font-weight: bold;
     }
 
+    /* ===== Latest forum post window on index ===== */
+    .latest-forum-window {
+      margin: 10px 0 16px;
+      border: 1px solid rgba(140, 220, 255, 0.4);
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(145deg, rgba(180, 230, 255, 0.12), rgba(20, 60, 110, 0.1) 40%, transparent),
+        rgba(6, 18, 36, 0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 20px rgba(40, 160, 255, 0.14),
+        0 8px 28px rgba(0, 10, 30, 0.35);
+      backdrop-filter: blur(12px) saturate(1.3);
+      -webkit-backdrop-filter: blur(12px) saturate(1.3);
+    }
+    .latest-forum-window .lfw-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 12px;
+      border-bottom: 1px solid rgba(140, 220, 255, 0.28);
+      background: linear-gradient(180deg, rgba(100, 190, 255, 0.38), rgba(20, 70, 130, 0.45));
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      color: #f4fcff;
+      text-shadow: 0 0 12px rgba(120, 220, 255, 0.45);
+    }
+    .latest-forum-window .lfw-titlebar .lfw-label {
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    .latest-forum-window .lfw-titlebar .lfw-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .latest-forum-window .lfw-titlebar a,
+    .latest-forum-window .lfw-titlebar button {
+      border: 1px solid rgba(140, 220, 255, 0.35);
+      background: rgba(8, 20, 40, 0.55);
+      color: #b8f0ff;
+      font: 600 11px/1 "Segoe UI", sans-serif;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .latest-forum-window .lfw-titlebar a:hover,
+    .latest-forum-window .lfw-titlebar button:hover {
+      color: #fff;
+      background: rgba(40, 120, 200, 0.45);
+    }
+    .latest-forum-window .lfw-body {
+      padding: 12px 14px 14px;
+      min-height: 72px;
+    }
+    .latest-forum-window .lfw-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .latest-forum-window .lfw-post-title {
+      margin: 0 0 8px;
+      font-size: clamp(16px, 1.8vw, 22px);
+      color: #a8f0ff;
+      text-shadow: 0 0 12px rgba(60, 200, 255, 0.35);
+      line-height: 1.25;
+    }
+    .latest-forum-window .lfw-post-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .latest-forum-window .lfw-post-title a:hover {
+      color: #fff;
+      background: transparent;
+      text-shadow: 0 0 14px rgba(120, 220, 255, 0.8);
+    }
+    .latest-forum-window .lfw-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      font-size: 14px;
+      max-height: 180px;
+      overflow: auto;
+      margin: 0 0 10px;
+      padding-right: 4px;
+    }
+    .latest-forum-window .lfw-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .latest-forum-window .lfw-footer a,
+    .latest-forum-window .lfw-footer button {
+      border: 1px solid rgba(140, 220, 255, 0.35);
+      background: rgba(8, 24, 44, 0.65);
+      color: #6ef0ff;
+      font: 700 12px/1 "Segoe UI", sans-serif;
+      padding: 7px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .latest-forum-window .lfw-footer a:hover,
+    .latest-forum-window .lfw-footer button:hover {
+      color: #fff;
+      background: rgba(40, 140, 220, 0.45);
+    }
+    .latest-forum-window .lfw-muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .latest-forum-window .lfw-error {
+      color: #ff8ca0;
+      font-size: 13px;
+    }
+
+
     .sidebar {
       min-width: 0;
       padding: 12px 12px 16px;
@@ -940,6 +1062,20 @@
 
     <div class="layout">
       <main aria-label="Entradas del blog">
+
+        <!-- Latest forum post quick window -->
+        <section class="latest-forum-window" id="latest-forum-window" aria-label="Latest forum post">
+          <div class="lfw-titlebar">
+            <span class="lfw-label">FORUM // LATEST POST</span>
+            <div class="lfw-actions">
+              <a href="forum.html" id="lfw-open-forums">Open forums</a>
+              <button type="button" id="lfw-refresh" title="Refresh">↻</button>
+            </div>
+          </div>
+          <div class="lfw-body" id="lfw-body">
+            <p class="lfw-muted">Loading latest post…</p>
+          </div>
+        </section>
         <article class="post" id="perl">
           <div class="post-icon" aria-hidden="true"><img src="data:image/webp;base64,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" alt=""></div>
           <div>
@@ -1105,11 +1241,7 @@
           <h2>Enlaces</h2>
           <div class="widget-body">
             <ul class="side-list">
-              <li><a href="https://www.debian.org/" target="_blank" rel="noopener noreferrer">Debian</a></li>
-              <li><a href="https://archlinux.org/" target="_blank" rel="noopener noreferrer">Arch Linux</a></li>
-              <li><a href="https://www.gnu.org/" target="_blank" rel="noopener noreferrer">GNU</a></li>
-              <li><a href="https://www.perl.org/" target="_blank" rel="noopener noreferrer">Perl</a></li>
-              <li><a href="https://opensource.org/" target="_blank" rel="noopener noreferrer">Open Source</a></li>
+              <li><a href="https://www.fuckyoutube.lol/homepage" target="_blank" rel="noopener noreferrer">fuckyoutube.lol</a></li>
             </ul>
           </div>
         </section>
@@ -1526,6 +1658,144 @@
 })();
 </script>
 <script src="nightcore-ipod.js" defer></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
+  const bodyEl = document.getElementById("lfw-body");
+  const refreshBtn = document.getElementById("lfw-refresh");
+  if (!bodyEl) return;
+
+  let latestThreadId = null;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  function fmtDate(iso) {
+    try { return new Date(iso).toLocaleString(); } catch { return iso || ""; }
+  }
+
+  function snippet(text, max) {
+    const t = String(text || "").replace(/\s+/g, " ").trim();
+    if (t.length <= max) return t;
+    return t.slice(0, max - 1) + "…";
+  }
+
+  // Any navigation that is NOT the current latest thread goes to forums root.
+  function forumGateUrl(wantedThreadId) {
+    if (wantedThreadId && latestThreadId && String(wantedThreadId) === String(latestThreadId)) {
+      return "forum.html?thread=" + encodeURIComponent(String(latestThreadId));
+    }
+    return "forum.html";
+  }
+
+  async function loadLatest() {
+    bodyEl.innerHTML = '<p class="lfw-muted">Loading latest post…</p>';
+    try {
+      if (!window.supabase || !window.supabase.createClient) {
+        throw new Error("Supabase client not available");
+      }
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data, error } = await sb
+        .from("forum_threads")
+        .select("id, board_id, title, body, created_at, user_id, profiles(username, display_name, avatar_url)")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) {
+        bodyEl.innerHTML = '<p class="lfw-muted">No forum posts yet. <a href="forum.html">Go to forums</a></p>';
+        latestThreadId = null;
+        return;
+      }
+
+      latestThreadId = data.id;
+      const p = data.profiles || {};
+      const author = p.display_name || p.username || "user";
+      const handle = p.username ? "@" + p.username : "";
+      const threadUrl = "forum.html?thread=" + encodeURIComponent(String(data.id));
+      const boardLabel = data.board_id ? String(data.board_id) : "board";
+
+      bodyEl.innerHTML =
+        '<div class="lfw-meta">' +
+          esc(fmtDate(data.created_at)) +
+          ' · <strong>' + esc(author) + '</strong>' +
+          (handle ? ' <span>' + esc(handle) + '</span>' : '') +
+          ' · /' + esc(boardLabel) + '/' +
+        '</div>' +
+        '<h3 class="lfw-post-title"><a href="' + esc(threadUrl) + '" data-lfw-thread="' + esc(String(data.id)) + '">' +
+          esc(data.title || "(untitled)") +
+        '</a></h3>' +
+        '<div class="lfw-content">' + esc(snippet(data.body, 700)) + '</div>' +
+        '<div class="lfw-footer">' +
+          '<a href="' + esc(threadUrl) + '" data-lfw-thread="' + esc(String(data.id)) + '">Open this post</a>' +
+          '<a href="' + esc(threadUrl) + '#reply" data-lfw-thread="' + esc(String(data.id)) + '">Quick reply on forum</a>' +
+          '<a href="forum.html" data-lfw-gate="1">All boards →</a>' +
+        '</div>';
+    } catch (err) {
+      console.warn("latest forum window", err);
+      bodyEl.innerHTML =
+        '<p class="lfw-error">Could not load the latest forum post.</p>' +
+        '<p class="lfw-muted"><a href="forum.html">Open forums</a></p>';
+      latestThreadId = null;
+    }
+  }
+
+  // Intercept clicks inside the widget: only the current latest thread is allowed;
+  // anything else (other boards, random forum links) goes to forum.html root.
+  document.getElementById("latest-forum-window")?.addEventListener("click", (e) => {
+    const a = e.target.closest("a");
+    if (!a) return;
+    const href = a.getAttribute("href") || "";
+    if (!href.includes("forum.html")) return;
+
+    // Explicit gate
+    if (a.hasAttribute("data-lfw-gate")) {
+      e.preventDefault();
+      location.href = "forum.html";
+      return;
+    }
+
+    const allowed = a.getAttribute("data-lfw-thread");
+    if (allowed && latestThreadId && String(allowed) === String(latestThreadId)) {
+      // allow — same post
+      return;
+    }
+
+    // forum link without matching thread id → force forums home
+    if (href.startsWith("forum.html") && !allowed) {
+      // open forums is fine
+      return;
+    }
+    if (href.startsWith("forum.html") && allowed && String(allowed) !== String(latestThreadId)) {
+      e.preventDefault();
+      location.href = "forum.html";
+    }
+  });
+
+  refreshBtn?.addEventListener("click", () => loadLatest());
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadLatest);
+  } else {
+    // supabase script may still be loading
+    const start = Date.now();
+    const wait = setInterval(() => {
+      if (window.supabase || Date.now() - start > 4000) {
+        clearInterval(wait);
+        loadLatest();
+      }
+    }, 50);
+  }
+})();
+</script>
+
 <script src="esmaiwol-chrome.js" defer></script>
 </body>
 </html>
