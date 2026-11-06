@@ -9,6 +9,7 @@
 
   const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
   const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
+  const DEFAULT_AVATAR = "default-avatar.jpeg";
 
   const css = `
 #esmaiwol-chrome {
@@ -488,7 +489,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       "aria-haspopup": "true",
       "aria-expanded": "false"
     });
-    ui.appendChild(el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" }));
+    ui.appendChild(el("img", { className: "ec-pfp", id: "ec-pfp", src: DEFAULT_AVATAR, alt: "Guest" }));
     const meta = el("div", { className: "ec-meta" });
     meta.appendChild(el("span", { className: "ec-nick", id: "ec-nick", text: "Guest" }));
     meta.appendChild(el("span", { className: "ec-clock", id: "ec-clock", text: "--:--:--" }));
@@ -571,17 +572,23 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
   function setGuest() {
     const link = document.getElementById("ec-device-link");
     const nick = document.getElementById("ec-nick");
-    const pfp = document.getElementById("ec-pfp");
+    let pfp = document.getElementById("ec-pfp");
     if (link) link.title = "Account options";
     if (nick) nick.textContent = "Guest";
     updateAccountMenu(false);
     if (pfp) {
-      if (pfp.tagName === "IMG") {
-        const ph = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" });
-        pfp.replaceWith(ph);
+      if (pfp.tagName !== "IMG") {
+        const img = el("img", {
+          className: "ec-pfp",
+          id: "ec-pfp",
+          src: DEFAULT_AVATAR,
+          alt: "Guest"
+        });
+        pfp.replaceWith(img);
       } else {
-        pfp.className = "ec-pfp ph";
-        pfp.textContent = "?";
+        pfp.src = DEFAULT_AVATAR;
+        pfp.className = "ec-pfp";
+        pfp.alt = "Guest";
       }
     }
   }
@@ -594,28 +601,19 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     if (nick) nick.textContent = username || "user";
     updateAccountMenu(true);
     if (!pfp) return;
-    if (avatarUrl) {
-      if (pfp.tagName !== "IMG") {
-        const img = el("img", {
-          className: "ec-pfp",
-          id: "ec-pfp",
-          src: avatarUrl,
-          alt: ""
-        });
-        pfp.replaceWith(img);
-      } else {
-        pfp.src = avatarUrl;
-        pfp.className = "ec-pfp";
-      }
+    const src = avatarUrl || DEFAULT_AVATAR;
+    if (pfp.tagName !== "IMG") {
+      const img = el("img", {
+        className: "ec-pfp",
+        id: "ec-pfp",
+        src: src,
+        alt: username || "user"
+      });
+      pfp.replaceWith(img);
     } else {
-      const letter = (username || "?").charAt(0).toUpperCase();
-      if (pfp.tagName === "IMG") {
-        const ph = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: letter });
-        pfp.replaceWith(ph);
-      } else {
-        pfp.className = "ec-pfp ph";
-        pfp.textContent = letter;
-      }
+      pfp.src = src;
+      pfp.className = "ec-pfp";
+      pfp.alt = username || "user";
     }
   }
 
