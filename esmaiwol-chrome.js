@@ -10,6 +10,7 @@
   const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
   const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
   const DEFAULT_AVATAR = "default-avatar.jpeg";
+  const DEFAULT_AVATAR_FALLBACK = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjRmYmZmIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjZDdlOGY0Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I3Y2ZlMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0icyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAuOSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNjIiIGZpbGw9IiNlOGYyZjgiIHN0cm9rZT0iIzliYjZjOCIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI0MiIgcj0iMjIiIGZpbGw9InVybCgjZykiIHN0cm9rZT0iIzhhYTdiYiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGVsbGlwc2UgY3g9IjY0IiBjeT0iOTYiIHJ4PSIzNCIgcnk9IjI4IiBmaWxsPSJ1cmwoI2cpIiBzdHJva2U9IiM4YWE3YmIiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxlbGxpcHNlIGN4PSI1NiIgY3k9IjM0IiByeD0iMTAiIHJ5PSI3IiBmaWxsPSJ1cmwoI3MpIi8+Cjwvc3ZnPg==";
 
   const css = `
 #esmaiwol-chrome {
@@ -296,18 +297,21 @@
   border-radius: 50%;
   object-fit: cover;
   border: 0;
-  background: #0a1520;
+  background-color: #d7e8f4;
+  background-image: url("default-avatar.jpeg");
+  background-size: cover;
+  background-position: center;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
   z-index: 2;
+  overflow: hidden;
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-indent: -9999px;
 }
 #esmaiwol-chrome .ec-pfp.ph {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: bold;
-  color: #9ec8e8;
-  font-family: Tahoma, "Segoe UI", sans-serif;
+  /* no letters inside the circle — image/background only */
+  display: block;
 }
 #esmaiwol-chrome .ec-meta {
   position: absolute;
@@ -569,51 +573,57 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     if (logout) logout.hidden = !loggedIn;
   }
 
+
+  function applyDefaultPfp(imgEl, altText) {
+    if (!imgEl) return;
+    imgEl.className = "ec-pfp";
+    imgEl.alt = altText || "";
+    imgEl.removeAttribute("data-letter");
+    imgEl.textContent = "";
+    const applyFallback = () => {
+      if (imgEl.dataset.fallbackApplied === "1") return;
+      imgEl.dataset.fallbackApplied = "1";
+      imgEl.src = DEFAULT_AVATAR_FALLBACK;
+    };
+    imgEl.onerror = applyFallback;
+    imgEl.src = DEFAULT_AVATAR;
+  }
+
+  function ensurePfpImg() {
+    let pfp = document.getElementById("ec-pfp");
+    if (!pfp) return null;
+    if (pfp.tagName === "IMG") return pfp;
+    const img = el("img", { className: "ec-pfp", id: "ec-pfp", alt: "" });
+    pfp.replaceWith(img);
+    return img;
+  }
+
   function setGuest() {
     const link = document.getElementById("ec-device-link");
     const nick = document.getElementById("ec-nick");
-    let pfp = document.getElementById("ec-pfp");
     if (link) link.title = "Account options";
     if (nick) nick.textContent = "Guest";
     updateAccountMenu(false);
-    if (pfp) {
-      if (pfp.tagName !== "IMG") {
-        const img = el("img", {
-          className: "ec-pfp",
-          id: "ec-pfp",
-          src: DEFAULT_AVATAR,
-          alt: "Guest"
-        });
-        pfp.replaceWith(img);
-      } else {
-        pfp.src = DEFAULT_AVATAR;
-        pfp.className = "ec-pfp";
-        pfp.alt = "Guest";
-      }
-    }
+    const pfp = ensurePfpImg();
+    applyDefaultPfp(pfp, "Guest");
   }
 
   function setUser(username, avatarUrl) {
     const link = document.getElementById("ec-device-link");
     const nick = document.getElementById("ec-nick");
-    let pfp = document.getElementById("ec-pfp");
     if (link) link.title = "Account options";
     if (nick) nick.textContent = username || "user";
     updateAccountMenu(true);
+    const pfp = ensurePfpImg();
     if (!pfp) return;
-    const src = avatarUrl || DEFAULT_AVATAR;
-    if (pfp.tagName !== "IMG") {
-      const img = el("img", {
-        className: "ec-pfp",
-        id: "ec-pfp",
-        src: src,
-        alt: username || "user"
-      });
-      pfp.replaceWith(img);
-    } else {
-      pfp.src = src;
+    if (avatarUrl) {
       pfp.className = "ec-pfp";
       pfp.alt = username || "user";
+      pfp.textContent = "";
+      pfp.onerror = () => applyDefaultPfp(pfp, username || "user");
+      pfp.src = avatarUrl;
+    } else {
+      applyDefaultPfp(pfp, username || "user");
     }
   }
 
