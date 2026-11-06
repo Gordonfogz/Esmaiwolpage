@@ -362,6 +362,16 @@
     .profile-entry-actions { margin-top:7px; font-size:11px; }
     .profile-summary { padding:7px; background:#ddd; border:1px solid #aaa; }
     .profile-media-counts { display:flex; flex-wrap:wrap; gap:12px; padding:8px; margin-bottom:8px; background:#ddd; border:1px solid #aaa; font-size:11px; }
+  
+    .awards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(145px,1fr)); gap:12px; padding:10px 0; }
+    .award-card { min-width:0; padding:12px 8px; border:1px solid #888; background:linear-gradient(145deg,#f5f5f5,#d5d5d5); text-align:center; box-shadow:inset 0 0 0 1px #fff; }
+    .award-card.locked { filter:grayscale(1); opacity:.48; }
+    .award-card img { display:block; width:100%; height:105px; object-fit:contain; margin:0 auto 8px; }
+    .award-name { font-weight:bold; font-size:12px; text-transform:uppercase; }
+    .award-progress { font-size:11px; margin-top:5px; color:#444; }
+    .award-date { font-size:10px; margin-top:4px; color:#555; }
+    .awards-intro { margin:4px 0 10px; font-size:12px; }
+
   </style>
 </head>
 <body>
@@ -434,7 +444,7 @@
           <div class="pf-body hidden" id="tab-activity"><p>No recent activity.</p></div>
           <div class="pf-body hidden" id="tab-posts"><p>Loading postings…</p></div>
           <div class="pf-body hidden" id="tab-media"><p>Loading media…</p></div>
-          <div class="pf-body hidden" id="tab-awards"><p>No awards yet.</p></div>
+          <div class="pf-body hidden" id="tab-awards"><p>Loading awards…</p></div>
           <div class="pf-body hidden" id="tab-edit">
             <form class="edit-form" id="form-profile">
               <label for="avatar-file">Profile picture (PFP)</label>
@@ -726,6 +736,63 @@
         '</article>';
     }
 
+
+    const AWARD_ASSET_BASE = "awards/";
+    const AWARD_FALLBACK_CATALOG = [
+      { award_key: "iron_cross", name: "Iron Cross", threshold: 10, icon_path: "awards/iron cross.png", description: "Reach 10 messages.", sort_order: 1 },
+      { award_key: "iron_eagle", name: "Iron Eagle", threshold: 15, icon_path: "awards/iron eagle.png", description: "Reach 15 messages.", sort_order: 2 },
+      { award_key: "lighter", name: "Lighter", threshold: 20, icon_path: "awards/lighter.png", description: "Reach 20 messages.", sort_order: 3 },
+      { award_key: "cigarbox", name: "Cigarbox", threshold: 25, icon_path: "awards/cigarbox.gif", description: "Reach 25 messages.", sort_order: 4 },
+      { award_key: "3dsspinning", name: "3DS Spinning", threshold: 30, icon_path: "awards/3dsspinning.gif", description: "Reach 30 messages.", sort_order: 5 }
+    ];
+
+    function renderAwards(catalog, earned, messageCount) {
+      const earnedMap = new Map((earned || []).map(item => [item.award_key, item]));
+      const ordered = [...catalog].sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0));
+      $("stat-awards").textContent = String(earnedMap.size);
+      $("tab-awards").innerHTML =
+        '<p class="awards-intro">Earn awards by publishing topics and replies. Your total message count: <b>' +
+        Number(messageCount || 0) + '</b>. Awards already earned remain on your profile.</p>' +
+        '<div class="awards-grid">' + ordered.map(award => {
+          const unlocked = earnedMap.has(award.award_key);
+          const record = earnedMap.get(award.award_key);
+          const icon = escapeProfileHtml(award.icon_path || "");
+          const name = escapeProfileHtml(award.name || award.award_key);
+          const threshold = Number(award.threshold || 0);
+          const date = record?.awarded_at ? new Date(record.awarded_at).toLocaleDateString() : "";
+          return '<article class="award-card' + (unlocked ? '' : ' locked') + '">' +
+            (icon ? '<img src="' + icon + '" alt="' + name + '" loading="lazy">' : '') +
+            '<div class="award-name">' + name + '</div>' +
+            '<div class="award-progress">' + (unlocked ? 'UNLOCKED' : 'LOCKED') + ' · ' + threshold + ' messages</div>' +
+            (unlocked ? '<div class="award-date">Earned: ' + escapeProfileHtml(date || "Date unavailable") + '</div>' : '') +
+            '</article>';
+        }).join("") + '</div>';
+    }
+
+    async function loadAwards(userId, messageCount) {
+      const awardsBox = $("tab-awards");
+      try {
+        const [catalogResult, earnedResult] = await Promise.all([
+          sb.from("awards_catalog").select("award_key, name, threshold, icon_path, description, sort_order").order("sort_order", { ascending: true }),
+          sb.from("user_awards").select("award_key, awarded_at").eq("user_id", userId)
+        ]);
+        if (catalogResult.error) throw catalogResult.error;
+        if (earnedResult.error) throw earnedResult.error;
+        renderAwards(catalogResult.data || [], earnedResult.data || [], messageCount);
+      } catch (err) {
+        console.warn("Awards tables unavailable; displaying award progress only", err);
+        // The visual catalogue still works before the SQL setup is run; earned status
+        // comes only from the database and is never guessed by the browser.
+        const { data, error } = await sb.from("user_awards").select("award_key, awarded_at").eq("user_id", userId);
+        if (error) {
+          awardsBox.innerHTML = '<p class="profile-error">Awards are not configured yet. Run the awards SQL setup in Supabase.</p>';
+          $("stat-awards").textContent = "—";
+          return;
+        }
+        renderAwards(AWARD_FALLBACK_CATALOG, data || [], messageCount);
+      }
+    }
+
     async function loadProfileActivity(userId) {
       const postsBox = $("tab-posts");
       const mediaBox = $("tab-media");
@@ -752,6 +819,7 @@
 
         $("stat-messages").textContent = String(entries.length);
         $("stat-media").textContent = String(media.length);
+        await loadAwards(userId, entries.length);
         const reactionCount = await sb.from("forum_reactions").select("id", { count: "exact", head: true }).eq("post_author_id", userId);
         if (reactionCount.error) {
           console.warn("Reaction score unavailable", reactionCount.error);
@@ -793,6 +861,8 @@
         activityBox.innerHTML = errorHtml;
         $("stat-messages").textContent = "—";
         $("stat-media").textContent = "—";
+        $("stat-awards").textContent = "—";
+        $("tab-awards").innerHTML = errorHtml;
       }
     }
 
