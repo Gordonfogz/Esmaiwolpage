@@ -235,6 +235,55 @@
   color: #e8f4ff;
 }
 #esmaiwol-chrome a.ec-device-ui:hover { filter: brightness(1.06); }
+#esmaiwol-chrome button.ec-device-ui {
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+#esmaiwol-chrome button.ec-device-ui:hover { filter: brightness(1.06); }
+#esmaiwol-chrome .ec-account-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  width: 190px;
+  padding: 5px;
+  background: #0b1422;
+  border: 1px solid #42658b;
+  box-shadow: 0 8px 22px rgba(0,0,0,.72);
+  z-index: 100003;
+  font: 12px "Courier New", Courier, monospace;
+}
+#esmaiwol-chrome .ec-device.account-open .ec-account-menu { display: block; }
+#esmaiwol-chrome .ec-account-menu a,
+#esmaiwol-chrome .ec-account-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-bottom: 1px solid #1a2a40;
+  border-radius: 0;
+  background: transparent;
+  color: #c8e0ff;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+#esmaiwol-chrome .ec-account-menu a:hover,
+#esmaiwol-chrome .ec-account-menu button:hover {
+  color: #00ff83;
+  background: #15263b;
+}
+#esmaiwol-chrome .ec-account-menu [hidden] { display: none !important; }
 #esmaiwol-chrome .ec-pfp,
 #esmaiwol-chrome .ec-pfp.ph {
   position: absolute;
@@ -349,7 +398,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     const inner = el("div", { className: "ec-inner" });
     const nav = el("nav", { className: "ec-nav", "aria-label": "Site" });
     [
-      ["index.html", "Inicio"],
+      ["index.html", "HOME"],
       ["forum.html", "FORUM"],
       ["chat.html", "CHAT"],
       ["profile.html", "PROFILE"],
@@ -430,12 +479,14 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     notifications.appendChild(menu);
     inner.appendChild(notifications);
 
-    const device = el("div", { className: "ec-device" });
-    const ui = el("a", {
+    const device = el("div", { className: "ec-device", id: "ec-account" });
+    const ui = el("button", {
       className: "ec-device-ui",
-      href: "login.html",
+      type: "button",
       id: "ec-device-link",
-      title: "Profile / Login"
+      title: "Account options",
+      "aria-haspopup": "true",
+      "aria-expanded": "false"
     });
     ui.appendChild(el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" }));
     const meta = el("div", { className: "ec-meta" });
@@ -443,11 +494,54 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     meta.appendChild(el("span", { className: "ec-clock", id: "ec-clock", text: "--:--:--" }));
     ui.appendChild(meta);
     device.appendChild(ui);
+
+    const accountMenu = el("div", {
+      className: "ec-account-menu",
+      id: "ec-account-menu",
+      role: "menu",
+      "aria-label": "Account options"
+    });
+    accountMenu.appendChild(el("a", { href: "login.html", id: "ec-account-login", role: "menuitem", text: "Log in" }));
+    accountMenu.appendChild(el("a", { href: "forum.html", id: "ec-account-post", role: "menuitem", text: "Post" }));
+    accountMenu.appendChild(el("a", { href: "profile.html", id: "ec-account-profile", role: "menuitem", text: "View profile" }));
+    accountMenu.appendChild(el("button", { type: "button", id: "ec-account-logout", role: "menuitem", text: "Log out" }));
+    device.appendChild(accountMenu);
+
+    ui.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = device.classList.toggle("account-open");
+      ui.setAttribute("aria-expanded", String(isOpen));
+    });
+    accountMenu.addEventListener("click", event => event.stopPropagation());
+    document.addEventListener("click", () => {
+      device.classList.remove("account-open");
+      ui.setAttribute("aria-expanded", "false");
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        device.classList.remove("account-open");
+        ui.setAttribute("aria-expanded", "false");
+      }
+    });
+    accountMenu.querySelector("#ec-account-logout").addEventListener("click", async () => {
+      if (!chromeSupabaseClient) return;
+      const { error } = await chromeSupabaseClient.auth.signOut();
+      if (error) {
+        alert("Could not log out: " + error.message);
+        return;
+      }
+      device.classList.remove("account-open");
+      ui.setAttribute("aria-expanded", "false");
+      setGuest();
+      initNotifications(null);
+    });
+
     inner.appendChild(device);
 
     root.appendChild(inner);
     document.body.insertBefore(root, document.body.firstChild);
     document.body.classList.add("esmaiwol-chrome-on");
+    updateAccountMenu(false);
     return root;
   }
 
@@ -461,12 +555,26 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
       String(n.getSeconds()).padStart(2, "0");
   }
 
+  let chromeSupabaseClient = null;
+
+  function updateAccountMenu(loggedIn) {
+    const login = document.getElementById("ec-account-login");
+    const post = document.getElementById("ec-account-post");
+    const profile = document.getElementById("ec-account-profile");
+    const logout = document.getElementById("ec-account-logout");
+    if (login) login.hidden = !!loggedIn;
+    if (post) post.hidden = !loggedIn;
+    if (profile) profile.hidden = !loggedIn;
+    if (logout) logout.hidden = !loggedIn;
+  }
+
   function setGuest() {
     const link = document.getElementById("ec-device-link");
     const nick = document.getElementById("ec-nick");
     const pfp = document.getElementById("ec-pfp");
-    if (link) link.href = "login.html";
+    if (link) link.title = "Account options";
     if (nick) nick.textContent = "Guest";
+    updateAccountMenu(false);
     if (pfp) {
       if (pfp.tagName === "IMG") {
         const ph = el("div", { className: "ec-pfp ph", id: "ec-pfp", text: "?" });
@@ -482,8 +590,9 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
     const link = document.getElementById("ec-device-link");
     const nick = document.getElementById("ec-nick");
     let pfp = document.getElementById("ec-pfp");
-    if (link) link.href = "profile.html";
+    if (link) link.title = "Account options";
     if (nick) nick.textContent = username || "user";
+    updateAccountMenu(true);
     if (!pfp) return;
     if (avatarUrl) {
       if (pfp.tagName !== "IMG") {
@@ -620,6 +729,7 @@ body.esmaiwol-chrome-on { padding-top: 84px !important; }
         createClient = window.supabase.createClient;
       }
       const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+      chromeSupabaseClient = sb;
       const { data } = await sb.auth.getSession();
       const session = data.session;
       if (!session) {
