@@ -291,6 +291,32 @@
       font-weight: bold;
     }
 
+    #enlaces .stamp-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 2px 0;
+    }
+    #enlaces .stamp-links a {
+      display: inline-block;
+      line-height: 0;
+      text-decoration: none;
+      background: transparent;
+    }
+    #enlaces .stamp-links a:hover {
+      background: transparent;
+      filter: brightness(1.1);
+    }
+    #enlaces .stamp-links img {
+      display: block;
+      width: 88px;
+      height: 31px;
+      image-rendering: auto;
+      border: 0;
+    }
+
+
     /* Webring-style banners inside Enlaces */
     #enlaces .widget-body {
       padding: 8px;
@@ -1283,9 +1309,10 @@
         <section class="widget" id="enlaces">
           <h2>Enlaces</h2>
           <div class="widget-body">
-            <ul class="side-list">
-              <li><a href="https://youtuube.neocities.org/" target="_blank" rel="noopener noreferrer">youtuube.neocities.org</a></li>
-            </ul>
+            <div class="stamp-links">
+              <a href="https://youtuube.neocities.org/" target="_blank" rel="noopener noreferrer"><img src="youtuube88x31.gif" alt="FuckYou" width="88" height="31"></a>
+              <a href="https://forum.agoraroad.com/"><img alt="Agora Road" src="https://forum.agoraroad.com/data/addonflare/awardsystem/icons/180.gif?1632460929"></a>
+            </div>
           </div>
         </section>
 
