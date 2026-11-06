@@ -667,6 +667,8 @@
   </div>
 
   <script>
+    const DEFAULT_AVATAR = "default-avatar.jpeg";
+    const DEFAULT_AVATAR_FALLBACK = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjRmYmZmIi8+PHN0b3Agb2Zmc2V0PSI1NSUiIHN0b3AtY29sb3I9IiNkN2U4ZjQiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNiN2NmZTAiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0icyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC45Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI2MiIgZmlsbD0iI2U4ZjJmOCIgc3Ryb2tlPSIjOWJiNmM4IiBzdHJva2Utd2lkdGg9IjMiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjQyIiByPSIyMiIgZmlsbD0idXJsKCNnKSIgc3Ryb2tlPSIjOGFhN2JiIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI5NiIgcng9IjM0IiByeT0iMjgiIGZpbGw9InVybCgjZykiIHN0cm9rZT0iIzhhYTdiYiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGVsbGlwc2UgY3g9IjU2IiBjeT0iMzQiIHJ4PSIxMCIgcnk9IjciIGZpbGw9InVybCgjcykiLz48L3N2Zz4=";
     const SUPABASE_URL = "https://oxgymzpvbpapsgmilenw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
     const { createClient } = supabase;
@@ -1185,8 +1187,8 @@
         name.textContent = display;
         handle.textContent = p.username ? "@" + p.username : "";
         bio.textContent = p.bio || "No bio yet.";
-        avatar.src = p.avatar_url || "default-avatar.jpeg";
-        avatar.onerror = () => { avatar.src = "default-avatar.jpeg"; };
+        avatar.onerror = () => { avatar.onerror = null; avatar.src = DEFAULT_AVATAR_FALLBACK; };
+        avatar.src = p.avatar_url || DEFAULT_AVATAR;
         visit.href = "profile.html?u=" + encodeURIComponent(p.username || "");
         visit.classList.toggle("hidden", !p.username);
       } catch (err) {
@@ -1217,9 +1219,9 @@
       const joined = opts.joined_at ? fmtDate(opts.joined_at) : "";
       let side = '<div class="fpost-side">';
       if (avatar) {
-        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile" onerror="this.onerror=null;this.src=\'default-avatar.jpeg\'">';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="' + escapeHtml(avatar) + '" alt="View profile" onerror="this.onerror=null;this.src=DEFAULT_AVATAR_FALLBACK">';
       } else {
-        side += '<img class="fpost-avatar" data-profile-trigger="1" src="default-avatar.jpeg" alt="View profile" onerror="this.style.background=\'#d7e8f4\'">';
+        side += '<img class="fpost-avatar" data-profile-trigger="1" src="default-avatar.jpeg" alt="View profile" onerror="this.onerror=null;this.src=DEFAULT_AVATAR_FALLBACK">';
       }
       side += '<div class="fpost-nick" data-profile-trigger="1">' + escapeHtml(nick) + '</div>';
       side += '<div class="fpost-role">Member</div>';

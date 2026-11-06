@@ -495,6 +495,7 @@
     const SUPABASE_KEY = "sb_publishable_UzgjZ0LkU_qUtjZaRZPbcw_W5_r2p56";
     const AVATAR_BUCKET = "avatars";
     const DEFAULT_AVATAR = "default-avatar.jpeg";
+    const DEFAULT_AVATAR_FALLBACK = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZjRmYmZmIi8+PHN0b3Agb2Zmc2V0PSI1NSUiIHN0b3AtY29sb3I9IiNkN2U4ZjQiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNiN2NmZTAiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0icyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMC45Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI2MiIgZmlsbD0iI2U4ZjJmOCIgc3Ryb2tlPSIjOWJiNmM4IiBzdHJva2Utd2lkdGg9IjMiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjQyIiByPSIyMiIgZmlsbD0idXJsKCNnKSIgc3Ryb2tlPSIjOGFhN2JiIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI5NiIgcng9IjM0IiByeT0iMjgiIGZpbGw9InVybCgjZykiIHN0cm9rZT0iIzhhYTdiYiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGVsbGlwc2UgY3g9IjU2IiBjeT0iMzQiIHJ4PSIxMCIgcnk9IjciIGZpbGw9InVybCgjcykiLz48L3N2Zz4=";
     const PROFILE_COLS = "id, username, display_name, bio, avatar_url, banner_url, background_url, created_at";
     const PROFILE_BASE_COLS = "id, username, display_name, bio, avatar_url, created_at";
     const { createClient } = supabase;
@@ -577,8 +578,13 @@
       $("share-url").textContent = new URL("profile.html?u=" + encodeURIComponent(p.username || "username"), location.href).href;
 
       const av = $("pf-avatar");
+      av.onerror = () => {
+        if (av.dataset.fb === "1") { av.onerror = null; av.src = DEFAULT_AVATAR_FALLBACK; return; }
+        av.dataset.fb = "1";
+        av.src = DEFAULT_AVATAR;
+      };
+      delete av.dataset.fb;
       av.src = p.avatar_url || DEFAULT_AVATAR;
-      av.onerror = () => { av.src = DEFAULT_AVATAR; };
 
       const ban = $("pf-banner");
       const wall = p.banner_url || p.background_url;
@@ -1036,6 +1042,20 @@
         paint({ display_name: "USER", username: "guest", bio: "Signed out. Login to edit your profile." });
       }
     });
+
+    (function wireDefaultAvatar() {
+      const av = document.getElementById("pf-avatar");
+      if (!av) return;
+      av.onerror = function () {
+        if (av.dataset.fb === "1") {
+          av.onerror = null;
+          av.src = DEFAULT_AVATAR_FALLBACK;
+          return;
+        }
+        av.dataset.fb = "1";
+        av.src = DEFAULT_AVATAR;
+      };
+    })();
 
     boot();
   </script>
