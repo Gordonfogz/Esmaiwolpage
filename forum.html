@@ -674,6 +674,12 @@
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Owner/admin account. Database RLS must enforce this too; hiding buttons is not security.
+    const ADMIN_EMAILS = ["yonifroste15@gmail.com"];
+    function isForumAdmin() {
+      return ADMIN_EMAILS.includes(String(session?.user?.email || "").toLowerCase());
+    }
+
     let session = null;
     let profile = null;
     let currentBoard = null;
@@ -1236,7 +1242,11 @@
       if (opts.title) main += '<div class="fpost-title">' + escapeHtml(opts.title) + '</div>';
       main += '<div class="fpost-body">' + formatBody(opts.body || "") + '</div>';
       main += renderAttachments(opts.attachments || []);
-      main += '<div class="fpost-actions"><button type="button" class="quote-post-btn" data-quote-post="' + escapeHtml(opts.reaction_id || '') + '" data-quote-author="' + escapeHtml(opts.profile_id || '') + '" data-quote-name="' + escapeHtml(nick) + '" data-quote-body="' + escapeHtml((opts.body || '').slice(0, 600)) + '">QUOTE</button></div>';
+      main += '<div class="fpost-actions">';
+      if (isForumAdmin() && opts.reaction_id && (opts.reaction_type === "thread" || opts.reaction_type === "reply")) {
+        main += '<button type="button" class="admin-delete-post-btn" data-delete-type="' + escapeHtml(opts.reaction_type) + '" data-delete-id="' + escapeHtml(opts.reaction_id) + '" style="margin-right:auto;border-color:#a8324a;color:#ff8ca0">[ ADMIN: DELETE POST ]</button>';
+      }
+      main += '<button type="button" class="quote-post-btn" data-quote-post="' + escapeHtml(opts.reaction_id || '') + '" data-quote-author="' + escapeHtml(opts.profile_id || '') + '" data-quote-name="' + escapeHtml(nick) + '" data-quote-body="' + escapeHtml((opts.body || '').slice(0, 600)) + '">QUOTE</button></div>';
       main += '<div class="reaction-bar" data-reaction-type="' + escapeHtml(opts.reaction_type || '') + '" data-reaction-id="' + escapeHtml(opts.reaction_id || '') + '" data-author-id="' + escapeHtml(opts.profile_id || '') + '">' + REACTION_EMOTES.map(em => '<button type="button" class="reaction-btn" data-react="' + escapeHtml(em.key) + '" aria-label="React with ' + escapeHtml(em.label) + '" title="' + escapeHtml(em.label) + '"><span class="reaction-emoji">' + em.emoji + '</span><span class="reaction-count">0</span></button>').join('') + '<span class="reaction-hint">React</span></div>';
       main += '</div>';
       return '<article class="fpost" data-profile-id="' + escapeHtml(opts.profile_id || '') + '" data-profile-name="' + escapeHtml(opts.profile_username || '') + '" title="Click to preview this user profile">' + side + main + '</article>';
@@ -1306,6 +1316,39 @@
         console.error("Reaction failed", err);
         alert("Could not save reaction: " + (err.message || err));
       } finally { btn.disabled = false; }
+    }
+
+    async function adminDeletePost(type, id) {
+      if (!isForumAdmin()) {
+        alert("Administrator access required.");
+        return;
+      }
+      const table = type === "thread" ? "forum_threads" : type === "reply" ? "forum_posts" : null;
+      if (!table || !id) return;
+      const label = type === "thread" ? "this thread and its replies (if database cascade is configured)" : "this reply";
+      if (!confirm("Delete " + label + "? This cannot be undone.")) return;
+
+      try {
+        // Remove replies first so deletion also works when the foreign key
+        // does not use ON DELETE CASCADE.
+        if (type === "thread") {
+          const { error: repliesError } = await sb.from("forum_posts").delete().eq("thread_id", id);
+          if (repliesError) throw repliesError;
+        }
+        const { error } = await sb.from(table).delete().eq("id", id);
+        if (error) throw error;
+        if (type === "thread") {
+          currentThreadId = null;
+          if (currentBoard) await openBoard(currentBoard);
+          else { show("view-boards"); await loadBoards(); }
+        } else if (currentThreadId) {
+          await openThread(currentThreadId);
+        }
+      } catch (err) {
+        console.error("Admin deletion failed:", err);
+        alert("Could not delete post: " + (err.message || err) +
+          "\\nCheck the Supabase DELETE RLS policy for " + table + ".");
+      }
     }
 
     async function openThread(threadId) {
@@ -1390,6 +1433,12 @@
         html += '<p class="muted" style="margin-top:4px">No replies yet.</p>';
       }
       box.innerHTML = html;
+      box.querySelectorAll(".admin-delete-post-btn").forEach(btn => {
+        btn.addEventListener("click", async e => {
+          e.stopPropagation();
+          await adminDeletePost(btn.dataset.deleteType, btn.dataset.deleteId);
+        });
+      });
       box.querySelectorAll(".quote-post-btn").forEach(btn => btn.addEventListener("click", () => {
         const body = btn.dataset.quoteBody || "";
         const author = btn.dataset.quoteName || "user";
