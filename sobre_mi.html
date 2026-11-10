@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050509">
+  <meta name="description" content="Sobre Esmaiwol: Linux, hardware, arte digital y proyectos web.">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Sobre mí // ESMAIWOL.ZN</title>
+  <style>
+    :root {
+      --bg: #050509;
+      --panel: #080914;
+      --blue: #1768ff;
+      --green: #00ff83;
+      --text: #cbd5ff;
+      --muted: #91b7bb;
+      --border: #164cff;
+      --frame-w: 36px; /* grosor visual del marco metálico */
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: #020208;
+      color: var(--text);
+      font: 16px/1.6 "Courier New", Courier, monospace;
+      min-height: 100vh;
+      padding: 16px 10px 28px;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    a:hover, a:focus { color: var(--green); background: #10172c; }
+
+    /* ===== TODO el contenido vive SOLO dentro de este marco ===== */
+    .site {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      background: #03050c;
+      /* Marco metálico: esquinas fijas, lados se estiran solo en 1 eje */
+      border: var(--frame-w) solid transparent;
+      border-image: url("frame.png") 55 fill / var(--frame-w) / 0 stretch;
+      /* respaldo si border-image falla */
+      box-shadow: 0 0 0 1px #1a1a2e;
+    }
+
+    .site-inner {
+      /* sin padding extra: el border-image ya actúa de margen */
+      min-height: 60vh;
+    }
+
+    /* Masthead + GIF de fondo */
+    .masthead {
+      position: relative;
+      padding: 26px 18px;
+      border-bottom: 2px solid var(--border);
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .masthead::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("bg-glitch.gif") center / cover no-repeat;
+      opacity: 0.55;
+      z-index: 0;
+    }
+    .masthead::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(5,5,9,0.75) 0%, rgba(8,12,50,0.55) 50%, rgba(5,5,9,0.78) 100%);
+      z-index: 1;
+    }
+    .masthead > * { position: relative; z-index: 2; }
+    .eyebrow {
+      color: var(--blue);
+      font-weight: bold;
+      letter-spacing: 3px;
+      margin: 0 0 8px;
+      text-shadow: 0 0 8px #000, 0 0 4px #1768ff;
+    }
+    .masthead h1 {
+      margin: 0;
+      color: var(--green);
+      font-size: clamp(26px, 5vw, 48px);
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+      text-shadow: 0 0 12px #00ff8333, 0 2px 6px #000;
+    }
+    .masthead p {
+      color: var(--muted);
+      margin: 8px 0 0;
+      text-shadow: 0 1px 4px #000;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border);
+      background: #050610;
+      font-weight: bold;
+    }
+    nav a { text-decoration: none; }
+    nav a:before { content: "[ "; color: var(--text); }
+    nav a:after { content: " ]"; color: var(--text); }
+
+    main {
+      padding: 16px 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(200px, 0.85fr);
+      gap: 16px;
+    }
+    .panel, .side-panel {
+      border: 2px solid var(--border);
+      background: #05060c;
+      min-width: 0;
+    }
+    .panel h2, .side-panel h2 {
+      font-size: 18px;
+      margin: 0;
+      padding: 6px 12px;
+      color: var(--green);
+      border-bottom: 2px solid var(--border);
+      background: linear-gradient(90deg, #07123c, #080914);
+    }
+    .content { padding: 12px; }
+    .content p { margin: 8px 0 12px; }
+    .terminal {
+      border: 1px solid #1768ff;
+      padding: 12px;
+      background: #03050c;
+      overflow-wrap: anywhere;
+    }
+    .prompt { color: var(--green); }
+    .quote {
+      color: #fff;
+      border-left: 3px solid var(--green);
+      padding: 8px 0 8px 14px;
+      margin: 12px 0;
+      font-weight: bold;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0;
+      list-style: none;
+    }
+    .tags li {
+      border: 1px solid var(--blue);
+      padding: 4px 8px;
+      color: var(--green);
+      background: #080914;
+    }
+    .side-panel { margin-bottom: 14px; }
+    .side-panel .content { padding: 12px; }
+    .side-panel ul { margin: 0; padding-left: 18px; }
+    .side-panel li { margin: 6px 0; }
+
+    footer {
+      padding: 12px 16px;
+      border-top: 2px solid var(--border);
+      color: var(--green);
+      font-weight: bold;
+    }
+    footer span { color: var(--muted); }
+
+    .language-picker {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--green);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .language-picker select {
+      background: #050509;
+      color: var(--green);
+      border: 1px solid var(--blue);
+      padding: 5px;
+      font: inherit;
+      max-width: 100%;
+    }
+    .language-picker select:focus {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 8px 4px 20px; font-size: 14px; }
+      :root { --frame-w: 22px; }
+      main { grid-template-columns: 1fr; padding: 10px 6px; }
+      .masthead { padding: 18px 12px; }
+      .content { padding: 10px; }
+      .language-picker { margin-left: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <div class="site-inner">
+      <header class="masthead">
+        <p class="eyebrow">ESMAIWOL NET.ZONE // USER PROFILE</p>
+        <h1>./SOBRE_MÍ</h1>
+        <p><span class="prompt">[STATUS]</span> usuario conectado · explorando sistemas, imágenes e ideas</p>
+      </header>
+      <nav aria-label="Navegación principal">
+        <a href="index.html">Inicio</a>
+        <a href="#perfil">Perfil</a>
+        <a href="#linux">Linux</a>
+        <a href="#hardware">Hardware</a>
+        <a href="#creativo">Arte y vídeo</a>
+        <a href="#proyectos">Proyectos</a>
+        <label class="language-picker" for="language-select"><span data-language-label>LANG:</span>
+          <select id="language-select" aria-label="Select language">
+            <option value="en" selected>English</option>
+            <option value="de">Deutsch</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+      </nav>
+      <main>
+        <div>
+          <section class="panel" id="perfil">
+            <h2>&gt;_ IDENTIDAD</h2>
+            <div class="content">
+              <div class="terminal"><span class="prompt">esmaiwol@net.zone:~$</span> whoami<br><br>Soy esmaiwol, un usuario y ahora dirán que postmodernista o larper. No soy un moderado; política y éticamente, a hablar no procedo porque simplemente no se me tomará en serio a primeras. Abiertamente pro elitista.</div>
+              <p class="quote">No es una página corporativa. Es mi rincón de la red: intereses, experimentos, archivos e ideas, a mi manera.</p>
+            </div>
+          </section>
+          <section class="panel" id="linux" style="margin-top:16px">
+            <h2>&gt;_ LINUX / SOFTWARE LIBRE</h2>
+            <div class="content">
+              <p>Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.</p>
+              <ul class="tags"><li>Debian</li><li>GNU/Linux</li><li>Software libre</li><li>Terminal</li></ul>
+            </div>
+          </section>
+          <section class="panel" id="hardware" style="margin-top:16px">
+            <h2>&gt;_ THINKPAD / HARDWARE</h2>
+            <div class="content">
+              <p>Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto</p>
+              <p><a href="index.html#thinkpad">→ Ver la entrada sobre mi ThinkPad</a></p>
+            </div>
+          </section>
+          <section class="panel" id="creativo" style="margin-top:16px">
+            <h2>&gt;_ EDICIÓN Y ARTE DIGITAL</h2>
+            <div class="content">
+              <p>También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.</p>
+              <ul class="tags"><li>Vídeo</li><li>Audio</li><li>PNG</li><li>Graffiti</li><li>Y2K / retro web</li></ul>
+            </div>
+          </section>
+          <section class="panel" id="proyectos" style="margin-top:16px">
+            <h2>&gt;_ ESMAIWOL / PROYECTOS</h2>
+            <div class="content">
+              <p>ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion</p>
+              <p><span class="prompt">[INFO]</span> Esta página se irá actualizando cuando tenga nuevos proyectos que enseñar.</p>
+            </div>
+          </section>
+          <section class="panel" id="galeria" style="margin-top:16px">
+            <h2>&gt;_ GALERÍA / ARCHIVO VISUAL</h2>
+            <div class="content">
+              <p>Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.</p>
+              <p class="prompt">[ GALERÍA EN CONSTRUCCIÓN ]</p>
+            </div>
+          </section>
+        </div>
+        <aside>
+          <section class="side-panel"><h2>SYS.INFO</h2><div class="content"><p><span class="prompt">USER:</span> esmaiwol</p><p><span class="prompt">MODE:</span> personal</p><p><span class="prompt">THEME:</span> retro terminal</p><p><span class="prompt">STATUS:</span> en construcción</p></div></section>
+          <section class="side-panel"><h2>CONTENIDO</h2><div class="content"><ul><li><a href="#perfil">Identidad</a></li><li><a href="#linux">Linux</a></li><li><a href="#hardware">ThinkPad</a></li><li><a href="#creativo">Arte y vídeo</a></li><li><a href="#proyectos">Proyectos</a></li><li><a href="#galeria">Galería</a></li></ul></div></section>
+          <section class="side-panel"><h2>EXTERNAL LINKS</h2><div class="content"><ul><li><a href="https://www.debian.org/" target="_blank" rel="noopener noreferrer">Debian</a></li><li><a href="https://www.gnu.org/" target="_blank" rel="noopener noreferrer">GNU</a></li><li><a href="https://www.perl.org/" target="_blank" rel="noopener noreferrer">Perl</a></li></ul></div></section>
+        </aside>
+      </main>
+      <footer><a href="index.html">&lt; Volver a ESMAIWOL NET.ZONE</a> <span>// HTML + CSS</span></footer>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const translations = {
+    en: {
+      "Sobre Esmaiwol: Linux, hardware, arte digital y proyectos web.": "About Esmaiwol: Linux, hardware, digital art, and web projects.",
+      "Sobre mí // ESMAIWOL.ZN": "About me // ESMAIWOL.ZN",
+      "Navegación principal": "Main navigation",
+      "LANG:": "LANG:",
+      "Inicio": "Home", "Perfil": "Profile", "Arte y vídeo": "Art & video",
+      "Proyectos": "Projects", "usuario conectado · explorando sistemas, imágenes e ideas": "user online · exploring systems, images, and ideas",
+      ">_ IDENTIDAD": ">_ IDENTITY", "IDENTIDAD": "IDENTITY",
+      "Soy esmaiwol, un usuario y ahora dirán que postmodernista o larper. No soy un moderado; política y éticamente, a hablar no procedo porque simplemente no se me tomará en serio a primeras. Abiertamente pro elitista.": "I'm esmaiwol, a user—and now people will call me a postmodernist or a larper. I'm not a moderate; politically and ethically, I won't go into it because I simply won't be taken seriously at first. Openly pro-elitist.",
+      "No es una página corporativa. Es mi rincón de la red: intereses, experimentos, archivos e ideas, a mi manera.": "This isn't a corporate website. It's my corner of the internet: interests, experiments, files, and ideas, my way.",
+      ">_ LINUX / SOFTWARE LIBRE": ">_ LINUX / FREE SOFTWARE", "LINUX / SOFTWARE LIBRE": "LINUX / FREE SOFTWARE",
+      "Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.": "I've always been the kind of person who knew Linux was objectively superior to Windows. No matter how you look at it, the usefulness and absurd amount of freedom GNU/Linux gives you are simply astonishing. Until quite recently, I always resisted the comfort zone Windows offered, defending it and even preferring it to the former.",
+      "Software libre": "Free software",
+      ">_ THINKPAD / HARDWARE": ">_ THINKPAD / HARDWARE", "THINKPAD / HARDWARE": "THINKPAD / HARDWARE",
+      "Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto": "One day I went downtown to buy a second-hand ThinkPad T430. An elderly man of seemingly high status handed it to me at the door of his residence, and with Debian I understood why it was a cult laptop.",
+      "→ Ver la entrada sobre mi ThinkPad": "→ Read the post about my ThinkPad",
+      ">_ EDICIÓN Y ARTE DIGITAL": ">_ EDITING & DIGITAL ART", "EDICIÓN Y ARTE DIGITAL": "EDITING & DIGITAL ART",
+      "También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.": "I also work with video editing, audio, images, retro aesthetics, graffiti, and visual experiments. I'm drawn to the old web: personal pages, dark interfaces, GIFs, and a visual identity that doesn't look like a generic template.",
+      "Vídeo": "Video", "Y2K / retro web": "Y2K / retro web",
+      ">_ ESMAIWOL / PROYECTOS": ">_ ESMAIWOL / PROJECTS", "ESMAIWOL / PROYECTOS": "ESMAIWOL / PROJECTS",
+      "ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion": "ESMAIWOL NET.ZONE is my personal space, still under construction. Did you know that anything I write here could amount to doxxing myself? In fact, a blog or a page dedicated to a single user can become the source of your own personal information leak.",
+      "Esta página se irá actualizando cuando tenga nuevos proyectos que enseñar.": "This page will be updated whenever I have new projects to show.",
+      ">_ GALERÍA / ARCHIVO VISUAL": ">_ GALLERY / VISUAL ARCHIVE", "GALERÍA / ARCHIVO VISUAL": "GALLERY / VISUAL ARCHIVE",
+      "Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.": "A space reserved for images, drawings, compositions, banners, and digital art. It can be expanded by adding images to the repository and linking them here.",
+      "[ GALERÍA EN CONSTRUCCIÓN ]": "[ GALLERY UNDER CONSTRUCTION ]",
+      "en construcción": "under construction", "CONTENIDO": "CONTENTS", "Identidad": "Identity",
+      "< Volver a ESMAIWOL NET.ZONE": "< Back to ESMAIWOL NET.ZONE", "Volver a ESMAIWOL NET.ZONE": "Back to ESMAIWOL NET.ZONE"
+    },
+    de: {
+      "Sobre Esmaiwol: Linux, hardware, arte digital y proyectos web.": "Über Esmaiwol: Linux, Hardware, digitale Kunst und Webprojekte.",
+      "Sobre mí // ESMAIWOL.ZN": "Über mich // ESMAIWOL.ZN",
+      "Navegación principal": "Hauptnavigation",
+      "LANG:": "SPRACHE:",
+      "Inicio": "Startseite", "Perfil": "Profil", "Arte y vídeo": "Kunst & Video",
+      "Proyectos": "Projekte", "usuario conectado · explorando sistemas, imágenes e ideas": "Benutzer online · erkundet Systeme, Bilder und Ideen",
+      ">_ IDENTIDAD": ">_ IDENTITÄT", "IDENTIDAD": "IDENTITÄT",
+      "Soy esmaiwol, un usuario y ahora dirán que postmodernista o larper. No soy un moderado; política y éticamente, a hablar no procedo porque simplemente no se me tomará en serio a primeras. Abiertamente pro elitista.": "Ich bin esmaiwol, ein Nutzer, und jetzt werden manche wohl sagen, ich sei Postmodernist oder LARPer. Ich bin kein Gemäßigter; auf politische und ethische Fragen gehe ich nicht näher ein, weil man mich ohnehin zunächst nicht ernst nehmen wird. Offen elitär eingestellt.",
+      "No es una página corporativa. Es mi rincón de la red: intereses, experimentos, archivos e ideas, a mi manera.": "Dies ist keine Unternehmenswebsite. Es ist meine Ecke des Internets: Interessen, Experimente, Dateien und Ideen – auf meine Art.",
+      ">_ LINUX / SOFTWARE LIBRE": ">_ LINUX / FREIE SOFTWARE", "LINUX / SOFTWARE LIBRE": "LINUX / FREIE SOFTWARE",
+      "Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.": "Ich war schon immer jemand, der wusste, dass Linux objektiv betrachtet Windows überlegen ist. Ganz gleich, wie man es betrachtet: Der Nutzen und die absurde Freiheit, die GNU/Linux bietet, sind einfach erstaunlich. Bis vor Kurzem habe ich mich stets gegen die Komfortzone von Windows gewehrt, es verteidigt und sogar dem Erstgenannten vorgezogen.",
+      "Software libre": "Freie Software",
+      ">_ THINKPAD / HARDWARE": ">_ THINKPAD / HARDWARE", "THINKPAD / HARDWARE": "THINKPAD / HARDWARE",
+      "Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto": "Eines Tages ging ich ins Stadtzentrum, um ein gebrauchtes ThinkPad T430 zu kaufen. Ein älterer Mann von scheinbar hohem gesellschaftlichem Rang übergab es mir an der Tür seines Hauses, und mit Debian verstand ich, warum dieser Laptop Kultstatus hat.",
+      "→ Ver la entrada sobre mi ThinkPad": "→ Den Beitrag über mein ThinkPad ansehen",
+      ">_ EDICIÓN Y ARTE DIGITAL": ">_ BEARBEITUNG & DIGITALE KUNST", "EDICIÓN Y ARTE DIGITAL": "BEARBEITUNG & DIGITALE KUNST",
+      "También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.": "Ich beschäftige mich auch mit Videoschnitt, Audio, Bildern, Retro-Ästhetik, Graffiti und visuellen Experimenten. Mich reizt das alte Web: persönliche Seiten, dunkle Oberflächen, GIFs und eine visuelle Identität, die nicht wie eine generische Vorlage wirkt.",
+      "Vídeo": "Video", "Y2K / retro web": "Y2K / Retro-Web",
+      ">_ ESMAIWOL / PROYECTOS": ">_ ESMAIWOL / PROJEKTE", "ESMAIWOL / PROYECTOS": "ESMAIWOL / PROJEKTE",
+      "ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion": "ESMAIWOL NET.ZONE ist mein persönlicher Bereich und befindet sich noch im Aufbau. Wusstest du, dass alles, was ich hier schreibe, dazu führen könnte, dass ich mich selbst doxxe? Tatsächlich kann ein Blog oder eine Seite, die einer einzigen Person gewidmet ist, zum Ursprung des eigenen persönlichen Informationslecks werden.",
+      "Esta página se irá actualizando cuando tenga nuevos proyectos que enseñar.": "Diese Seite wird aktualisiert, sobald ich neue Projekte zeigen kann.",
+      ">_ GALERÍA / ARCHIVO VISUAL": ">_ GALERIE / VISUELLES ARCHIV", "GALERÍA / ARCHIVO VISUAL": "GALERIE / VISUELLES ARCHIV",
+      "Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.": "Ein Bereich für Bilder, Zeichnungen, Kompositionen, Banner und digitale Kunst. Er lässt sich erweitern, indem Bilder zum Repository hinzugefügt und hier verlinkt werden.",
+      "[ GALERÍA EN CONSTRUCCIÓN ]": "[ GALERIE IM AUFBAU ]",
+      "en construcción": "im Aufbau", "CONTENIDO": "INHALT", "Identidad": "Identität",
+      "< Volver a ESMAIWOL NET.ZONE": "< Zurück zu ESMAIWOL NET.ZONE", "Volver a ESMAIWOL NET.ZONE": "Zurück zu ESMAIWOL NET.ZONE"
+    },
+    es: {}
+  };
+
+  const selector = document.getElementById('language-select');
+  const textNodes = [];
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  const baseText = new Map(textNodes.map(node => [node, node.nodeValue]));
+  const baseTitle = document.title;
+  const baseDescription = document.querySelector('meta[name="description"]').content;
+  const baseAria = document.querySelector('nav').getAttribute('aria-label');
+
+  function applyLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.title = lang === 'es' ? baseTitle : translations[lang][baseTitle] || (lang === 'en' ? 'About me // ESMAIWOL.ZN' : 'Über mich // ESMAIWOL.ZN');
+    document.querySelector('meta[name="description"]').content = translations[lang][baseDescription] || baseDescription;
+    document.querySelector('nav').setAttribute('aria-label', lang === 'es' ? baseAria : translations[lang][baseAria] || (lang === 'en' ? 'Main navigation' : 'Hauptnavigation'));
+    for (const [node, originalValue] of baseText) {
+      const trimmed = originalValue.trim();
+      const leading = originalValue.match(/^\s*/)[0];
+      const trailing = originalValue.match(/\s*$/)[0];
+      const translated = lang === 'es' ? trimmed : (translations[lang][trimmed] ?? trimmed);
+      node.nodeValue = leading + translated + trailing;
+    }
+    const status = document.querySelector('.masthead p:last-child');
+    status.innerHTML = lang === 'es'
+      ? '<span class="prompt">[STATUS]</span> usuario conectado · explorando sistemas, imágenes e ideas'
+      : lang === 'en'
+        ? '<span class="prompt">[STATUS]</span> user online · exploring systems, images, and ideas'
+        : '<span class="prompt">[STATUS]</span> Benutzer online · erkundet Systeme, Bilder und Ideen';
+    const info = document.querySelector('#proyectos .content p .prompt');
+    if (info) info.parentElement.innerHTML = lang === 'es'
+      ? '<span class="prompt">[INFO]</span> Esta página se irá actualizando cuando tenga nuevos proyectos que enseñar.'
+      : lang === 'en'
+        ? '<span class="prompt">[INFO]</span> This page will be updated whenever I have new projects to show.'
+        : '<span class="prompt">[INFO]</span> Diese Seite wird aktualisiert, sobald ich neue Projekte zeigen kann.';
+    const ps = document.querySelectorAll('.side-panel .content p');
+    if (ps[0]) ps[0].innerHTML = '<span class="prompt">USER:</span> esmaiwol';
+    if (ps[1]) ps[1].innerHTML = '<span class="prompt">MODE:</span> ' + (lang === 'de' ? 'persönlich' : 'personal');
+    if (ps[2]) ps[2].innerHTML = '<span class="prompt">THEME:</span> ' + (lang === 'de' ? 'Retro-Terminal' : 'retro terminal');
+    if (ps[3]) ps[3].innerHTML = '<span class="prompt">STATUS:</span> ' + (lang === 'es' ? 'en construcción' : lang === 'en' ? 'under construction' : 'im Aufbau');
+    const languageLabel = document.querySelector('[data-language-label]');
+    if (languageLabel) languageLabel.textContent = lang === 'de' ? 'SPRACHE:' : 'LANG:';
+  }
+  selector.value = 'en';
+  selector.addEventListener('change', () => applyLanguage(selector.value));
+  applyLanguage('en');
+})();
+</script>
+</body>
+</html>
