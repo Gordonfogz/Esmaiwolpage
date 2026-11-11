@@ -268,6 +268,38 @@
       main { grid-template-columns: 1fr; }
       .masthead-right { width: 38%; opacity: 0.85; }
     }
+
+    /* FAV GAMES stamps */
+    .fav-games {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+      gap: 8px;
+      padding: 10px;
+      justify-items: center;
+    }
+    .fav-games a, .fav-games .stamp {
+      display: block;
+      width: 56px;
+      height: 56px;
+      border: 1px solid #ff1a1a88;
+      background: #1a0505;
+      box-shadow: 0 0 6px #ff000033, inset 0 0 8px #0008;
+      clip-path: polygon(0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px));
+      overflow: hidden;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+    }
+    .fav-games a:hover, .fav-games .stamp:hover {
+      transform: scale(1.08);
+      border-color: #ff4444;
+      box-shadow: 0 0 12px #ff000066;
+    }
+    .fav-games img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      image-rendering: auto;
+    }
   </style>
 </head>
 <body>
@@ -379,13 +411,19 @@
         </div>
 
         <aside>
-          <section class="side-panel">
-            <h2>SYS.INFO</h2>
-            <div class="content">
-              <p><span class="prompt">USER:</span> esmaiwol</p>
-              <p><span class="prompt">MODE:</span> <span data-i18n="mode">personal</span></p>
-              <p><span class="prompt">THEME:</span> <span data-i18n="theme">retro terminal</span></p>
-              <p><span class="prompt">STATUS:</span> <span data-i18n="sys_status">en construcción</span></p>
+          <section class="side-panel" id="fav-games">
+            <h2 data-i18n="h_favgames">&gt;_ FAV. GAMES</h2>
+            <div class="fav-games">
+              <a class="stamp" href="#" title="Touhou 6 — Embodiment of Scarlet Devil"><img src="fav-games/th06.png" alt="TH06"></a>
+              <a class="stamp" href="#" title="War Thunder"><img src="fav-games/warthunder.png" alt="War Thunder"></a>
+              <a class="stamp" href="#" title="RuneScape"><img src="fav-games/runescape.png" alt="RuneScape"></a>
+              <a class="stamp" href="#" title="Gal*Gun 2"><img src="fav-games/galgun2.png" alt="Gal*Gun 2"></a>
+              <a class="stamp" href="#" title="Megadimension Neptunia VIIR"><img src="fav-games/neptunia.png" alt="Neptunia VIIR"></a>
+              <a class="stamp" href="#" title="The Legend of Zelda: Majora's Mask"><img src="fav-games/majora.png" alt="Majora's Mask"></a>
+              <a class="stamp" href="#" title="Counter-Strike"><img src="fav-games/cs.png" alt="Counter-Strike"></a>
+              <a class="stamp" href="#" title="Crack-Life"><img src="fav-games/cracklife.png" alt="Crack-Life"></a>
+              <a class="stamp" href="#" title="Angry Goy II"><img src="fav-games/angrygoy.png" alt="Angry Goy II"></a>
+              <a class="stamp" href="#" title="Postal 2 + Paradise Lost"><img src="fav-games/postal2.png" alt="Postal 2"></a>
             </div>
           </section>
           <section class="side-panel">
