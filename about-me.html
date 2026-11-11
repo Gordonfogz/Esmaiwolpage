@@ -300,6 +300,38 @@
       display: block;
       image-rendering: auto;
     }
+
+    /* Gallery grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      padding: 10px;
+    }
+    .gallery-grid a {
+      display: block;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #ff1a1a88;
+      background: #0a0202;
+      aspect-ratio: 1 / 1;
+      box-shadow: 0 0 8px #ff000022;
+      clip-path: polygon(0 5px, 5px 0, calc(100% - 5px) 0, 100% 5px, 100% calc(100% - 5px), calc(100% - 5px) 100%, 5px 100%, 0 calc(100% - 5px));
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .gallery-grid a:hover {
+      transform: scale(1.04);
+      border-color: #ff4444;
+      box-shadow: 0 0 14px #ff000055;
+      z-index: 1;
+    }
+    .gallery-grid img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -403,9 +435,25 @@
 
           <section class="panel" id="galeria" style="margin-top:10px">
             <h2 data-i18n="h_gallery">&gt;_ GALERÍA / ARCHIVO VISUAL</h2>
-            <div class="content">
-              <p data-i18n="p_gallery">Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.</p>
-              <p class="prompt" data-i18n="p_gallery_status">[ GALERÍA EN CONSTRUCCIÓN ]</p>
+            <div class="gallery-grid">
+              <a href="gallery/live_fpv.png" target="_blank" rel="noopener" title="LIVE">
+                <img src="gallery/live_fpv.png" alt="LIVE" loading="lazy">
+              </a>
+              <a href="gallery/postal_chainsaw.jpg" target="_blank" rel="noopener" title="Postal 2">
+                <img src="gallery/postal_chainsaw.jpg" alt="Postal 2" loading="lazy">
+              </a>
+              <a href="gallery/postal_demo.jpg" target="_blank" rel="noopener" title="Postal 2 Demo">
+                <img src="gallery/postal_demo.jpg" alt="Postal 2 Demo" loading="lazy">
+              </a>
+              <a href="gallery/gore_corridor.jpg" target="_blank" rel="noopener" title="Gore">
+                <img src="gallery/gore_corridor.jpg" alt="Gore" loading="lazy">
+              </a>
+              <a href="gallery/flandre.jpg" target="_blank" rel="noopener" title="Flandre">
+                <img src="gallery/flandre.jpg" alt="Flandre" loading="lazy">
+              </a>
+              <a href="gallery/angel_bat.png" target="_blank" rel="noopener" title="Angel">
+                <img src="gallery/angel_bat.png" alt="Angel" loading="lazy">
+              </a>
             </div>
           </section>
         </div>
