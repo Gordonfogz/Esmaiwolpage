@@ -14,15 +14,25 @@
       --text: #cbd5ff;
       --muted: #91b7bb;
       --border: #164cff;
-      /* Cambia este archivo por la imagen de fondo que quieras usar dentro del marco. */
-      --about-background: url("about-bg.jpg");
+      /* Fondo de pantalla DETRÁS del marco (cambia esta URL) */
+      --wallpaper: #010104;
+      /* --wallpaper: url("wallpaper.jpg") center / cover no-repeat; */
+      /* Abertura interior medida sobre frame.png 488×377 */
+      --hole-top: 14.85%;
+      --hole-bottom: 10.88%;
+      --hole-left: 10.86%;
+      --hole-right: 9.43%;
     }
+
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body { width: 100%; height: 100%; }
-    body {
+    html, body {
       margin: 0;
-      background: #010104;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      background: var(--wallpaper);
       color: var(--text);
       font: 16px/1.6 "Courier New", Courier, monospace;
       min-height: 100vh;
@@ -31,57 +41,55 @@
       align-items: center;
       justify-content: center;
       padding: 12px;
-      overflow: hidden;
     }
 
     a { color: var(--blue); text-underline-offset: 3px; }
     a:hover, a:focus { color: var(--green); background: #10172c; }
 
-    /* Marco fijo por fuera; toda la página queda dentro de la abertura. */
-    .site {
+    /* ===== MARCO centrado; el contenido SOLO vive en la abertura ===== */
+    .frame {
       position: relative;
-      isolation: isolate;
-      flex: 0 0 auto;
-      width: min(1200px, calc(100vw - 24px), calc((100svh - 24px) * 1.2944));
+      width: min(1100px, calc(100vw - 24px), calc((100svh - 24px) * 1.2944));
       aspect-ratio: 488 / 377;
-      margin: 0 auto;
-      overflow: hidden;
-      background: transparent;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 24px #00134c66);
     }
 
-    .site-inner {
-      position: absolute;
-      /* Abertura interior calculada sobre el PNG original de 488 × 377. */
-      left: 10.8%; right: 9.8%; top: 15.1%; bottom: 10.9%;
-      min-width: 0; min-height: 0;
-      overflow: auto;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
-      background-color: #03050c;
-      background-image: linear-gradient(rgba(3,5,12,.78), rgba(3,5,12,.86)), var(--about-background);
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      scrollbar-color: #1768ff #050610;
-      z-index: 1;
-    }
-
-    .frame-overlay {
+    /* Imagen del marco encima de todo */
+    .frame > img.bezel {
       position: absolute;
       inset: 0;
-      display: block;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: fill;
       pointer-events: none;
       user-select: none;
-      z-index: 5;
+      z-index: 20;
     }
 
-    /* Cabecera con GIF bien visible y centrada */
+    /* Ventana de contenido = exactamente el agujero transparente */
+    .window {
+      position: absolute;
+      top: var(--hole-top);
+      bottom: var(--hole-bottom);
+      left: var(--hole-left);
+      right: var(--hole-right);
+      z-index: 10;
+      overflow: auto;
+      overscroll-behavior: contain;
+      background: #03050c;
+      scrollbar-width: thin;
+      scrollbar-color: #1768ff #050610;
+    }
+    .window::-webkit-scrollbar { width: 8px; }
+    .window::-webkit-scrollbar-track { background: #050610; }
+    .window::-webkit-scrollbar-thumb { background: #1768ff; border-radius: 4px; }
+
+    /* ----- contenido interno ----- */
     .masthead {
       position: relative;
       text-align: center;
-      padding: 32px 20px 28px;
+      padding: 28px 18px 24px;
       border-bottom: 2px solid var(--border);
       overflow: hidden;
       isolation: isolate;
@@ -90,20 +98,15 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: url("bg-glitch.gif") center center / cover no-repeat;
-      opacity: 0.65;
+      background: url("bg-glitch.gif") center / cover no-repeat;
+      opacity: 0.6;
       z-index: 0;
     }
     .masthead::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(3,5,12,0.55) 0%,
-        rgba(3,5,12,0.35) 40%,
-        rgba(3,5,12,0.7) 100%
-      );
+      background: linear-gradient(180deg, rgba(3,5,12,.55) 0%, rgba(3,5,12,.35) 45%, rgba(3,5,12,.72) 100%);
       z-index: 1;
     }
     .masthead > * { position: relative; z-index: 2; }
@@ -112,19 +115,19 @@
       color: var(--blue);
       font-weight: bold;
       letter-spacing: 3px;
-      margin: 0 0 10px;
+      margin: 0 0 8px;
       text-shadow: 0 0 10px #000, 0 0 6px #1768ff88;
     }
     .masthead h1 {
       margin: 0;
       color: var(--green);
-      font-size: clamp(28px, 5vw, 50px);
+      font-size: clamp(26px, 4.5vw, 46px);
       line-height: 1.1;
       text-shadow: 0 0 14px #00ff8344, 0 2px 8px #000;
     }
     .masthead p {
       color: var(--muted);
-      margin: 12px 0 0;
+      margin: 10px 0 0;
       text-shadow: 0 1px 4px #000;
     }
 
@@ -134,7 +137,7 @@
       justify-content: center;
       align-items: center;
       gap: 8px 14px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-bottom: 2px solid var(--border);
       background: #050610;
       font-weight: bold;
@@ -148,7 +151,7 @@
       align-items: center;
       gap: 6px;
       color: var(--green);
-      margin-left: 12px;
+      margin-left: 10px;
     }
     .language-picker select {
       background: #050509;
@@ -163,10 +166,10 @@
     }
 
     main {
-      padding: 20px 18px;
+      padding: 16px 14px;
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(200px, 0.9fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.7fr) minmax(180px, 0.9fr);
+      gap: 14px;
       align-items: start;
     }
 
@@ -176,19 +179,19 @@
       min-width: 0;
     }
     .panel h2, .side-panel h2 {
-      font-size: 17px;
+      font-size: 16px;
       margin: 0;
-      padding: 7px 12px;
+      padding: 6px 12px;
       color: var(--green);
       border-bottom: 2px solid var(--border);
       background: linear-gradient(90deg, #07123c, #080914);
     }
-    .content { padding: 12px 14px; }
+    .content { padding: 12px; }
     .content p { margin: 8px 0 12px; }
 
     .terminal {
       border: 1px solid #1768ff;
-      padding: 12px;
+      padding: 10px;
       background: #03050c;
       overflow-wrap: anywhere;
     }
@@ -214,12 +217,12 @@
       background: #080914;
       font-size: 0.92em;
     }
-    .side-panel { margin-bottom: 14px; }
+    .side-panel { margin-bottom: 12px; }
     .side-panel ul { margin: 0; padding-left: 18px; }
     .side-panel li { margin: 5px 0; }
 
     footer {
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-top: 2px solid var(--border);
       color: var(--green);
       font-weight: bold;
@@ -228,23 +231,21 @@
     footer span { color: var(--muted); }
 
     @media (max-width: 760px) {
-      body { padding: 8px; font-size: 14px; }
-      main { grid-template-columns: minmax(0, 1fr); padding: 12px 10px; }
-      .masthead { padding: 22px 12px; }
+      body { padding: 6px; font-size: 14px; }
+      main { grid-template-columns: 1fr; padding: 12px 10px; }
+      .masthead { padding: 20px 12px; }
       nav { justify-content: flex-start; }
       .language-picker { margin-left: 0; width: 100%; }
-      .site-inner { scrollbar-width: thin; }
-    }
-
-    @media (max-height: 520px) and (min-width: 761px) {
-      body { padding: 6px; }
-      .site { width: min(1200px, calc((100svh - 12px) * 1.2944), calc(100vw - 12px)); }
     }
   </style>
 </head>
 <body>
-  <div class="site">
-    <div class="site-inner">
+  <!--
+    WALLPAPER: cambia --wallpaper en :root
+    Ejemplo: --wallpaper: url("mi-fondo.jpg") center / cover no-repeat #010104;
+  -->
+  <div class="frame" role="img" aria-label="Marco metálico">
+    <div class="window" id="content-window">
       <header class="masthead">
         <p class="eyebrow">ESMAIWOL NET.ZONE // USER PROFILE</p>
         <h1>./SOBRE_MÍ</h1>
@@ -278,7 +279,7 @@
             </div>
           </section>
 
-          <section class="panel" id="linux" style="margin-top:16px">
+          <section class="panel" id="linux" style="margin-top:14px">
             <h2>&gt;_ LINUX / SOFTWARE LIBRE</h2>
             <div class="content">
               <p>Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.</p>
@@ -286,7 +287,7 @@
             </div>
           </section>
 
-          <section class="panel" id="hardware" style="margin-top:16px">
+          <section class="panel" id="hardware" style="margin-top:14px">
             <h2>&gt;_ THINKPAD / HARDWARE</h2>
             <div class="content">
               <p>Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto</p>
@@ -294,7 +295,7 @@
             </div>
           </section>
 
-          <section class="panel" id="creativo" style="margin-top:16px">
+          <section class="panel" id="creativo" style="margin-top:14px">
             <h2>&gt;_ EDICIÓN Y ARTE DIGITAL</h2>
             <div class="content">
               <p>También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.</p>
@@ -302,7 +303,7 @@
             </div>
           </section>
 
-          <section class="panel" id="proyectos" style="margin-top:16px">
+          <section class="panel" id="proyectos" style="margin-top:14px">
             <h2>&gt;_ ESMAIWOL / PROYECTOS</h2>
             <div class="content">
               <p>ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion</p>
@@ -310,7 +311,7 @@
             </div>
           </section>
 
-          <section class="panel" id="galeria" style="margin-top:16px">
+          <section class="panel" id="galeria" style="margin-top:14px">
             <h2>&gt;_ GALERÍA / ARCHIVO VISUAL</h2>
             <div class="content">
               <p>Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.</p>
@@ -360,7 +361,8 @@
         <span> // HTML + CSS</span>
       </footer>
     </div>
-    <img class="frame-overlay" src="frame.png" alt="" aria-hidden="true" draggable="false">
+
+    <img class="bezel" src="frame.png" alt="" aria-hidden="true" draggable="false">
   </div>
 
 <script>
