@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050509">
+  <meta name="theme-color" content="#010104">
   <meta name="description" content="Sobre Esmaiwol: Linux, hardware, arte digital y proyectos web.">
-  <link rel="icon" type="image/png" href="favicon.png">
   <title>Sobre mí // ESMAIWOL.ZN</title>
   <style>
     :root {
@@ -14,19 +13,19 @@
       --text: #cbd5ff;
       --muted: #91b7bb;
       --border: #164cff;
-      /* Fondo de pantalla DETRÁS del marco (cambia esta URL) */
+      /* Wallpaper independiente (detrás del marco) */
       --wallpaper: #010104;
-      /* --wallpaper: url("wallpaper.jpg") center / cover no-repeat; */
-      /* Abertura interior medida sobre frame.png 488×377 */
-      --hole-top: 14.85%;
-      --hole-bottom: 10.88%;
-      --hole-left: 10.86%;
-      --hole-right: 9.43%;
+      /* --wallpaper: url("fondo.jpg") center / cover no-repeat #010104; */
+
+      /* Abertura medida en frame.png 488×377 */
+      --t: 14.8541%;
+      --b: 10.8753%;
+      --l: 10.8607%;
+      --r: 9.4262%;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; }
     html, body {
-      margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
@@ -34,29 +33,48 @@
     body {
       background: var(--wallpaper);
       color: var(--text);
-      font: 16px/1.6 "Courier New", Courier, monospace;
+      font: 16px/1.55 "Courier New", Courier, monospace;
+      display: grid;
+      place-items: center;
       min-height: 100vh;
       min-height: 100svh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
+      padding: 10px;
     }
 
     a { color: var(--blue); text-underline-offset: 3px; }
     a:hover, a:focus { color: var(--green); background: #10172c; }
 
-    /* ===== MARCO centrado; el contenido SOLO vive en la abertura ===== */
-    .frame {
+    /* Contenedor del marco: centrado, proporción exacta del PNG */
+    .stage {
       position: relative;
-      width: min(1100px, calc(100vw - 24px), calc((100svh - 24px) * 1.2944));
+      width: min(1080px, calc(100vw - 20px), calc((100svh - 20px) * 488 / 377));
       aspect-ratio: 488 / 377;
-      flex-shrink: 0;
-      filter: drop-shadow(0 0 24px #00134c66);
+      line-height: 0;
     }
 
-    /* Imagen del marco encima de todo */
-    .frame > img.bezel {
+    /* Ventana de contenido = agujero del marco */
+    .viewport {
+      position: absolute;
+      top: var(--t);
+      bottom: var(--b);
+      left: var(--l);
+      right: var(--r);
+      z-index: 1;
+      overflow: auto;
+      overscroll-behavior: contain;
+      background: #03050c;
+      line-height: 1.55;
+      scrollbar-width: thin;
+      scrollbar-color: #1768ff #050610;
+      /* Máscara extra: el contenido no puede pintar fuera del agujero */
+      -webkit-mask-image: linear-gradient(#000, #000);
+      mask-image: linear-gradient(#000, #000);
+    }
+    .viewport::-webkit-scrollbar { width: 7px; }
+    .viewport::-webkit-scrollbar-thumb { background: #1768ff; border-radius: 4px; }
+
+    /* Marco encima, sin distorsión de ratio */
+    .bezel {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -64,32 +82,15 @@
       object-fit: fill;
       pointer-events: none;
       user-select: none;
-      z-index: 20;
+      z-index: 2;
+      display: block;
     }
 
-    /* Ventana de contenido = exactamente el agujero transparente */
-    .window {
-      position: absolute;
-      top: var(--hole-top);
-      bottom: var(--hole-bottom);
-      left: var(--hole-left);
-      right: var(--hole-right);
-      z-index: 10;
-      overflow: auto;
-      overscroll-behavior: contain;
-      background: #03050c;
-      scrollbar-width: thin;
-      scrollbar-color: #1768ff #050610;
-    }
-    .window::-webkit-scrollbar { width: 8px; }
-    .window::-webkit-scrollbar-track { background: #050610; }
-    .window::-webkit-scrollbar-thumb { background: #1768ff; border-radius: 4px; }
-
-    /* ----- contenido interno ----- */
+    /* ===== contenido ===== */
     .masthead {
       position: relative;
       text-align: center;
-      padding: 28px 18px 24px;
+      padding: 26px 16px 22px;
       border-bottom: 2px solid var(--border);
       overflow: hidden;
       isolation: isolate;
@@ -99,14 +100,14 @@
       position: absolute;
       inset: 0;
       background: url("bg-glitch.gif") center / cover no-repeat;
-      opacity: 0.6;
+      opacity: 0.58;
       z-index: 0;
     }
     .masthead::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(3,5,12,.55) 0%, rgba(3,5,12,.35) 45%, rgba(3,5,12,.72) 100%);
+      background: linear-gradient(180deg, rgba(3,5,12,.5), rgba(3,5,12,.32) 45%, rgba(3,5,12,.75));
       z-index: 1;
     }
     .masthead > * { position: relative; z-index: 2; }
@@ -115,20 +116,19 @@
       color: var(--blue);
       font-weight: bold;
       letter-spacing: 3px;
-      margin: 0 0 8px;
-      text-shadow: 0 0 10px #000, 0 0 6px #1768ff88;
+      margin-bottom: 8px;
+      text-shadow: 0 0 8px #000, 0 0 5px #1768ff88;
     }
     .masthead h1 {
-      margin: 0;
       color: var(--green);
-      font-size: clamp(26px, 4.5vw, 46px);
+      font-size: clamp(24px, 4.2vw, 44px);
       line-height: 1.1;
-      text-shadow: 0 0 14px #00ff8344, 0 2px 8px #000;
+      text-shadow: 0 0 12px #00ff8340, 0 2px 6px #000;
     }
     .masthead p {
       color: var(--muted);
-      margin: 10px 0 0;
-      text-shadow: 0 1px 4px #000;
+      margin-top: 10px;
+      text-shadow: 0 1px 3px #000;
     }
 
     nav {
@@ -136,11 +136,12 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 8px 14px;
-      padding: 10px 14px;
+      gap: 6px 12px;
+      padding: 10px 12px;
       border-bottom: 2px solid var(--border);
       background: #050610;
       font-weight: bold;
+      line-height: 1.4;
     }
     nav a { text-decoration: none; }
     nav a:before { content: "[ "; color: var(--text); }
@@ -151,25 +152,21 @@
       align-items: center;
       gap: 6px;
       color: var(--green);
-      margin-left: 10px;
+      margin-left: 8px;
     }
     .language-picker select {
       background: #050509;
       color: var(--green);
       border: 1px solid var(--blue);
-      padding: 4px 6px;
+      padding: 3px 5px;
       font: inherit;
-    }
-    .language-picker select:focus {
-      outline: 2px solid var(--green);
-      outline-offset: 2px;
     }
 
     main {
-      padding: 16px 14px;
+      padding: 14px 12px;
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(180px, 0.9fr);
-      gap: 14px;
+      grid-template-columns: minmax(0, 1.7fr) minmax(170px, 0.9fr);
+      gap: 12px;
       align-items: start;
     }
 
@@ -179,15 +176,14 @@
       min-width: 0;
     }
     .panel h2, .side-panel h2 {
-      font-size: 16px;
-      margin: 0;
-      padding: 6px 12px;
+      font-size: 15px;
+      padding: 6px 10px;
       color: var(--green);
       border-bottom: 2px solid var(--border);
       background: linear-gradient(90deg, #07123c, #080914);
     }
-    .content { padding: 12px; }
-    .content p { margin: 8px 0 12px; }
+    .content { padding: 10px 12px; }
+    .content p { margin: 8px 0 10px; }
 
     .terminal {
       border: 1px solid #1768ff;
@@ -199,53 +195,49 @@
     .quote {
       color: #fff;
       border-left: 3px solid var(--green);
-      padding: 6px 0 6px 12px;
-      margin: 12px 0;
+      padding: 4px 0 4px 10px;
+      margin: 10px 0;
       font-weight: bold;
     }
     .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       padding: 0;
       list-style: none;
     }
     .tags li {
       border: 1px solid var(--blue);
-      padding: 3px 8px;
+      padding: 2px 7px;
       color: var(--green);
       background: #080914;
-      font-size: 0.92em;
+      font-size: 0.9em;
     }
-    .side-panel { margin-bottom: 12px; }
-    .side-panel ul { margin: 0; padding-left: 18px; }
-    .side-panel li { margin: 5px 0; }
+    .side-panel { margin-bottom: 10px; }
+    .side-panel ul { margin: 0; padding-left: 16px; }
+    .side-panel li { margin: 4px 0; }
 
     footer {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-top: 2px solid var(--border);
       color: var(--green);
       font-weight: bold;
       text-align: center;
+      line-height: 1.4;
     }
     footer span { color: var(--muted); }
 
-    @media (max-width: 760px) {
-      body { padding: 6px; font-size: 14px; }
-      main { grid-template-columns: 1fr; padding: 12px 10px; }
-      .masthead { padding: 20px 12px; }
+    @media (max-width: 720px) {
+      body { font-size: 14px; padding: 6px; }
+      main { grid-template-columns: 1fr; }
       nav { justify-content: flex-start; }
       .language-picker { margin-left: 0; width: 100%; }
     }
   </style>
 </head>
 <body>
-  <!--
-    WALLPAPER: cambia --wallpaper en :root
-    Ejemplo: --wallpaper: url("mi-fondo.jpg") center / cover no-repeat #010104;
-  -->
-  <div class="frame" role="img" aria-label="Marco metálico">
-    <div class="window" id="content-window">
+  <div class="stage">
+    <div class="viewport" id="win">
       <header class="masthead">
         <p class="eyebrow">ESMAIWOL NET.ZONE // USER PROFILE</p>
         <h1>./SOBRE_MÍ</h1>
@@ -279,7 +271,7 @@
             </div>
           </section>
 
-          <section class="panel" id="linux" style="margin-top:14px">
+          <section class="panel" id="linux" style="margin-top:12px">
             <h2>&gt;_ LINUX / SOFTWARE LIBRE</h2>
             <div class="content">
               <p>Siempre fui ese que sabia que linux era superior a windows objetivamente hablando. No importa por donde lo veas, la utilidad y absurda libertd que te otorga gnu linux es simplemente sorprendente, yo antes, y hasta hace no muy poco, siempre se nego a la zona de confort que te otorgaba windows, defendiendo he incluso prefiriendolo antes que el primero.</p>
@@ -287,7 +279,7 @@
             </div>
           </section>
 
-          <section class="panel" id="hardware" style="margin-top:14px">
+          <section class="panel" id="hardware" style="margin-top:12px">
             <h2>&gt;_ THINKPAD / HARDWARE</h2>
             <div class="content">
               <p>Un dia fui al centro de la ciudad para comprar un portatil thinkpad t430 de segunda mano, un anciano de aparente status me la entrego en la puerta de su morada, y con debian entendi por que era un portatil de culto</p>
@@ -295,7 +287,7 @@
             </div>
           </section>
 
-          <section class="panel" id="creativo" style="margin-top:14px">
+          <section class="panel" id="creativo" style="margin-top:12px">
             <h2>&gt;_ EDICIÓN Y ARTE DIGITAL</h2>
             <div class="content">
               <p>También me muevo entre edición de vídeo, audio, imágenes, estética retro, graffiti y experimentos visuales. Me atrae la web vieja: páginas personales, interfaces oscuras, GIFs y una identidad visual que no parezca una plantilla genérica.</p>
@@ -303,7 +295,7 @@
             </div>
           </section>
 
-          <section class="panel" id="proyectos" style="margin-top:14px">
+          <section class="panel" id="proyectos" style="margin-top:12px">
             <h2>&gt;_ ESMAIWOL / PROYECTOS</h2>
             <div class="content">
               <p>ESMAIWOL NET.ZONE es mi espacio personal en construcción. Sabias que lo que sea que escriba aqui podria ser mi autodoxxeo? efectivamente hablando, un blog o una pagina dedicada a un solo usuario puede ser la creacion de tu propia fuga personal de informacion</p>
@@ -311,7 +303,7 @@
             </div>
           </section>
 
-          <section class="panel" id="galeria" style="margin-top:14px">
+          <section class="panel" id="galeria" style="margin-top:12px">
             <h2>&gt;_ GALERÍA / ARCHIVO VISUAL</h2>
             <div class="content">
               <p>Un espacio reservado para imágenes, dibujos, composiciones, banners y arte digital. Se puede ampliar añadiendo imágenes al repositorio y enlazándolas aquí.</p>
@@ -362,7 +354,7 @@
       </footer>
     </div>
 
-    <img class="bezel" src="frame.png" alt="" aria-hidden="true" draggable="false">
+    <img class="bezel" src="frame.png" alt="" width="488" height="377" draggable="false">
   </div>
 
 <script>
@@ -433,7 +425,7 @@
   const textNodes = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) textNodes.push(walker.currentNode);
-  const baseText = new Map(textNodes.map(node => [node, node.nodeValue]));
+  const baseText = new Map(textNodes.map(n => [n, n.nodeValue]));
   const baseTitle = document.title;
   const baseDescription = document.querySelector('meta[name="description"]').content;
   const baseAria = document.querySelector('nav').getAttribute('aria-label');
@@ -447,8 +439,7 @@
       const trimmed = originalValue.trim();
       const leading = originalValue.match(/^\s*/)[0];
       const trailing = originalValue.match(/\s*$/)[0];
-      const translated = lang === 'es' ? trimmed : (translations[lang]?.[trimmed] ?? trimmed);
-      node.nodeValue = leading + translated + trailing;
+      node.nodeValue = leading + (lang === 'es' ? trimmed : (translations[lang]?.[trimmed] ?? trimmed)) + trailing;
     }
     const status = document.querySelector('.masthead p:last-child');
     if (status) status.innerHTML = lang === 'es'
