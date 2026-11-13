@@ -24,7 +24,7 @@
       background-color: #4aa0d0;
       background-image: url("profile-bg.gif");
       background-size: cover;
-      background-position: center center;
+      background-position: center 40%;
       background-repeat: no-repeat;
       background-attachment: fixed;
     }
@@ -133,14 +133,15 @@
     .pf-banner {
       position: relative;
       flex: 0 0 38%;
-      min-height: 0;
+      min-height: 72px;
       background-color: var(--blue-banner);
       background-size: cover;
       background-position: center;
       display: flex;
       align-items: flex-end;
-      padding: 10px 12px 8px;
+      padding: 10px 12px 10px;
       gap: 12px;
+      overflow: visible;
     }
     .pf-banner.has-wp { background-color: #333; }
     .pf-actions {
@@ -158,14 +159,26 @@
       border-radius: 2px;
     }
     .pf-avatar {
-      width: clamp(48px, 14%, 68px);
-      height: clamp(48px, 14%, 68px);
-      aspect-ratio: 1;
+      width: 64px;
+      height: 64px;
+      min-width: 64px;
+      min-height: 64px;
       flex-shrink: 0;
       border: 2px solid #fff;
       background: #e8eef4;
       object-fit: cover;
+      object-position: center;
       box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      display: block;
+      border-radius: 0;
+    }
+    @media (max-width: 560px) {
+      .pf-avatar {
+        width: 52px;
+        height: 52px;
+        min-width: 52px;
+        min-height: 52px;
+      }
     }
     .pf-nameblock { min-width: 0; padding-bottom: 2px; }
     .pf-name {
