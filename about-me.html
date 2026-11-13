@@ -332,6 +332,21 @@
       object-position: center;
       display: block;
     }
+
+    .voice-bio {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .voice-bio audio {
+      width: 100%;
+      height: 36px;
+      filter: hue-rotate(-20deg) saturate(1.4);
+    }
+    .voice-bio .voice-note {
+      font-size: 12px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -368,7 +383,17 @@
 
       <main>
         <div>
-          <section class="panel" id="perfil">
+          <section class="panel" id="voice-bio">
+            <h2 data-i18n="h_voice">&gt;_ AUDIO VOICE BIO</h2>
+            <div class="content voice-bio">
+              <audio id="voice-bio-audio" controls preload="auto" controlslist="nodownload">
+                <source src="voice-bio.mp3" type="audio/mpeg">
+              </audio>
+              <p class="voice-note" data-i18n="p_voice_note">[ PLAY AT FULL VOLUME ]</p>
+            </div>
+          </section>
+
+          <section class="panel" id="perfil" style="margin-top:10px">
             <h2 data-i18n="h_identity">&gt;_ IDENTIDAD</h2>
             <div class="content">
               <div class="terminal"><span class="prompt">esmaiwol@net.zone:~$</span> whoami<br><br><span data-i18n="p_identity">Soy esmaiwol, un usuario y ahora dirán que postmodernista o larper. No soy un moderado; política y éticamente, a hablar no procedo porque simplemente no se me tomará en serio a primeras. Abiertamente pro elitista.</span></div>
@@ -478,6 +503,7 @@
             <h2 data-i18n="h_contents">CONTENIDO</h2>
             <div class="content">
               <ul>
+                <li><a href="#voice-bio" data-i18n="nav_voice">Audio voice bio</a></li>
                 <li><a href="#perfil" data-i18n="nav_identity">Identidad</a></li>
                 <li><a href="#me-gusta" data-i18n="nav_like">Me gusta</a></li>
                 <li><a href="#no-me-gusta" data-i18n="nav_dislike">No me gusta</a></li>
@@ -527,6 +553,9 @@
       nav_gallery: "Galería",
       lang_label: "LANG:",
       h_identity: ">_ IDENTIDAD",
+      h_voice: ">_ AUDIO VOICE BIO",
+      nav_voice: "Audio voice bio",
+      p_voice_note: "[ REPRODUCIR A TODO VOLUMEN ]",
       h_like: ">_ ME GUSTA",
       p_like: "Me gusta el moe, las waifus, el contenido oficial y canon de una franquicia, como super weaboo, tengo gustos en cuanto a fan arts muy exigentes y cualquier contenido hecho por fans sobre una franquicia de mi importancia tiene que ser estrictamente bueno para que me guste, soy el gatekeeper de turno, me gusta la marihuana y ver videos subidos de tono hechos con MMD, o títulos de hentai altamente desconocidos.",
       h_dislike: ">_ NO ME GUSTA",
@@ -570,6 +599,9 @@
       nav_gallery: "Gallery",
       lang_label: "LANG:",
       h_identity: ">_ IDENTITY",
+      h_voice: ">_ AUDIO VOICE BIO",
+      nav_voice: "Audio voice bio",
+      p_voice_note: "[ PLAY AT FULL VOLUME ]",
       h_like: ">_ I LIKE",
       p_like: "I like moe, waifus, official and canon franchise content. As a super weaboo, I'm very demanding about fan art — any fan-made content about a franchise I care about has to be strictly good for me to like it. I'm the gatekeeper on duty. I like marijuana and watching NSFW MMD videos, or highly obscure hentai titles.",
       h_dislike: ">_ I DISLIKE",
@@ -613,6 +645,9 @@
       nav_gallery: "Galerie",
       lang_label: "SPRACHE:",
       h_identity: ">_ IDENTITÄT",
+      h_voice: ">_ AUDIO VOICE BIO",
+      nav_voice: "Audio voice bio",
+      p_voice_note: "[ IN VOLLER LAUTSTÄRKE ABSPIELEN ]",
       h_like: ">_ DAS MAG ICH",
       p_like: "Ich mag Moe, Waifus, offiziellen und kanonischen Franchise-Inhalt. Als Super-Weaboo bin ich bei Fanarts sehr anspruchsvoll — Fan-Inhalte zu einem Franchise, das mir wichtig ist, müssen streng gut sein, damit sie mir gefallen. Ich bin der Gatekeeper im Dienst. Ich mag Marihuana und NSFW-MMD-Videos oder sehr obskure Hentai-Titel.",
       h_dislike: ">_ DAS MAG ICH NICHT",
@@ -656,6 +691,17 @@
       const key = el.getAttribute('data-i18n');
       if (d[key] != null) el.textContent = d[key];
     });
+  }
+
+
+  const voice = document.getElementById('voice-bio-audio');
+  if (voice) {
+    const forceVol = () => { voice.volume = 1.0; };
+    voice.addEventListener('play', forceVol);
+    voice.addEventListener('volumechange', () => {
+      if (voice.volume < 1) voice.volume = 1.0;
+    });
+    forceVol();
   }
 
   sel.addEventListener('change', () => apply(sel.value));
