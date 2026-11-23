@@ -35,7 +35,7 @@
     h1{margin:3px 0 8px;color:var(--green);font-size:clamp(27px,6vw,42px);line-height:1.1;text-shadow:0 0 18px #000,0 0 14px #55ff9950,0 1px 3px #000}
     h2{margin:0 0 12px;color:var(--green);font-size:19px}
     .intro{margin:0;color:#c2c9e8}
-    .nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:13px}
+    .nav{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px;font-size:13px}.nav button{padding:4px 8px;font-size:11px}.nav .status{min-height:0;margin:0;font-size:11px}.blacklist-panel{margin:0;position:sticky;top:12px}
     .notice{margin:12px 0;padding:10px 12px;border-left:3px solid var(--blue);background:#0a1024;color:#bdc7eb;font-size:13px}
     .board-warning{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0;padding:13px 15px;border:2px solid #ffdf00;border-left:7px solid #ffdf00;background:#332d00;color:#fff36a;font-weight:bold;text-transform:uppercase;box-shadow:0 0 14px #ffdf0030}
     .board-warning-copy{display:flex;align-items:center;gap:10px;min-width:0}
@@ -43,8 +43,8 @@
     .board-warning-text{margin:0}
     .board-warning-gif{display:block;width:150px;max-width:30%;height:auto;max-height:115px;object-fit:contain;flex:0 0 auto;border:1px solid #ffdf00}
     @media(max-width:520px){.board-warning{gap:9px;padding:10px}.board-warning-gif{width:90px;max-width:28%;max-height:90px}.board-warning .warning-symbol{font-size:22px}}
-    .layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:start}
-    .main{min-width:0}.side{display:grid;gap:14px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;align-items:start}
+    .main{min-width:0}.side{display:grid;gap:14px;align-content:start;min-width:0}
     .panel{padding:15px;margin-bottom:14px}
     label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}
     input,textarea,select{display:block;width:100%;padding:10px;border:1px solid #293a79;border-radius:0;background:#03040a;color:var(--text);font:inherit;outline:none}
@@ -76,7 +76,7 @@
     .reply-form textarea{min-height:65px}.reply-form label{margin-top:7px}
     .empty{padding:22px;text-align:center;border:1px dashed #293a79;color:var(--muted)}
     footer{margin-top:18px;text-align:center;color:#747da0;font-size:11px}
-    @media(max-width:760px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr}}
     @media(max-width:520px){.side{grid-template-columns:1fr}.wrap{width:calc(100% - 14px);margin-top:7px}header,.panel,.thread{padding:11px}}
   </style>
 </head>
@@ -86,7 +86,7 @@
       <div class="eyebrow">ESMAIWOL NET.ZONE // imageboard</div>
       <h1>Esmaiwol.chan</h1>
       <p class="intro">𝕿𝖍𝖊𝖘𝖊 𝖈𝖍𝖆𝖒𝖇𝖊𝖗𝖘 𝖇𝖊𝖑𝖔𝖓𝖌 𝖙𝖔 𝕰𝖘𝖒𝖆𝖎𝖜𝖔𝖑𝖙𝖍𝖊𝖘𝖊 𝖉𝖚𝖓𝖌𝖊𝖔𝖓𝖘 𝖙𝖍𝖆𝖙 𝖆𝖗𝖊 𝖓𝖔𝖙𝖍𝖎𝖓𝖌 𝖒𝖔𝖗𝖊 𝖙𝖍𝖆𝖓 𝖕𝖆𝖗𝖙 𝖔𝖋 𝖒𝖞 𝖈𝖆𝖘𝖙𝖑𝖊.</p>
-      <nav class="nav"><a href="index.html">&lt;&lt; Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Create thread</a><a href="#tablones">View threads</a><a href="fashfoids.html" id="fashfoids-entry">♡ FASHFOIDS [LOCKED]</a></nav>
+      <nav class="nav"><a href="index.html">&lt;&lt; Back to ESMAIWOL NET.ZONE</a><a href="#nuevo-hilo">Create thread</a><a href="#tablones">View threads</a><a href="fashfoids.html" id="fashfoids-entry">♡ FASHFOIDS [LOCKED]</a><button type="button" id="account-open">[ ACCOUNT ]</button><span id="account-status" class="status" role="status">ANONYMOUS MODE</span></nav>
     </header>
 
     <div class="notice">The rules here are based first and foremost on common sense; you can post whatever you want, and I’ll delete whatever I want. This isn't your virtual stomping ground for every kind of degenerate or moron—this place is for a select few.</div>
@@ -121,28 +121,78 @@
         </section>
 
         <section id="tablones">
-          <div class="boardbar"><h2 id="list-title">// Recent threads</h2><span class="muted">Refresh to see new posts</span></div>
+          <div class="boardbar"><h2 id="list-title">// Recent threads</h2><span id="connection-status" class="status" role="status">Checking connection…</span><span class="muted">Refresh to see new posts</span></div>
           <div id="threads-list"><div class="empty">Connecting to the board…</div></div>
         </section>
       </main>
 
-      <aside class="side">
-        <section class="panel">
-          <h2>// System</h2>
-          <div id="connection-status" class="status">Checking connection…</div>
-          <p class="muted">post what you want</p>
-          <div class="form-actions"><button type="button" id="admin-login">[ ADMIN LOGIN ]</button></div>
-          <div id="admin-status" class="status" role="status">Admin mode off.</div>
-        </section>
-        <section class="panel">
-          <h2>// BLACK LIST </h2>
+      <aside class="side" aria-label="Board information">
+        <section class="panel blacklist-panel">
+          <h2>// BLACK LIST</h2>
           <p class="muted">FEMBOYS NOT, TRANNIES NOT, THIS IS NOT YOUR SIDE</p>
-          <p class="muted">Files are saved in the Supabase Storage bucket <code>chan-images</code>.</p><p class="anti-spam-note">zogbots or bots not</p>
+          <p class="anti-spam-note">zogbots or bots not</p>
         </section>
       </aside>
     </div>
     <footer>ESMAIWOL.CHAN</footer>
   </div>
+
+  <div class="account-overlay hidden" id="account-overlay" role="dialog" aria-modal="true" aria-labelledby="account-title">
+    <section class="account-card">
+      <button type="button" class="account-close" id="account-close" aria-label="Close">[ X ]</button>
+      <p class="account-kicker">ESMAIWOL.CHAN // SHARED AUTH</p>
+      <h2 id="account-title">ACCOUNT TERMINAL</h2>
+      <p class="account-note">Optional account. Posts and replies remain anonymous, whether you are signed in or not.</p>
+      <div id="account-auth-forms">
+        <div class="account-tabs">
+          <button type="button" class="active" id="account-tab-login">[ LOGIN ]</button>
+          <button type="button" id="account-tab-register">[ REGISTER ]</button>
+        </div>
+        <form id="account-form-login">
+          <label for="account-login-email">Email</label>
+          <input id="account-login-email" type="email" autocomplete="email" required>
+          <label for="account-login-password">Password</label>
+          <input id="account-login-password" type="password" autocomplete="current-password" minlength="6" required>
+          <button type="submit">[ AUTHENTICATE ]</button>
+        </form>
+        <form id="account-form-register" class="hidden">
+          <label for="account-reg-username">Username</label>
+          <input id="account-reg-username" type="text" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" title="Letters, numbers and underscore only" required>
+          <label for="account-reg-email">Email</label>
+          <input id="account-reg-email" type="email" autocomplete="email" required>
+          <label for="account-reg-password">Password (min 6)</label>
+          <input id="account-reg-password" type="password" autocomplete="new-password" minlength="6" required>
+          <button type="submit">[ CREATE ACCOUNT ]</button>
+        </form>
+      </div>
+      <div id="account-signed-in" class="hidden">
+        <p id="account-whoami"></p>
+        <p id="account-role"></p>
+        <button type="button" id="account-logout">[ SIGN OUT ]</button>
+      </div>
+      <div id="account-message" class="account-message" role="status" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <style>
+    .account-overlay{position:fixed;inset:0;z-index:1000000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(4px)}
+    .account-overlay.hidden{display:none}
+    .account-card{position:relative;width:min(100%,430px);max-height:90vh;overflow:auto;padding:24px;background:#090d0b;border:1px solid #527b61;box-shadow:0 0 28px rgba(55,150,90,.22);color:#c8d8cb;font:13px/1.55 monospace}
+    .account-card h2{margin:4px 0 8px;color:#a9e5b5;font-size:20px;letter-spacing:2px}
+    .account-kicker{color:#7ebd8e;font-size:10px;letter-spacing:2px}
+    .account-note{color:#91a596;font-size:11px;margin-bottom:18px}
+    .account-close{position:absolute;right:12px;top:12px;background:transparent;color:#a9c7af;border:1px solid #45624d;padding:4px 8px;cursor:pointer}
+    .account-tabs{display:flex;gap:8px;margin:12px 0}
+    .account-tabs button,.account-card form button,.account-card #account-logout{background:#101a13;color:#b7e2c0;border:1px solid #527b61;padding:9px 12px;font:inherit;cursor:pointer}
+    .account-tabs button.active{background:#1b3021;border-color:#9ad5a7}
+    .account-card label{display:block;margin:10px 0 4px;color:#9db9a3}
+    .account-card input{box-sizing:border-box;width:100%;padding:10px;background:#050806;color:#d7e6d9;border:1px solid #3e5945;font:inherit}
+    .account-card form button{width:100%;margin-top:16px}
+    .account-card .hidden{display:none!important}
+    .account-message{min-height:22px;margin-top:12px;color:#9fd3a8;overflow-wrap:anywhere}
+    .account-message.error{color:#ff8791}
+    #account-status{font-size:10px}
+  </style>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -417,32 +467,128 @@
       actions.append(button); container.append(actions);
     }
 
+    let currentSession = null;
+    let currentProfile = null;
+
+    function setAccountMessage(message, error = false) {
+      const el = $('account-message');
+      el.textContent = message || '';
+      el.classList.toggle('error', !!error);
+    }
+
+    function showAccountTab(which) {
+      const login = which === 'login';
+      $('account-tab-login').classList.toggle('active', login);
+      $('account-tab-register').classList.toggle('active', !login);
+      $('account-form-login').classList.toggle('hidden', !login);
+      $('account-form-register').classList.toggle('hidden', login);
+      setAccountMessage('');
+    }
+
+    function applySession(session) {
+      currentSession = session || null;
+      const user = currentSession?.user || null;
+      isAdmin = user?.app_metadata?.role === 'admin';
+      $('account-status').textContent = isAdmin ? 'ADMIN ACCOUNT' : (user ? 'ACCOUNT CONNECTED · POSTS ANONYMOUS' : 'ANONYMOUS MODE');
+      $('account-open').textContent = user ? '[ ACCOUNT ]' : '[ LOGIN / REGISTER ]';
+      if (user) {
+        $('account-auth-forms').classList.add('hidden');
+        $('account-signed-in').classList.remove('hidden');
+        const label = currentProfile?.display_name || currentProfile?.username || user.email || 'account';
+        $('account-whoami').textContent = 'SIGNED IN AS: ' + label;
+        $('account-role').textContent = isAdmin ? 'PERMISSIONS: ADMINISTRATOR' : 'PERMISSIONS: STANDARD USER';
+      } else {
+        currentProfile = null;
+        $('account-auth-forms').classList.remove('hidden');
+        $('account-signed-in').classList.add('hidden');
+      }
+      // The poster token is intentionally independent from the auth session.
+      // Never attach user ID, email or username to chan threads/replies.
+      if ($('account-overlay').classList.contains('hidden')) return;
+      setAccountMessage(user ? (isAdmin ? 'Administrator session active.' : 'Session active. Your posts remain anonymous.') : 'You are browsing anonymously.');
+    }
+
     async function refreshAdminState() {
       if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      isAdmin = user?.app_metadata?.role === 'admin';
-      status('admin-status', isAdmin ? `Admin authenticated: ${user.email || 'administrator'}.` : (user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!user && !isAdmin);
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const session = data.session || null;
+      currentProfile = null;
+      if (session?.user) {
+        const { data: profile } = await supabase.from('profiles')
+          .select('username, display_name').eq('id', session.user.id).maybeSingle();
+        currentProfile = profile || null;
+      }
+      applySession(session);
       await loadThreads();
     }
-    async function adminLogin() {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+
+    $('account-open').addEventListener('click', () => {
+      $('account-overlay').classList.remove('hidden');
+      if (currentSession?.user) applySession(currentSession);
+      else showAccountTab('login');
+    });
+    $('account-close').addEventListener('click', () => $('account-overlay').classList.add('hidden'));
+    $('account-overlay').addEventListener('click', event => {
+      if (event.target === $('account-overlay')) $('account-overlay').classList.add('hidden');
+    });
+    $('account-tab-login').addEventListener('click', () => showAccountTab('login'));
+    $('account-tab-register').addEventListener('click', () => showAccountTab('register'));
+
+    $('account-form-login').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = $('account-form-login').querySelector('button[type="submit"]');
+      button.disabled = true; setAccountMessage('Authenticating…');
+      try {
+        const email = $('account-login-email').value.trim();
+        const password = $('account-login-password').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await refreshAdminState();
+        setAccountMessage(isAdmin ? 'ADMIN ACCESS GRANTED.' : 'Signed in. Your chan posts remain anonymous.');
+      } catch (error) { setAccountMessage(error.message || 'Login failed.', true); }
+      finally { button.disabled = false; }
+    });
+
+    $('account-form-register').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = $('account-form-register').querySelector('button[type="submit"]');
+      button.disabled = true; setAccountMessage('Creating shared ESMAIWOL account…');
+      try {
+        const username = $('account-reg-username').value.trim();
+        const email = $('account-reg-email').value.trim();
+        const password = $('account-reg-password').value;
+        if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) throw new Error('Username: 3–24 characters, letters, numbers and underscore only.');
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+        if (error) throw error;
+        if (data.user) {
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: data.user.id, username, display_name: username
+          });
+          if (profileError && !/duplicate|unique/i.test(profileError.message || '')) console.warn('Profile creation:', profileError.message);
+        }
+        if (data.session) {
+          await refreshAdminState();
+          setAccountMessage('Account created. You are signed in; posts are still anonymous.');
+        } else {
+          setAccountMessage('Account created. Check your email to confirm it, then log in.');
+          showAccountTab('login');
+        }
+      } catch (error) { setAccountMessage(error.message || 'Registration failed.', true); }
+      finally { button.disabled = false; }
+    });
+
+    $('account-logout').addEventListener('click', async () => {
+      try {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
-        isAdmin = false;
-        status('admin-status', 'Signed out.');
+        currentProfile = null;
+        applySession(null);
+        setAccountMessage('Signed out. You can continue posting anonymously.');
         await loadThreads();
-        return;
-      }
-      const email = prompt('Administrator email (created in Supabase Auth):');
-      if (email === null) return;
-      const password = prompt('Administrator password:');
-      if (password === null) return;
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) throw error;
-      await refreshAdminState();
-    }
+      } catch (error) { setAccountMessage(error.message || 'Could not sign out.', true); }
+    });
+
     async function adminDeletePost(table, post) {
       const label = table === 'threads' ? 'thread and all its replies' : 'reply';
       if (!confirm(`ADMIN: permanently delete this ${label}?`)) return;
@@ -606,10 +752,9 @@
       $('threads-list').replaceChildren(safeText('div','empty','Edit chan.html and replace the two configuration values indicated in the code.'));
     }else{
       supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-      $('admin-login').addEventListener('click', () => adminLogin().catch(e => status('admin-status', e.message || 'Admin sign-in failed.', true)));
       supabase.auth.onAuthStateChange((_event, session) => {
-        isAdmin = session?.user?.app_metadata?.role === 'admin';
-        status('admin-status', isAdmin ? `Admin authenticated: ${session.user.email || 'administrator'}.` : (session?.user ? 'Signed in, but this account is not an administrator.' : 'Admin mode off.'), !!session?.user && !isAdmin);
+        currentProfile = null;
+        applySession(session);
         loadThreads().catch(e => status('connection-status', e.message, true));
       });
       refreshAdminState().catch(e=>status('connection-status',e.message,true));
